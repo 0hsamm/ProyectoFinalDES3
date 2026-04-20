@@ -1,0 +1,127 @@
+package co.edu.unbosque.proyectofinal.dto;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
+import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
+
+public class ConversacionDTO {
+
+	private Long id;
+    private TipoConversacion tipoConversacion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaUltimoMensaje;
+    private List<Long> participantesIds;
+    private String ultimoMensaje;
+    
+    
+    public ConversacionDTO() {
+		// TODO Auto-generated constructor stub
+	}
+
+
+	public ConversacionDTO(Long id, TipoConversacion tipoConversacion, LocalDateTime fechaCreacion,
+			LocalDateTime fechaUltimoMensaje, List<Long> participantesIds, String ultimoMensaje) {
+		super();
+		this.id = id;
+		this.tipoConversacion = tipoConversacion;
+		this.fechaCreacion = fechaCreacion;
+		this.fechaUltimoMensaje = fechaUltimoMensaje;
+		this.participantesIds = participantesIds;
+		this.ultimoMensaje = ultimoMensaje;
+	}
+
+
+	public Long getId() {
+		return id;
+	}
+
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+
+	public TipoConversacion getTipoConversacion() {
+		return tipoConversacion;
+	}
+
+
+	public void setTipoConversacion(TipoConversacion tipoConversacion) {
+		this.tipoConversacion = tipoConversacion;
+	}
+
+
+	public LocalDateTime getFechaCreacion() {
+		return fechaCreacion;
+	}
+
+
+	public void setFechaCreacion(LocalDateTime fechaCreacion) {
+		this.fechaCreacion = fechaCreacion;
+	}
+
+
+	public LocalDateTime getFechaUltimoMensaje() {
+		return fechaUltimoMensaje;
+	}
+
+
+	public void setFechaUltimoMensaje(LocalDateTime fechaUltimoMensaje) {
+		this.fechaUltimoMensaje = fechaUltimoMensaje;
+	}
+
+
+	public List<Long> getParticipantesIds() {
+		return participantesIds;
+	}
+
+
+	public void setParticipantesIds(List<Long> participantesIds) {
+		this.participantesIds = participantesIds;
+	}
+
+
+	public String getUltimoMensaje() {
+		return ultimoMensaje;
+	}
+
+
+	public void setUltimoMensaje(String ultimoMensaje) {
+		this.ultimoMensaje = ultimoMensaje;
+	}
+
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(fechaCreacion, fechaUltimoMensaje, id, participantesIds, tipoConversacion, ultimoMensaje);
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ConversacionDTO other = (ConversacionDTO) obj;
+		return Objects.equals(fechaCreacion, other.fechaCreacion)
+				&& Objects.equals(fechaUltimoMensaje, other.fechaUltimoMensaje) && Objects.equals(id, other.id)
+				&& Objects.equals(participantesIds, other.participantesIds)
+				&& tipoConversacion == other.tipoConversacion && Objects.equals(ultimoMensaje, other.ultimoMensaje);
+	}
+
+
+	@Override
+	public String toString() {
+		return "ConversacionDTO [id=" + id + ", tipoConversacion=" + tipoConversacion + ", fechaCreacion="
+				+ fechaCreacion + ", fechaUltimoMensaje=" + fechaUltimoMensaje + ", participantesIds="
+				+ participantesIds + ", ultimoMensaje=" + ultimoMensaje + "]";
+	}
+    
+    
+	
+}
