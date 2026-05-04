@@ -9,21 +9,21 @@ public class UsuarioDTO {
     private String usuario;
     private String nombrePersona;
     private String sobreMi;
-    private boolean online;
+    private boolean enLinea;
     private LocalDateTime ultimaVezEnLinea;
     
     public UsuarioDTO() {
 		// TODO Auto-generated constructor stub
 	}
 
-	public UsuarioDTO(Long id, String usuario, String nombrePersona, String sobreMi, boolean online,
+	public UsuarioDTO(Long id, String usuario, String nombrePersona, String sobreMi, boolean enLinea,
 			LocalDateTime ultimaVezEnLinea) {
 		super();
 		this.id = id;
 		this.usuario = usuario;
 		this.nombrePersona = nombrePersona;
 		this.sobreMi = sobreMi;
-		this.online = online;
+		this.enLinea = enLinea;
 		this.ultimaVezEnLinea = ultimaVezEnLinea;
 	}
 
@@ -59,12 +59,12 @@ public class UsuarioDTO {
 		this.sobreMi = sobreMi;
 	}
 
-	public boolean isOnline() {
-		return online;
+	public boolean isEnLinea() {
+		return enLinea;
 	}
 
-	public void setOnline(boolean online) {
-		this.online = online;
+	public void setEnLinea(boolean enLinea) {
+		this.enLinea = enLinea;
 	}
 
 	public LocalDateTime getUltimaVezEnLinea() {
@@ -77,7 +77,7 @@ public class UsuarioDTO {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, nombrePersona, online, sobreMi, ultimaVezEnLinea, usuario);
+		return Objects.hash(id, nombrePersona, enLinea, sobreMi, ultimaVezEnLinea, usuario);
 	}
 
 	@Override
@@ -90,14 +90,14 @@ public class UsuarioDTO {
 			return false;
 		UsuarioDTO other = (UsuarioDTO) obj;
 		return Objects.equals(id, other.id) && Objects.equals(nombrePersona, other.nombrePersona)
-				&& online == other.online && Objects.equals(sobreMi, other.sobreMi)
+				&& enLinea == other.enLinea && Objects.equals(sobreMi, other.sobreMi)
 				&& Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea) && Objects.equals(usuario, other.usuario);
 	}
 
 	@Override
 	public String toString() {
 		return "UsuarioDTO [id=" + id + ", usuario=" + usuario + ", nombrePersona=" + nombrePersona + ", sobreMi="
-				+ sobreMi + ", online=" + online + ", ultimaVezEnLinea=" + ultimaVezEnLinea + "]";
+				+ sobreMi + ", online=" + enLinea + ", ultimaVezEnLinea=" + ultimaVezEnLinea + "]";
 	}
     
     
