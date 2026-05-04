@@ -125,17 +125,44 @@ public class Usuario {
 	}
 
 
-	public boolean isOnline() {
+	public boolean isEnLinea() {
 		return enLinea;
 	}
 
 
-	public void setOnline(boolean online) {
-		this.enLinea = online;
+
+
+	public void setEnLinea(boolean enLinea) {
+		this.enLinea = enLinea;
 	}
 
 
 
+
+	public List<InicioSesionUsuario> getNumeroSesion() {
+		return numeroSesion;
+	}
+
+
+
+
+	public void setNumeroSesion(List<InicioSesionUsuario> numeroSesion) {
+		this.numeroSesion = numeroSesion;
+	}
+
+
+
+
+	public List<ParticipanteConversacion> getNumeroConversacion() {
+		return numeroConversacion;
+	}
+
+
+
+
+	public void setNumeroConversacion(List<ParticipanteConversacion> numeroConversacion) {
+		this.numeroConversacion = numeroConversacion;
+	}
 
 
 
