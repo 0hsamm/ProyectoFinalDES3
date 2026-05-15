@@ -29,7 +29,7 @@ public class Mensaje {
 	
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "id_conversacion", nullable = false)
-	private Conversacion conversacion;
+	private Conversacion conversation;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "id_remitente", nullable = false)
@@ -52,10 +52,8 @@ public class Mensaje {
 	@Column(nullable = false)
 	private LocalDateTime horaEnvio;//Cuando el remitente mandó el mensaje
 
-	@Column(nullable = true)
 	private LocalDateTime horaLlegada;//Cuando el destinatario recibio el mensaje
 
-	@Column(nullable = true)
 	private LocalDateTime horaLeido; //Cuando el destinatario leyó el mensaje
 	
 	@OneToOne(mappedBy = "mensaje", fetch = FetchType.LAZY)
@@ -65,11 +63,11 @@ public class Mensaje {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Mensaje(Conversacion conversacion, Usuario remitente, TipoMensaje tipoMensaje, String contenidoCifrado,
+	public Mensaje(Conversacion conversation, Usuario remitente, TipoMensaje tipoMensaje, String contenidoCifrado,
 			String vi, EstatusMensaje estatusMensaje, LocalDateTime horaEnvio, LocalDateTime horaLlegada,
 			LocalDateTime horaLeido, ArchivoAdjunto adjunto) {
 		super();
-		this.conversacion = conversacion;
+		this.conversation = conversation;
 		this.remitente = remitente;
 		this.tipoMensaje = tipoMensaje;
 		this.contenidoCifrado = contenidoCifrado;
@@ -89,12 +87,12 @@ public class Mensaje {
 		this.id = id;
 	}
 
-	public Conversacion getConversacion() {
-		return conversacion;
+	public Conversacion getConversation() {
+		return conversation;
 	}
 
-	public void setConversacion(Conversacion conversacion) {
-		this.conversacion = conversacion;
+	public void setConversation(Conversacion conversation) {
+		this.conversation = conversation;
 	}
 
 	public Usuario getRemitente() {
@@ -171,7 +169,7 @@ public class Mensaje {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(adjunto, contenidoCifrado, conversacion, estatusMensaje, horaEnvio, horaLeido, horaLlegada,
+		return Objects.hash(adjunto, contenidoCifrado, conversation, estatusMensaje, horaEnvio, horaLeido, horaLlegada,
 				id, remitente, tipoMensaje, vi);
 	}
 
@@ -185,7 +183,7 @@ public class Mensaje {
 			return false;
 		Mensaje other = (Mensaje) obj;
 		return Objects.equals(adjunto, other.adjunto) && Objects.equals(contenidoCifrado, other.contenidoCifrado)
-				&& Objects.equals(conversacion, other.conversacion) && estatusMensaje == other.estatusMensaje
+				&& Objects.equals(conversation, other.conversation) && estatusMensaje == other.estatusMensaje
 				&& Objects.equals(horaEnvio, other.horaEnvio) && Objects.equals(horaLeido, other.horaLeido)
 				&& Objects.equals(horaLlegada, other.horaLlegada) && id == other.id
 				&& Objects.equals(remitente, other.remitente) && tipoMensaje == other.tipoMensaje
@@ -194,7 +192,7 @@ public class Mensaje {
 
 	@Override
 	public String toString() {
-		return "Mensaje [id=" + id + ", conversacion=" + conversacion + ", remitente=" + remitente + ", tipoMensaje="
+		return "Mensaje [id=" + id + ", conversation=" + conversation + ", remitente=" + remitente + ", tipoMensaje="
 				+ tipoMensaje + ", contenidoCifrado=" + contenidoCifrado + ", vi=" + vi + ", estatusMensaje="
 				+ estatusMensaje + ", horaEnvio=" + horaEnvio + ", horaLlegada=" + horaLlegada + ", horaLeido="
 				+ horaLeido + ", adjunto=" + adjunto + "]";
