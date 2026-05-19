@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "agora.app-id",
+    "type": "java.lang.String",
+    "description": "App ID del proyecto en Agora.io"
+  },
+  {
+    "name": "agora.app-certificate",
+    "type": "java.lang.String",
+    "description": "App Certificate del proyecto en Agora.io"
+  },
+  {
+    "name": "cloudinary.api_key",
+    "type": "java.lang.String",
+    "description": "A description for 'cloudinary.api_key'"
+  }
+]}
