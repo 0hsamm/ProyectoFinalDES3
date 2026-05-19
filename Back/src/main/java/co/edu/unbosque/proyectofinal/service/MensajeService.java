@@ -7,15 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import co.edu.unbosque.proyectofinal.dto.CrearMensajeDTO;
 import co.edu.unbosque.proyectofinal.dto.MensajeDTO;
-import co.edu.unbosque.proyectofinal.dto.SubirAudioDTO;
-import co.edu.unbosque.proyectofinal.entity.ArchivoAdjunto;
 import co.edu.unbosque.proyectofinal.entity.Conversacion;
 import co.edu.unbosque.proyectofinal.entity.Mensaje;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
@@ -23,13 +20,13 @@ import co.edu.unbosque.proyectofinal.enums.EstatusMensaje;
 import co.edu.unbosque.proyectofinal.enums.RolParticipante;
 import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
 import co.edu.unbosque.proyectofinal.enums.TipoMensaje;
-import co.edu.unbosque.proyectofinal.repository.ArchivoAdjuntoRepository;
 import co.edu.unbosque.proyectofinal.repository.ConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.MensajeRepository;
 import co.edu.unbosque.proyectofinal.repository.ParticipanteConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 
 @Service
+@Transactional
 public class MensajeService {
 
 	@Autowired
@@ -40,154 +37,154 @@ public class MensajeService {
 
 	@Autowired
 	private UsuarioRepository usuarioRepo;
-	
+
 	@Autowired
 	private ParticipanteConversacionRepository participanteRepo;
-	
-	@Autowired
-	private ArchivoAdjuntoRepository archivoAdjuntoRepo;
-	
+
 	@Autowired
 	private CloudinaryService cloudinaryService;
 
 	@Autowired
-	private ModelMapper mapper;
+	private CifradoService cifradoService;
 
-	public int create(CrearMensajeDTO dto) {
+	public int create(MensajeDTO dto) {
 
-	    try {
+		try {
 
-	        Optional<Usuario> remitente =
-	                usuarioRepo.findByUsuario(
-	                        dto.getUsuario());
+			if (dto == null
+					|| dto.getRemitenteId() == null
+					|| dto.getConversacionId() == null) {
 
-	        if (!remitente.isPresent()) {
-	            return 1;
-	        }
+				return 5;
+			}
 
-	        Optional<Conversacion> conversacion =
-	                conversacionRepo.findById(
-	                        dto.getConversacionId());
+			Optional<Usuario> remitente =
+					usuarioRepo.findById(
+							dto.getRemitenteId());
 
-	        if (!conversacion.isPresent()) {
-	            return 2;
-	        }
+			if (!remitente.isPresent()) {
+				return 1;
+			}
 
-	        /**
-	         * Validar permisos
-	         * en canales.
-	         */
-	        if (conversacion.get().getTipoConversacion()
-	                == TipoConversacion.CANAL) {
+			Optional<Conversacion> conversacion =
+					conversacionRepo.findById(
+							dto.getConversacionId());
 
-	            boolean esAdmin =
-	                    participanteRepo
-	                            .existsByConversacion_IdAndUsuario_UsuarioAndRol(
+			if (!conversacion.isPresent()) {
+				return 2;
+			}
 
-	                                    dto.getConversacionId(),
+			boolean esParticipante =
+					participanteRepo
+							.existsByConversacion_IdAndUsuario_Id(
+									dto.getConversacionId(),
+									dto.getRemitenteId());
 
-	                                    dto.getUsuario(),
+			if (!esParticipante) {
+				return 4;
+			}
 
-	                                    RolParticipante.ADMIN);
+			if (conversacion.get().getTipoConversacion()
+					== TipoConversacion.CANAL) {
 
-	            if (!esAdmin) {
-	                return 4;
-	            }
-	        }
+				boolean esAdmin =
+						participanteRepo
+								.existsByConversacion_IdAndUsuario_IdAndRol(
+										dto.getConversacionId(),
+										dto.getRemitenteId(),
+										RolParticipante.ADMIN);
 
-	        /**
-	         * Crear mensaje.
-	         */
-	        Mensaje mensaje =
-	                new Mensaje();
+				if (!esAdmin) {
+					return 4;
+				}
+			}
 
-	        mensaje.setRemitente(
-	                remitente.get());
+			if (dto.getTipoMensaje() == null) {
+				dto.setTipoMensaje(TipoMensaje.TEXTO);
+			}
 
-	        mensaje.setConversacion(
-	                conversacion.get());
+			if ((dto.getTipoMensaje() == TipoMensaje.TEXTO
+					|| dto.getTipoMensaje() == TipoMensaje.IA)
+					&& (dto.getContenido() == null
+					|| dto.getContenido().trim().isEmpty())) {
 
-	        mensaje.setTipoMensaje(
-	                dto.getTipoMensaje());
+				return 5;
+			}
 
-	        mensaje.setHoraEnvio(
-	                LocalDateTime.now());
+			if ((dto.getTipoMensaje() == TipoMensaje.TEXTO
+					|| dto.getTipoMensaje() == TipoMensaje.IA)
+					&& !cifradoService.validarFrase(
+							dto.getFraseSecreta(),
+							conversacion.get().getEncripado())) {
 
-	        mensaje.setEstatusMensaje(
-	                EstatusMensaje.ENVIADO);
+				return 6;
+			}
 
-	        /**
-	         * Si es texto.
-	         */
-	        if (dto.getTipoMensaje()
-	                == TipoMensaje.TEXTO) {
+			Mensaje mensaje =
+					new Mensaje();
 
-	            mensaje.setContenidoCifrado(
-	                    dto.getContenido());
-	        }
+			mensaje.setRemitente(
+					remitente.get());
 
-	        /**
-	         * Guardar mensaje primero.
-	         */
-	        mensajeRepo.save(mensaje);
+			mensaje.setConversacion(
+					conversacion.get());
 
-	        /**
-	         * Si es audio.
-	         */
-	        if (dto.getTipoMensaje()
-	                == TipoMensaje.AUDIO) {
+			mensaje.setTipoMensaje(
+					dto.getTipoMensaje());
 
-	            MultipartFile archivo =
-	                    dto.getArchivo();
+			mensaje.setHoraEnvio(
+					LocalDateTime.now());
 
-	            /**
-	             * Subir audio a Cloudinary.
-	             */
-	            Map<String, Object> resultado =
-	                    cloudinaryService
-	                            .subirAudio(archivo);
+			mensaje.setHoraLlegada(null);
 
-	            /**
-	             * Crear adjunto.
-	             */
-	            ArchivoAdjunto adjunto =
-	                    new ArchivoAdjunto();
+			mensaje.setHoraLeido(null);
 
-	            adjunto.setMensaje(
-	                    mensaje);
+			mensaje.setEstatusMensaje(
+					EstatusMensaje.ENVIADO);
 
-	            adjunto.setNombreOriginalArchivo(
-	                    archivo.getOriginalFilename());
+			if (dto.getTipoMensaje() == TipoMensaje.TEXTO
+					|| dto.getTipoMensaje() == TipoMensaje.IA) {
 
-	            adjunto.setFormatoArchivo(
-	                    archivo.getContentType());
+				CifradoService.ResultadoCifrado resultadoCifrado =
+						cifradoService.cifrar(
+								dto.getContenido(),
+								dto.getFraseSecreta(),
+								conversacion.get().getEncripado());
 
-	            adjunto.setTamanoArchivo(
-	                    archivo.getSize());
+				mensaje.setContenidoCifrado(
+						resultadoCifrado.getTextoCifrado());
 
-	            adjunto.setUrl(
-	                    resultado.get("secure_url")
-	                            .toString());
+				mensaje.setVi(
+						resultadoCifrado.getIv());
+			}
 
-	            adjunto.setPublicId(
-	                    resultado.get("public_id")
-	                            .toString());
+			mensajeRepo.save(mensaje);
 
-	            archivoAdjuntoRepo.save(
-	                    adjunto);
-	        }
+			Conversacion conversacionActual =
+					conversacion.get();
 
-	        return 0;
+			conversacionActual.setFechaUltimoMensaje(
+					mensaje.getHoraEnvio());
 
-	    } catch (Exception e) {
+			conversacionRepo.save(conversacionActual);
 
-	        e.printStackTrace();
+			return 0;
 
-	        return 3;
-	    }
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+			return 3;
+		}
 	}
 
 	public List<MensajeDTO> getAll() {
+
+		return getAll(null);
+	}
+
+	public List<MensajeDTO> getAll(
+			String fraseSecreta) {
 
 		List<Mensaje> lista =
 				mensajeRepo.findAll();
@@ -196,11 +193,8 @@ public class MensajeService {
 				new ArrayList<>();
 
 		lista.forEach(m ->
-
 			dtoList.add(
-					mapper.map(
-							m,
-							MensajeDTO.class))
+					mapear(m, fraseSecreta))
 		);
 
 		return dtoList;
@@ -209,19 +203,24 @@ public class MensajeService {
 	public List<MensajeDTO>
 	getMensajesPorConversacion(Long id) {
 
+		return getMensajesPorConversacion(id, null);
+	}
+
+	public List<MensajeDTO>
+	getMensajesPorConversacion(
+			Long id,
+			String fraseSecreta) {
+
 		List<Mensaje> lista =
 				mensajeRepo
-				.findByConversacion_Id(id);
+						.findByConversacion_Id(id);
 
 		List<MensajeDTO> dtoList =
 				new ArrayList<>();
 
 		lista.forEach(m ->
-
 			dtoList.add(
-					mapper.map(
-							m,
-							MensajeDTO.class))
+					mapear(m, fraseSecreta))
 		);
 
 		return dtoList;
@@ -230,20 +229,25 @@ public class MensajeService {
 	public List<MensajeDTO>
 	getUltimosMensajes(Long id) {
 
+		return getUltimosMensajes(id, null);
+	}
+
+	public List<MensajeDTO>
+	getUltimosMensajes(
+			Long id,
+			String fraseSecreta) {
+
 		List<Mensaje> lista =
 				mensajeRepo
-				.findTop20ByConversacion_IdOrderByHoraEnvioDesc(
-						id);
+						.findTop20ByConversacion_IdOrderByHoraEnvioDesc(
+								id);
 
 		List<MensajeDTO> dtoList =
 				new ArrayList<>();
 
 		lista.forEach(m ->
-
 			dtoList.add(
-					mapper.map(
-							m,
-							MensajeDTO.class))
+					mapear(m, fraseSecreta))
 		);
 
 		return dtoList;
@@ -263,12 +267,77 @@ public class MensajeService {
 
 		return 1;
 	}
-	
-	public Map<String, Object> subirAudio(MultipartFile archivo) throws IOException {
 
-	    return cloudinaryService.subirAudio(archivo);
+	public Map<String, Object> subirAudio(
+			MultipartFile archivo)
+			throws IOException {
+
+		return cloudinaryService.subirAudio(archivo);
 	}
-	
-	
 
+	private MensajeDTO mapear(Mensaje mensaje) {
+
+		return mapear(mensaje, null);
+	}
+
+	private MensajeDTO mapear(
+			Mensaje mensaje,
+			String fraseSecreta) {
+
+		MensajeDTO dto =
+				new MensajeDTO();
+
+		dto.setId(mensaje.getId());
+		dto.setConversacionId(
+				mensaje.getConversacion().getId());
+		dto.setRemitenteId(
+				mensaje.getRemitente().getId());
+		dto.setTipoMensaje(
+				mensaje.getTipoMensaje());
+		dto.setContenido(
+				obtenerContenidoVisible(
+						mensaje,
+						fraseSecreta));
+		dto.setContenidoProtegido(
+				mensaje.getVi() != null
+						&& dto.getContenido() == null);
+		dto.setEstatusMensaje(
+				mensaje.getEstatusMensaje());
+		dto.setHoraEnvio(
+				mensaje.getHoraEnvio());
+		dto.setHoraLlegada(
+				mensaje.getHoraLlegada());
+		dto.setHoraLeido(
+				mensaje.getHoraLeido());
+		dto.setTieneAdjunto(
+				mensaje.getAdjunto() != null);
+
+		return dto;
+	}
+
+	private String obtenerContenidoVisible(
+			Mensaje mensaje,
+			String fraseSecreta) {
+
+		if (mensaje.getVi() == null) {
+			return mensaje.getContenidoCifrado();
+		}
+
+		if (fraseSecreta == null
+				|| fraseSecreta.trim().isEmpty()) {
+
+			return null;
+		}
+
+		try {
+			return cifradoService.descifrar(
+					mensaje.getContenidoCifrado(),
+					mensaje.getVi(),
+					fraseSecreta,
+					mensaje.getConversacion().getEncripado());
+
+		} catch (RuntimeException e) {
+			return null;
+		}
+	}
 }

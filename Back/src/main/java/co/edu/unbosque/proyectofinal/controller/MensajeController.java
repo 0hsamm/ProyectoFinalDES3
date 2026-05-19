@@ -1,122 +1,113 @@
 package co.edu.unbosque.proyectofinal.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import co.edu.unbosque.proyectofinal.dto.CrearMensajeDTO;
 import co.edu.unbosque.proyectofinal.dto.MensajeDTO;
-import co.edu.unbosque.proyectofinal.enums.TipoMensaje;
 import co.edu.unbosque.proyectofinal.service.MensajeService;
 
 @RestController
 @RequestMapping("/mensajes")
 @CrossOrigin(origins = {"http://localhost:8081", "*"})
-
 public class MensajeController {
 
 	@Autowired
 	private MensajeService mensajeService;
 
-	// ENVIAR MENSAJE
 	@PostMapping
 	public ResponseEntity<String> enviarMensaje(
+			@RequestBody MensajeDTO dto) {
 
-			@RequestParam String usuario,
-
-			@RequestParam Long conversacionId,
-
-			@RequestParam TipoMensaje tipoMensaje,
-
-			@RequestParam String contenido
-	) {
-
-		CrearMensajeDTO dto = new CrearMensajeDTO();
-
-		dto.setUsuario(usuario);
-
-		dto.setConversacionId(conversacionId);
-
-		dto.setTipoMensaje(tipoMensaje);
-
-		dto.setContenido(contenido);
-
-		int status = mensajeService.create(dto);
+		int status =
+				mensajeService.create(dto);
 
 		if (status == 0) {
-
 			return new ResponseEntity<>(
-
 					"Mensaje enviado correctamente",
-
 					HttpStatus.OK);
 		}
 
 		else if (status == 1) {
-
 			return new ResponseEntity<>(
-
 					"Usuario no encontrado",
-
 					HttpStatus.BAD_REQUEST);
 		}
 
 		else if (status == 2) {
-
 			return new ResponseEntity<>(
-
-					"Conversación no encontrada",
-
+					"Conversacion no encontrada",
 					HttpStatus.BAD_REQUEST);
 		}
 
-		else {
-
+		else if (status == 4) {
 			return new ResponseEntity<>(
+					"El usuario no tiene permiso para enviar mensajes en esta conversacion",
+					HttpStatus.FORBIDDEN);
+		}
 
+		else if (status == 5) {
+			return new ResponseEntity<>(
+					"Datos del mensaje incompletos",
+					HttpStatus.BAD_REQUEST);
+		}
+
+		else if (status == 6) {
+			return new ResponseEntity<>(
+					"Frase secreta invalida o no configurada",
+					HttpStatus.FORBIDDEN);
+		}
+
+		else {
+			return new ResponseEntity<>(
 					"Error interno al enviar mensaje",
-
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	// OBTENER TODOS
 	@GetMapping
-	public List<MensajeDTO> obtenerTodos() {
+	public List<MensajeDTO> obtenerTodos(
+			@RequestParam(required = false)
+			String fraseSecreta) {
 
-		return mensajeService.getAll();
+		return mensajeService.getAll(fraseSecreta);
 	}
 
-	// MENSAJES POR CONVERSACION
 	@GetMapping("/conversacion/{id}")
 	public List<MensajeDTO> obtenerPorConversacion(
-			@PathVariable Long id) {
+			@PathVariable Long id,
+			@RequestParam(required = false)
+			String fraseSecreta) {
 
 		return mensajeService
-				.getMensajesPorConversacion(id);
+				.getMensajesPorConversacion(id, fraseSecreta);
 	}
 
-	// ULTIMOS MENSAJES
 	@GetMapping("/conversacion/{id}/recientes")
 	public List<MensajeDTO> obtenerRecientes(
-			@PathVariable Long id) {
+			@PathVariable Long id,
+			@RequestParam(required = false)
+			String fraseSecreta) {
 
 		return mensajeService
-				.getUltimosMensajes(id);
+				.getUltimosMensajes(id, fraseSecreta);
 	}
 
-	// ELIMINAR
 	@DeleteMapping("/{id}")
 	public int eliminar(
 			@PathVariable Long id) {
 
 		return mensajeService.deleteById(id);
 	}
-	
-	
-	
 }

@@ -2,16 +2,15 @@ package co.edu.unbosque.proyectofinal.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import co.edu.unbosque.proyectofinal.dto.AgregarParticipanteDTO;
 import co.edu.unbosque.proyectofinal.dto.ConversacionDTO;
-import co.edu.unbosque.proyectofinal.dto.CrearConversacionDTO;
 import co.edu.unbosque.proyectofinal.dto.ParticipanteConversacionDTO;
 import co.edu.unbosque.proyectofinal.entity.Conversacion;
 import co.edu.unbosque.proyectofinal.entity.Mensaje;
@@ -24,6 +23,7 @@ import co.edu.unbosque.proyectofinal.repository.MensajeRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 
 @Service
+@Transactional
 public class ConversacionService {
 
 	@Autowired
@@ -33,130 +33,106 @@ public class ConversacionService {
 	private UsuarioRepository usuarioRepo;
 
 	@Autowired
-	private ModelMapper mapper;
-
-	@Autowired
 	private MensajeRepository mensajeRepo;
 
-	public int create(CrearConversacionDTO dto) {
+	@Autowired
+	private CifradoService cifradoService;
 
-	    // VALIDACIONES
-	    if (dto.getTipoConversacion()
-	            != TipoConversacion.CANAL
+	public int create(ConversacionDTO dto) {
 
-	            && (dto.getUsuariosId() == null
-	            || dto.getUsuariosId().isEmpty())) {
+		if (dto == null
+				|| dto.getTipoConversacion() == null) {
 
-	        return 2;
-	    }
+			return 2;
+		}
 
-	    if (dto.getTipoConversacion()
-	            == TipoConversacion.PRIVADA
+		List<Long> participantesIds =
+				normalizarParticipantes(
+						dto.getParticipantesIds());
 
-	            && dto.getUsuariosId().size() != 2) {
+		if (participantesIds.isEmpty()) {
+			return 2;
+		}
 
-	        return 3;
-	    }
+		if (!tieneTexto(dto.getFraseSecreta())) {
+			return 5;
+		}
 
-	    Conversacion conversacion =
-	            new Conversacion();
+		if (dto.getTipoConversacion()
+				== TipoConversacion.PRIVADA
+				&& participantesIds.size() != 2) {
 
-	    conversacion.setTipoConversacion(
-	            dto.getTipoConversacion());
+			return 3;
+		}
 
-	    conversacion.setFechaCreacion(
-	            LocalDateTime.now());
+		if (dto.getTipoConversacion()
+				== TipoConversacion.GRUPAL
+				&& participantesIds.size() < 2) {
 
-	    conversacion.setEncripado("DEFAULT");
+			return 3;
+		}
 
-	    conversacion.setFechaUltimoMensaje(
-	            null);
+		Conversacion conversacion =
+				new Conversacion();
 
-	    List<ParticipanteConversacion>
-	    participantes = new ArrayList<>();
+		conversacion.setTipoConversacion(
+				dto.getTipoConversacion());
 
-	    // =====================================
-	    // SI ES CANAL
-	    // =====================================
+		LocalDateTime fechaCreacion =
+				LocalDateTime.now();
 
-	    if (dto.getTipoConversacion()
-	            == TipoConversacion.CANAL) {
+		conversacion.setFechaCreacion(
+				fechaCreacion);
 
-	    	Optional<Usuario> adminOpt =
-	    	        usuarioRepo.findByUsuario(
-	    	                dto.getCreador());
+		conversacion.setEncripado(cifradoService.generarHashFrase(dto.getFraseSecreta()));
 
-	    	if (!adminOpt.isPresent()) {
-	    	    return 1;
-	    	}
+		conversacion.setFechaUltimoMensaje(
+				fechaCreacion);
 
-	    	Usuario admin = adminOpt.get();
+		List<ParticipanteConversacion> participantes =
+				new ArrayList<>();
 
-	        if (admin == null) {
-	            return 1;
-	        }
+		for (int i = 0; i < participantesIds.size(); i++) {
 
-	        ParticipanteConversacion p =
-	                new ParticipanteConversacion();
+			Long usuarioId =
+					participantesIds.get(i);
 
-	        p.setUsuario(admin);
+			Optional<Usuario> userOpt =
+					usuarioRepo.findById(usuarioId);
 
-	        p.setConversacion(conversacion);
+			if (!userOpt.isPresent()) {
+				return 1;
+			}
 
-	        p.setFechaIngresoChat(
-	                LocalDateTime.now());
+			ParticipanteConversacion participante =
+					new ParticipanteConversacion();
 
-	        p.setFechaUltimoLeido(
-	                LocalDateTime.now());
+			participante.setUsuario(
+					userOpt.get());
 
-	        p.setRol(
-	                RolParticipante.ADMIN);
+			participante.setConversacion(
+					conversacion);
 
-	        participantes.add(p);
+			participante.setFechaIngresoChat(
+					LocalDateTime.now());
 
-	    } else {
+			participante.setFechaUltimoLeido(
+					LocalDateTime.now());
 
-	        // =====================================
-	        // PRIVADOS Y GRUPOS
-	        // =====================================
+			participante.setRol(
+					calcularRolInicial(
+							dto.getTipoConversacion(),
+							i));
 
-	        for (Long userId : dto.getUsuariosId()) {
+			participantes.add(participante);
+		}
 
-	            Optional<Usuario> userOpt =
-	                    usuarioRepo.findById(userId);
+		conversacion.setParticipante(
+				participantes);
 
-	            if (!userOpt.isPresent()) {
-	                return 1;
-	            }
+		conversacionRepo.save(conversacion);
 
-	            Usuario usuario = userOpt.get();
-
-	            ParticipanteConversacion p =
-	                    new ParticipanteConversacion();
-
-	            p.setUsuario(usuario);
-
-	            p.setConversacion(conversacion);
-
-	            p.setFechaIngresoChat(
-	                    LocalDateTime.now());
-
-	            p.setFechaUltimoLeido(
-	                    LocalDateTime.now());
-
-	            p.setRol(
-	                    RolParticipante.ADMIN);
-
-	            participantes.add(p);
-	        }
-	    }
-
-	    conversacion.setParticipante(
-	            participantes);
-
-	    conversacionRepo.save(conversacion);
-
-	    return 0;
+		return 0;
 	}
 
 	public List<ConversacionDTO> getAll() {
@@ -168,11 +144,8 @@ public class ConversacionService {
 				new ArrayList<>();
 
 		lista.forEach(c ->
-
 			dtoList.add(
-					mapper.map(
-							c,
-							ConversacionDTO.class))
+					mapear(c))
 		);
 
 		return dtoList;
@@ -184,10 +157,7 @@ public class ConversacionService {
 				conversacionRepo.findById(id);
 
 		if (conv.isPresent()) {
-
-			return mapper.map(
-					conv.get(),
-					ConversacionDTO.class);
+			return mapear(conv.get());
 		}
 
 		return null;
@@ -217,10 +187,13 @@ public class ConversacionService {
 
 		if (conv.isPresent()) {
 
-			Conversacion temp = conv.get();
+			Conversacion temp =
+					conv.get();
 
-			temp.setTipoConversacion(
-					dto.getTipoConversacion());
+			if (dto.getTipoConversacion() != null) {
+				temp.setTipoConversacion(
+						dto.getTipoConversacion());
+			}
 
 			conversacionRepo.save(temp);
 
@@ -235,18 +208,15 @@ public class ConversacionService {
 
 		List<Conversacion> lista =
 				conversacionRepo
-				.findByParticipante_Usuario_Id(
-						usuarioId);
+						.findByParticipante_Usuario_Id(
+								usuarioId);
 
 		List<ConversacionDTO> dtoList =
 				new ArrayList<>();
 
 		lista.forEach(c ->
-
 			dtoList.add(
-					mapper.map(
-							c,
-							ConversacionDTO.class))
+					mapear(c))
 		);
 
 		return dtoList;
@@ -257,8 +227,8 @@ public class ConversacionService {
 
 		List<Conversacion> lista =
 				conversacionRepo
-				.findByParticipante_Usuario_Id(
-						usuarioId);
+						.findByParticipante_Usuario_Id(
+								usuarioId);
 
 		List<ConversacionDTO> dtoList =
 				new ArrayList<>();
@@ -266,24 +236,27 @@ public class ConversacionService {
 		for (Conversacion c : lista) {
 
 			ConversacionDTO dto =
-					mapper.map(
-							c,
-							ConversacionDTO.class);
+					mapear(c);
 
 			Optional<Mensaje> ultimo =
 					mensajeRepo
-					.findTop1ByConversacion_IdOrderByHoraEnvioDesc(
-							c.getId());
+							.findTop1ByConversacion_IdOrderByHoraEnvioDesc(
+									c.getId());
 
 			if (ultimo.isPresent()) {
 
-				dto.setUltimoMensaje(
-						ultimo.get()
-						.getContenidoCifrado());
+				if (ultimo.get().getVi() == null) {
+					dto.setUltimoMensaje(
+							ultimo.get()
+									.getContenidoCifrado());
+				} else {
+					dto.setUltimoMensaje(
+							"Mensaje protegido");
+				}
 
 				dto.setFechaUltimoMensaje(
 						ultimo.get()
-						.getHoraEnvio());
+								.getHoraEnvio());
 			}
 
 			dtoList.add(dto);
@@ -291,94 +264,193 @@ public class ConversacionService {
 
 		return dtoList;
 	}
-	
+
 	public int agregarParticipante(
-	        AgregarParticipanteDTO dto) {
+			ParticipanteConversacionDTO dto) {
 
-	    Optional<Conversacion> convOpt =
-	            conversacionRepo.findById(
-	                    dto.getConversacionId());
+		if (dto == null
+				|| dto.getConversacionId() == null
+				|| dto.getUsuarioId() == null) {
 
-	    if (!convOpt.isPresent()) {
-	        return 1;
-	    }
+			return 4;
+		}
 
-	    Optional<Usuario> userOpt =
-	            usuarioRepo.findByUsuario(
-	                    dto.getUsuario());
+		Optional<Conversacion> convOpt =
+				conversacionRepo.findById(
+						dto.getConversacionId());
 
-	    if (!userOpt.isPresent()) {
-	        return 2;
-	    }
+		if (!convOpt.isPresent()) {
+			return 1;
+		}
 
-	    Conversacion conversacion =
-	            convOpt.get();
+		Optional<Usuario> userOpt =
+				usuarioRepo.findById(
+						dto.getUsuarioId());
 
-	    Usuario usuario =
-	            userOpt.get();
+		if (!userOpt.isPresent()) {
+			return 2;
+		}
 
-	    // VALIDAR SI YA EXISTE
-	    for (ParticipanteConversacion p :
-	            conversacion.getParticipante()) {
+		Conversacion conversacion =
+				convOpt.get();
 
-	        if (p.getUsuario().getUsuario()
-	                .equals(dto.getUsuario())) {
+		Usuario usuario =
+				userOpt.get();
 
-	            return 3;
-	        }
-	    }
+		for (ParticipanteConversacion p :
+				conversacion.getParticipante()) {
 
-	    ParticipanteConversacion nuevo =
-	            new ParticipanteConversacion();
+			if (p.getUsuario().getId()
+					== dto.getUsuarioId()) {
 
-	    nuevo.setConversacion(conversacion);
+				return 3;
+			}
+		}
 
-	    nuevo.setUsuario(usuario);
+		ParticipanteConversacion nuevo =
+				new ParticipanteConversacion();
 
-	    nuevo.setFechaIngresoChat(
-	            LocalDateTime.now());
+		nuevo.setConversacion(conversacion);
 
-	    nuevo.setFechaUltimoLeido(
-	            LocalDateTime.now());
+		nuevo.setUsuario(usuario);
 
-	    nuevo.setRol(
-	            RolParticipante.MIEMBRO);
+		nuevo.setFechaIngresoChat(
+				LocalDateTime.now());
 
-	    conversacion.getParticipante()
-	            .add(nuevo);
+		nuevo.setFechaUltimoLeido(
+				LocalDateTime.now());
 
-	    conversacionRepo.save(conversacion);
+		nuevo.setRol(
+				dto.getRol() == null
+						? RolParticipante.MIEMBRO
+						: dto.getRol());
 
-	    return 0;
+		conversacion.getParticipante()
+				.add(nuevo);
+
+		conversacionRepo.save(conversacion);
+
+		return 0;
 	}
-	
+
 	public List<ParticipanteConversacionDTO>
 	getParticipantes(Long conversacionId) {
 
-	    Optional<Conversacion> convOpt =
-	            conversacionRepo.findById(
-	                    conversacionId);
+		Optional<Conversacion> convOpt =
+				conversacionRepo.findById(
+						conversacionId);
 
-	    if (!convOpt.isPresent()) {
-	        return new ArrayList<>();
-	    }
+		if (!convOpt.isPresent()) {
+			return new ArrayList<>();
+		}
 
-	    List<ParticipanteConversacionDTO>
-	    dtoList = new ArrayList<>();
+		List<ParticipanteConversacionDTO> dtoList =
+				new ArrayList<>();
 
-	    for (ParticipanteConversacion p :
-	            convOpt.get().getParticipante()) {
+		for (ParticipanteConversacion p :
+				convOpt.get().getParticipante()) {
 
-	        ParticipanteConversacionDTO dto =
-	                mapper.map(
-	                        p,
-	                        ParticipanteConversacionDTO.class);
+			dtoList.add(
+					mapearParticipante(p));
+		}
 
-	        dtoList.add(dto);
-	    }
-
-	    return dtoList;
+		return dtoList;
 	}
-	
 
+	private List<Long> normalizarParticipantes(
+			List<Long> participantesIds) {
+
+		if (participantesIds == null) {
+			return new ArrayList<>();
+		}
+
+		return new ArrayList<>(
+				new LinkedHashSet<>(
+						participantesIds));
+	}
+
+	private RolParticipante calcularRolInicial(
+			TipoConversacion tipoConversacion,
+			int posicion) {
+
+		if (tipoConversacion == TipoConversacion.PRIVADA) {
+			return RolParticipante.MIEMBRO;
+		}
+
+		return posicion == 0
+				? RolParticipante.ADMIN
+				: RolParticipante.MIEMBRO;
+	}
+
+	private ConversacionDTO mapear(
+			Conversacion conversacion) {
+
+		ConversacionDTO dto =
+				new ConversacionDTO();
+
+		dto.setId(conversacion.getId());
+		dto.setTipoConversacion(
+				conversacion.getTipoConversacion());
+		dto.setFechaCreacion(
+				conversacion.getFechaCreacion());
+		dto.setFechaUltimoMensaje(
+				conversacion.getFechaUltimoMensaje());
+		dto.setParticipantesIds(
+				obtenerParticipantesIds(conversacion));
+		dto.setFraseSecretaConfigurada(
+				cifradoService.esHashFraseConfigurado(
+						conversacion.getEncripado()));
+
+		return dto;
+	}
+
+	private List<Long> obtenerParticipantesIds(
+			Conversacion conversacion) {
+
+		List<Long> ids =
+				new ArrayList<>();
+
+		for (ParticipanteConversacion participante :
+				conversacion.getParticipante()) {
+
+			ids.add(
+					participante
+							.getUsuario()
+							.getId());
+		}
+
+		return ids;
+	}
+
+	private ParticipanteConversacionDTO mapearParticipante(
+			ParticipanteConversacion participante) {
+
+		ParticipanteConversacionDTO dto =
+				new ParticipanteConversacionDTO();
+
+		dto.setId(participante.getId());
+		dto.setConversacionId(
+				participante
+						.getConversacion()
+						.getId());
+		dto.setUsuarioId(
+				participante
+						.getUsuario()
+						.getId());
+		dto.setRol(
+				participante.getRol());
+		dto.setFechaIngresoChat(
+				participante.getFechaIngresoChat());
+		dto.setFechaUltimoLeido(
+				participante.getFechaUltimoLeido());
+
+		return dto;
+	}
+
+	private boolean tieneTexto(
+			String valor) {
+
+		return valor != null
+				&& !valor.trim().isEmpty();
+	}
 }

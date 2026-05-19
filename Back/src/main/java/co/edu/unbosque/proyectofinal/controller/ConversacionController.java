@@ -5,13 +5,17 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import co.edu.unbosque.proyectofinal.dto.AgregarParticipanteDTO;
 import co.edu.unbosque.proyectofinal.dto.ConversacionDTO;
-import co.edu.unbosque.proyectofinal.dto.CrearConversacionDTO;
 import co.edu.unbosque.proyectofinal.dto.ParticipanteConversacionDTO;
-import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
 import co.edu.unbosque.proyectofinal.service.ConversacionService;
 
 @RestController
@@ -24,23 +28,26 @@ public class ConversacionController {
 
 	@PostMapping
 	public ResponseEntity<String> crear(
-	        @RequestBody CrearConversacionDTO dto) {
+			@RequestBody ConversacionDTO dto) {
 
-	    int status =
-	            conversacionService.create(dto);
+		int status =
+				conversacionService.create(dto);
 
-	    if (status == 0) {
+		if (status == 0) {
+			return new ResponseEntity<>(
+					"Conversacion creada correctamente",
+					HttpStatus.CREATED);
+		}
 
-	        return new ResponseEntity<>(
-	                "Conversación creada correctamente",
-	                HttpStatus.CREATED);
+		if (status == 5) {
+			return new ResponseEntity<>(
+					"La frase secreta es obligatoria para proteger la conversacion",
+					HttpStatus.BAD_REQUEST);
+		}
 
-	    } else {
-
-	        return new ResponseEntity<>(
-	                "Error al crear la conversación",
-	                HttpStatus.BAD_REQUEST);
-	    }
+		return new ResponseEntity<>(
+				"Error al crear la conversacion",
+				HttpStatus.BAD_REQUEST);
 	}
 
 	@GetMapping
@@ -59,16 +66,13 @@ public class ConversacionController {
 				conversacionService.getById(id);
 
 		if (dto != null) {
-
 			return new ResponseEntity<>(
 					dto,
 					HttpStatus.OK);
-
-		} else {
-
-			return new ResponseEntity<>(
-					HttpStatus.NOT_FOUND);
 		}
+
+		return new ResponseEntity<>(
+				HttpStatus.NOT_FOUND);
 	}
 
 	@DeleteMapping("/{id}")
@@ -79,79 +83,77 @@ public class ConversacionController {
 				conversacionService.deleteById(id);
 
 		if (status == 0) {
-
 			return new ResponseEntity<>(
-					"Conversación eliminada",
+					"Conversacion eliminada",
 					HttpStatus.OK);
+		}
 
-		} else {
+		return new ResponseEntity<>(
+				"No se encontro la conversacion",
+				HttpStatus.NOT_FOUND);
+	}
 
-			return new ResponseEntity<>(
-					"No se encontró la conversación",
-					HttpStatus.NOT_FOUND);
+	@PostMapping("/agregarParticipante")
+	public ResponseEntity<String> agregarParticipante(
+			@RequestBody ParticipanteConversacionDTO dto) {
+
+		int r =
+				conversacionService
+						.agregarParticipante(dto);
+
+		switch (r) {
+
+		case 0:
+			return ResponseEntity.ok(
+					"Participante agregado");
+
+		case 1:
+			return ResponseEntity.badRequest()
+					.body("Conversacion no existe");
+
+		case 2:
+			return ResponseEntity.badRequest()
+					.body("Usuario no existe");
+
+		case 3:
+			return ResponseEntity.badRequest()
+					.body("Usuario ya pertenece");
+
+		default:
+			return ResponseEntity.internalServerError()
+					.body("Error interno");
 		}
 	}
-	
-	@PostMapping("/agregarParticipante")
-	public ResponseEntity<String> agregarParticipante(@RequestBody AgregarParticipanteDTO dto) {
 
-	    int r =
-	            conversacionService
-	            .agregarParticipante(dto);
+	@GetMapping("/{id}/participantes")
+	public ResponseEntity<List<ParticipanteConversacionDTO>> getParticipantes(
+			@PathVariable Long id) {
 
-	    switch (r) {
-
-	    case 0:
-	        return ResponseEntity.ok(
-	                "Participante agregado");
-
-	    case 1:
-	        return ResponseEntity.badRequest()
-	                .body("Conversacion no existe");
-
-	    case 2:
-	        return ResponseEntity.badRequest()
-	                .body("Usuario no existe");
-
-	    case 3:
-	        return ResponseEntity.badRequest()
-	                .body("Usuario ya pertenece");
-
-	    default:
-	        return ResponseEntity.internalServerError()
-	                .body("Error interno");
-	    }
+		return ResponseEntity.ok(
+				conversacionService.getParticipantes(id));
 	}
-	
-	@GetMapping("/{id}/participantes") 
-	public ResponseEntity<List<ParticipanteConversacionDTO>> getParticipantes(@PathVariable Long id) {
 
-	    return ResponseEntity.ok(conversacionService.getParticipantes(id));
-	}
-	
-	@PostMapping("/{id}/join/{usuario}")
+	@PostMapping("/{id}/join/{usuarioId}")
 	public ResponseEntity<String> joinCanal(
-	        @PathVariable Long id,
-	        @PathVariable String usuario) {
+			@PathVariable Long id,
+			@PathVariable Long usuarioId) {
 
-	    AgregarParticipanteDTO dto =
-	            new AgregarParticipanteDTO();
+		ParticipanteConversacionDTO dto =
+				new ParticipanteConversacionDTO();
 
-	    dto.setConversacionId(id);
+		dto.setConversacionId(id);
+		dto.setUsuarioId(usuarioId);
 
-	    dto.setUsuario(usuario);
+		int r =
+				conversacionService
+						.agregarParticipante(dto);
 
-	    int r =
-	            conversacionService
-	            .agregarParticipante(dto);
+		if (r == 0) {
+			return ResponseEntity.ok(
+					"Te uniste al canal");
+		}
 
-	    if (r == 0) {
-	        return ResponseEntity.ok(
-	                "Te uniste al canal");
-	    }
-
-	    return ResponseEntity.badRequest()
-	            .body("No se pudo unir");
+		return ResponseEntity.badRequest()
+				.body("No se pudo unir");
 	}
-
 }

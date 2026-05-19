@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import co.edu.unbosque.proyectofinal.dto.IniciarLlamadaDTO;
 import co.edu.unbosque.proyectofinal.dto.LlamadaDTO;
 import co.edu.unbosque.proyectofinal.dto.LlamadaRespuestaDTO;
 import co.edu.unbosque.proyectofinal.service.LlamadaService;
@@ -36,7 +35,7 @@ public class LlamadaController {
 		description = "Crea la llamada en BD y devuelve el token de Agora para el llamante. "
 				+ "El frontend usa este token para conectarse al canal de Agora.")
 	public ResponseEntity<?> iniciarLlamada(
-			@RequestBody IniciarLlamadaDTO dto) {
+			@RequestBody LlamadaDTO dto) {
 
 		LlamadaRespuestaDTO respuesta =
 				llamadaService.iniciarLlamada(dto);

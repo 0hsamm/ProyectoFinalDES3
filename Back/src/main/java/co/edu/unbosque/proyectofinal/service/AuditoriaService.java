@@ -16,7 +16,7 @@ import co.edu.unbosque.proyectofinal.repository.RegistroAuditoriaRepository;
 @Service
 public class AuditoriaService {
 
-    private final RegistroAuditoriaRepository registroAuditoriaRepository;
+    private RegistroAuditoriaRepository registroAuditoriaRepository;
 
     public AuditoriaService(
             RegistroAuditoriaRepository registroAuditoriaRepository) {

@@ -3,6 +3,8 @@ package co.edu.unbosque.proyectofinal.dto;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import co.edu.unbosque.proyectofinal.enums.EstatusMensaje;
 import co.edu.unbosque.proyectofinal.enums.TipoMensaje;
 
@@ -18,6 +20,10 @@ public class MensajeDTO {
     private LocalDateTime horaLlegada;
     private LocalDateTime horaLeido;
     private boolean tieneAdjunto;
+    private boolean contenidoProtegido;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String fraseSecreta;
     
     public MensajeDTO() {
 		// TODO Auto-generated constructor stub
@@ -123,10 +129,26 @@ public class MensajeDTO {
 		this.tieneAdjunto = tieneAdjunto;
 	}
 
+	public boolean isContenidoProtegido() {
+		return contenidoProtegido;
+	}
+
+	public void setContenidoProtegido(boolean contenidoProtegido) {
+		this.contenidoProtegido = contenidoProtegido;
+	}
+
+	public String getFraseSecreta() {
+		return fraseSecreta;
+	}
+
+	public void setFraseSecreta(String fraseSecreta) {
+		this.fraseSecreta = fraseSecreta;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(contenido, conversacionId, estatusMensaje, horaEnvio, horaLeido, horaLlegada, id,
-				remitenteId, tieneAdjunto, tipoMensaje);
+		return Objects.hash(contenido, contenidoProtegido, conversacionId, estatusMensaje, horaEnvio, horaLeido,
+				horaLlegada, id, remitenteId, tieneAdjunto, tipoMensaje);
 	}
 
 	@Override
@@ -138,7 +160,8 @@ public class MensajeDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		MensajeDTO other = (MensajeDTO) obj;
-		return Objects.equals(contenido, other.contenido) && Objects.equals(conversacionId, other.conversacionId)
+		return Objects.equals(contenido, other.contenido) && contenidoProtegido == other.contenidoProtegido
+				&& Objects.equals(conversacionId, other.conversacionId)
 				&& estatusMensaje == other.estatusMensaje && Objects.equals(horaEnvio, other.horaEnvio)
 				&& Objects.equals(horaLeido, other.horaLeido) && Objects.equals(horaLlegada, other.horaLlegada)
 				&& Objects.equals(id, other.id) && Objects.equals(remitenteId, other.remitenteId)
@@ -150,7 +173,7 @@ public class MensajeDTO {
 		return "MensajeDTO [id=" + id + ", conversacionId=" + conversacionId + ", remitenteId=" + remitenteId
 				+ ", tipoMensaje=" + tipoMensaje + ", contenido=" + contenido + ", estatusMensaje=" + estatusMensaje
 				+ ", horaEnvio=" + horaEnvio + ", horaLlegada=" + horaLlegada + ", horaLeido=" + horaLeido
-				+ ", tieneAdjunto=" + tieneAdjunto + "]";
+				+ ", tieneAdjunto=" + tieneAdjunto + ", contenidoProtegido=" + contenidoProtegido + "]";
 	}
     
     

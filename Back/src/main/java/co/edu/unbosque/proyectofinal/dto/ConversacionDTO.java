@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
 
 public class ConversacionDTO {
@@ -14,6 +16,10 @@ public class ConversacionDTO {
     private LocalDateTime fechaUltimoMensaje;
     private List<Long> participantesIds;
     private String ultimoMensaje;
+    private boolean fraseSecretaConfigurada;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String fraseSecreta;
     
     
     public ConversacionDTO() {
@@ -92,10 +98,27 @@ public class ConversacionDTO {
 		this.ultimoMensaje = ultimoMensaje;
 	}
 
+	public boolean isFraseSecretaConfigurada() {
+		return fraseSecretaConfigurada;
+	}
+
+	public void setFraseSecretaConfigurada(boolean fraseSecretaConfigurada) {
+		this.fraseSecretaConfigurada = fraseSecretaConfigurada;
+	}
+
+	public String getFraseSecreta() {
+		return fraseSecreta;
+	}
+
+	public void setFraseSecreta(String fraseSecreta) {
+		this.fraseSecreta = fraseSecreta;
+	}
+
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(fechaCreacion, fechaUltimoMensaje, id, participantesIds, tipoConversacion, ultimoMensaje);
+		return Objects.hash(fechaCreacion, fechaUltimoMensaje, fraseSecretaConfigurada, id, participantesIds,
+				tipoConversacion, ultimoMensaje);
 	}
 
 
@@ -109,7 +132,8 @@ public class ConversacionDTO {
 			return false;
 		ConversacionDTO other = (ConversacionDTO) obj;
 		return Objects.equals(fechaCreacion, other.fechaCreacion)
-				&& Objects.equals(fechaUltimoMensaje, other.fechaUltimoMensaje) && Objects.equals(id, other.id)
+				&& Objects.equals(fechaUltimoMensaje, other.fechaUltimoMensaje)
+				&& fraseSecretaConfigurada == other.fraseSecretaConfigurada && Objects.equals(id, other.id)
 				&& Objects.equals(participantesIds, other.participantesIds)
 				&& tipoConversacion == other.tipoConversacion && Objects.equals(ultimoMensaje, other.ultimoMensaje);
 	}
@@ -119,7 +143,8 @@ public class ConversacionDTO {
 	public String toString() {
 		return "ConversacionDTO [id=" + id + ", tipoConversacion=" + tipoConversacion + ", fechaCreacion="
 				+ fechaCreacion + ", fechaUltimoMensaje=" + fechaUltimoMensaje + ", participantesIds="
-				+ participantesIds + ", ultimoMensaje=" + ultimoMensaje + "]";
+				+ participantesIds + ", ultimoMensaje=" + ultimoMensaje + ", fraseSecretaConfigurada="
+				+ fraseSecretaConfigurada + "]";
 	}
     
     

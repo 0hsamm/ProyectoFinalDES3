@@ -9,6 +9,11 @@ import co.edu.unbosque.proyectofinal.enums.RolParticipante;
 public interface ParticipanteConversacionRepository extends JpaRepository<ParticipanteConversacion, Long> {
 
     boolean existsByConversacion_IdAndUsuario_Id(Long conversacionId, Long usuarioId);
+
+    boolean existsByConversacion_IdAndUsuario_IdAndRol(
+            Long conversacionId,
+            Long usuarioId,
+            RolParticipante rol);
     
     boolean existsByConversacion_IdAndUsuario_UsuarioAndRol(
             Long conversacionId,

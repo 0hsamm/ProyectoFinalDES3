@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping({"/api/ia", "/api/ai"})
 public class AsistenteIaController {
 
-    private final AsistenteIaService asistenteIaService;
+    private AsistenteIaService asistenteIaService;
 
     public AsistenteIaController(
             AsistenteIaService asistenteIaService) {

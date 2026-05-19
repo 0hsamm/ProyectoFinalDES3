@@ -5,9 +5,16 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import co.edu.unbosque.proyectofinal.dto.CrearUsuarioDTO;
 import co.edu.unbosque.proyectofinal.dto.UsuarioDTO;
 import co.edu.unbosque.proyectofinal.service.UsuarioService;
 
@@ -21,45 +28,20 @@ public class UsuarioController {
 
 	@PostMapping
 	public ResponseEntity<String> crear(
+			@RequestBody UsuarioDTO dto) {
 
-			@RequestParam String usuario,
-
-			@RequestParam String correo,
-
-			@RequestParam String nombrePersona,
-
-			@RequestParam String contrasena,
-
-			@RequestParam String sobreMi
-	) {
-
-		CrearUsuarioDTO dto =
-				new CrearUsuarioDTO();
-
-		dto.setUsuario(usuario);
-
-		dto.setCorreo(correo);
-
-		dto.setNombrePersona(nombrePersona);
-
-		dto.setContrasena(contrasena);
-
-		dto.setSobreMi(sobreMi);
-
-		int status = usuarioService.create(dto);
+		int status =
+				usuarioService.create(dto);
 
 		if (status == 0) {
-
 			return new ResponseEntity<>(
 					"Usuario creado correctamente",
 					HttpStatus.CREATED);
-
-		} else {
-
-			return new ResponseEntity<>(
-					"Error al crear el usuario",
-					HttpStatus.BAD_REQUEST);
 		}
+
+		return new ResponseEntity<>(
+				"Error al crear el usuario",
+				HttpStatus.BAD_REQUEST);
 	}
 
 	@GetMapping
@@ -78,16 +60,13 @@ public class UsuarioController {
 				usuarioService.getById(id);
 
 		if (usuario != null) {
-
 			return new ResponseEntity<>(
 					usuario,
 					HttpStatus.OK);
-
-		} else {
-
-			return new ResponseEntity<>(
-					HttpStatus.NOT_FOUND);
 		}
+
+		return new ResponseEntity<>(
+				HttpStatus.NOT_FOUND);
 	}
 
 	@DeleteMapping("/{id}")
@@ -98,48 +77,31 @@ public class UsuarioController {
 				usuarioService.deleteById(id);
 
 		if (status == 0) {
-
 			return new ResponseEntity<>(
 					"Usuario eliminado",
 					HttpStatus.OK);
-
-		} else {
-
-			return new ResponseEntity<>(
-					HttpStatus.NOT_FOUND);
 		}
+
+		return new ResponseEntity<>(
+				HttpStatus.NOT_FOUND);
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<String> actualizar(
-
 			@PathVariable Long id,
-
-			@RequestParam String usuario,
-
-			@RequestParam String nombrePersona
-	) {
-
-		UsuarioDTO dto = new UsuarioDTO();
-
-		dto.setUsuario(usuario);
-
-		dto.setNombrePersona(nombrePersona);
+			@RequestBody UsuarioDTO dto) {
 
 		int status =
 				usuarioService.updateById(id, dto);
 
 		if (status == 0) {
-
 			return new ResponseEntity<>(
 					"Usuario actualizado",
 					HttpStatus.OK);
-
-		} else {
-
-			return new ResponseEntity<>(
-					HttpStatus.NOT_FOUND);
 		}
+
+		return new ResponseEntity<>(
+				HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping("/username/{username}")
@@ -150,16 +112,12 @@ public class UsuarioController {
 				usuarioService.getByUsername(username);
 
 		if (usuario != null) {
-
 			return new ResponseEntity<>(
 					usuario,
 					HttpStatus.OK);
-
-		} else {
-
-			return new ResponseEntity<>(
-					HttpStatus.NOT_FOUND);
 		}
-	}
 
+		return new ResponseEntity<>(
+				HttpStatus.NOT_FOUND);
+	}
 }

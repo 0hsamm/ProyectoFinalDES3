@@ -39,13 +39,13 @@ public class AsistenteIaService {
 
     private static final int MAXIMO_CARACTERES_CONTEXTO = 8000;
 
-    private final SeguridadIaService seguridadIaService;
+    private SeguridadIaService seguridadIaService;
 
-    private final AuditoriaService auditoriaService;
+    private AuditoriaService auditoriaService;
 
-    private final InteraccionIaRepository interaccionIaRepository;
+    private InteraccionIaRepository interaccionIaRepository;
 
-    private final HttpClient httpClient;
+    private HttpClient httpClient;
 
     @Value("${gemini.api-key:}")
     private String apiKey;
@@ -83,6 +83,8 @@ public class AsistenteIaService {
             String ip,
             String navegador) {
 
+        validarSolicitud(solicitud);
+
         validarTexto(
                 solicitud.getMensaje(),
                 "La pregunta no puede estar vacia",
@@ -111,6 +113,8 @@ public class AsistenteIaService {
             SolicitudGeminiDTO solicitud,
             String ip,
             String navegador) {
+
+        validarSolicitud(solicitud);
 
         validarTexto(
                 solicitud.getMensaje(),
@@ -141,6 +145,8 @@ public class AsistenteIaService {
             String ip,
             String navegador) {
 
+        validarSolicitud(solicitud);
+
         validarTexto(
                 solicitud.getContexto(),
                 "Debes enviar el texto autorizado que quieres resumir",
@@ -169,6 +175,8 @@ public class AsistenteIaService {
             SolicitudGeminiDTO solicitud,
             String ip,
             String navegador) {
+
+        validarSolicitud(solicitud);
 
         validarTexto(
                 solicitud.getMensaje(),
@@ -600,6 +608,15 @@ public class AsistenteIaService {
                     "El texto supera el limite permitido de "
                             + maximoCaracteres
                             + " caracteres");
+        }
+    }
+
+    private void validarSolicitud(
+            SolicitudGeminiDTO solicitud) {
+
+        if (solicitud == null) {
+            throw new IllegalArgumentException(
+                    "La solicitud de IA no puede estar vacia");
         }
     }
 

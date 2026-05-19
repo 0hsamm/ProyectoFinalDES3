@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import co.edu.unbosque.proyectofinal.dto.CrearUsuarioDTO;
 import co.edu.unbosque.proyectofinal.dto.UsuarioDTO;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
@@ -21,27 +21,59 @@ public class UsuarioService {
 	@Autowired
 	private ModelMapper modelMapper;
 
-	public int create(CrearUsuarioDTO dto) {
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	public int create(UsuarioDTO dto) {
 
 		try {
 
-			Usuario usuario = new Usuario();
+			if (dto == null
+					|| dto.getUsuario() == null
+					|| dto.getCorreo() == null
+					|| dto.getNombrePersona() == null
+					|| dto.getContrasena() == null
+					|| dto.getContrasena().isBlank()) {
 
-			usuario.setUsuario(dto.getUsuario());
+				return 1;
+			}
 
-			usuario.setCorreo(dto.getCorreo());
+			Usuario usuario =
+					new Usuario();
 
-			usuario.setNombrePersona(dto.getNombrePersona());
+			usuario.setUsuario(
+					dto.getUsuario());
+
+			usuario.setCorreo(
+					dto.getCorreo());
+
+			usuario.setNombrePersona(
+					dto.getNombrePersona());
 
 			usuario.setContrasenaHash(
-					dto.getContrasena());
+					passwordEncoder.encode(
+							dto.getContrasena()));
 
-			usuario.setSobreMi(dto.getSobreMi());
+			usuario.setSobreMi(
+					dto.getSobreMi());
+
+			if (usuario.getSobreMi() == null
+					|| usuario.getSobreMi().isBlank()) {
+
+				usuario.setSobreMi("Hola! Estoy usando WZ");
+			}
+
+			usuario.setFechaNacimiento(
+					dto.getFechaNacimiento());
 
 			usuario.setFechaCreacionCuenta(
 					LocalDateTime.now());
 
 			usuario.setEnLinea(false);
+
+			usuario.setUltimaVezEnLinea(null);
+
+			usuario.setHabilitado(false);
 
 			usuarioRepository.save(usuario);
 
@@ -98,16 +130,44 @@ public class UsuarioService {
 
 			Usuario usuario =
 					usuarioRepository.findById(id)
-					.orElse(null);
+							.orElse(null);
 
 			if (usuario == null) {
 				return 1;
 			}
 
-			usuario.setUsuario(dto.getUsuario());
+			if (dto.getUsuario() != null) {
+				usuario.setUsuario(
+						dto.getUsuario());
+			}
 
-			usuario.setNombrePersona(
-					dto.getNombrePersona());
+			if (dto.getNombrePersona() != null) {
+				usuario.setNombrePersona(
+						dto.getNombrePersona());
+			}
+
+			if (dto.getCorreo() != null) {
+				usuario.setCorreo(
+						dto.getCorreo());
+			}
+
+			if (dto.getSobreMi() != null) {
+				usuario.setSobreMi(
+						dto.getSobreMi());
+			}
+
+			if (dto.getFechaNacimiento() != null) {
+				usuario.setFechaNacimiento(
+						dto.getFechaNacimiento());
+			}
+
+			if (dto.getContrasena() != null
+					&& !dto.getContrasena().isBlank()) {
+
+				usuario.setContrasenaHash(
+						passwordEncoder.encode(
+								dto.getContrasena()));
+			}
 
 			usuarioRepository.save(usuario);
 
@@ -132,5 +192,4 @@ public class UsuarioService {
 								UsuarioDTO.class))
 				.orElse(null);
 	}
-
 }

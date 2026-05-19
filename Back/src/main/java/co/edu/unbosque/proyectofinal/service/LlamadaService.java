@@ -9,13 +9,13 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import co.edu.unbosque.proyectofinal.dto.IniciarLlamadaDTO;
 import co.edu.unbosque.proyectofinal.dto.LlamadaDTO;
 import co.edu.unbosque.proyectofinal.dto.LlamadaRespuestaDTO;
 import co.edu.unbosque.proyectofinal.entity.Conversacion;
 import co.edu.unbosque.proyectofinal.entity.Llamada;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.enums.EstadoLlamada;
+import co.edu.unbosque.proyectofinal.enums.TipoLlamada;
 import co.edu.unbosque.proyectofinal.repository.ConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.LlamadaRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
@@ -43,7 +43,15 @@ public class LlamadaService {
 	 *  null   → error (usuario o conversación no encontrados)
 	 *  objeto → éxito, con token y datos del canal
 	 */
-	public LlamadaRespuestaDTO iniciarLlamada(IniciarLlamadaDTO dto) {
+	public LlamadaRespuestaDTO iniciarLlamada(LlamadaDTO dto) {
+
+		if (dto == null
+				|| dto.getUsuarioLlamanteId() == null
+				|| dto.getUsuarioReceptorId() == null
+				|| dto.getConversacionId() == null) {
+
+			return null;
+		}
 
 		Optional<Usuario> llamanteOpt =
 				usuarioRepo.findById(dto.getUsuarioLlamanteId());
@@ -83,7 +91,10 @@ public class LlamadaService {
 		// Persistir la llamada en la base de datos
 		Llamada llamada = new Llamada();
 		llamada.setCanalAgora(canal);
-		llamada.setTipoLlamada(dto.getTipoLlamada());
+		llamada.setTipoLlamada(
+				dto.getTipoLlamada() == null
+						? TipoLlamada.VOZ
+						: dto.getTipoLlamada());
 		llamada.setEstadoLlamada(EstadoLlamada.INICIADA);
 		llamada.setFechaInicio(LocalDateTime.now());
 		llamada.setUsuarioLlamante(llamante);

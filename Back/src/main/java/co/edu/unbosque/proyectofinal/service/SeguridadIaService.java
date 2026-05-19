@@ -15,9 +15,9 @@ import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 @Service
 public class SeguridadIaService {
 
-    private final UsuarioRepository usuarioRepository;
+    private UsuarioRepository usuarioRepository;
 
-    private final ParticipanteConversacionRepository
+    private ParticipanteConversacionRepository
             participanteConversacionRepository;
 
     public SeguridadIaService(
