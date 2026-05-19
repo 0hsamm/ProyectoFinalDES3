@@ -1,28 +1,25 @@
 package co.edu.unbosque.proyectofinal.controller;
 
+import java.time.LocalDate;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import co.edu.unbosque.proyectofinal.dto.RespuestaAutenticacionDTO;
 import co.edu.unbosque.proyectofinal.dto.LoginDTO;
 import co.edu.unbosque.proyectofinal.dto.RegistroDTO;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.exception.CredencialesInvalidasException;
 import co.edu.unbosque.proyectofinal.exception.UsuarioYaExisteException;
+import co.edu.unbosque.proyectofinal.security.JwtUtil;
 import co.edu.unbosque.proyectofinal.service.AutenticacionService;
-
-import java.time.LocalDate;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import org.springframework.web.bind.annotation.RequestBody;
-
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RequestParam;
-
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controlador encargado de manejar
@@ -39,15 +36,21 @@ public class AutenticacionController {
 
     private final AutenticacionService authService;
 
+    private final JwtUtil jwtUtil;
+
     /**
      * Constructor que inyecta
      * el servicio de autenticación.
      */
     public AutenticacionController(
-            AutenticacionService authService) {
+            AutenticacionService authService,
+            JwtUtil jwtUtil) {
 
         this.authService =
                 authService;
+
+        this.jwtUtil =
+                jwtUtil;
     }
 
     /**
@@ -145,9 +148,22 @@ public class AutenticacionController {
             Usuario usuarioLogeado =
                     authService.login(dto);
 
+            String token =
+                    jwtUtil.generateToken(
+                            usuarioLogeado);
+
+            RespuestaAutenticacionDTO respuesta =
+                    new RespuestaAutenticacionDTO(
+                            token,
+                            "Bearer",
+                            usuarioLogeado.getId(),
+                            usuarioLogeado.getUsuario(),
+                            usuarioLogeado.getCorreo(),
+                            usuarioLogeado.getNombrePersona());
+
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(usuarioLogeado);
+                    .body(respuesta);
         }
 
         catch (

@@ -4,33 +4,51 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import co.edu.unbosque.proyectofinal.dto.LoginDTO;
 import co.edu.unbosque.proyectofinal.dto.RegistroDTO;
 import co.edu.unbosque.proyectofinal.entity.TokenVerificacion;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.exception.CorreoYaExisteException;
 import co.edu.unbosque.proyectofinal.exception.CredencialesInvalidasException;
 import co.edu.unbosque.proyectofinal.exception.UsuarioYaExisteException;
+import co.edu.unbosque.proyectofinal.exception.ValidadorUsuario;
 import co.edu.unbosque.proyectofinal.repository.TokenVerificacionRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
-import co.edu.unbosque.proyectofinal.exception.CorreoYaExisteException;
+
 @Service
 public class AutenticacionService {
 
 	@Autowired
 	private UsuarioRepository usuarioRepo;
-	
-	@Autowired TokenVerificacionRepository tokenRepo;
+
+	@Autowired
+	private TokenVerificacionRepository tokenRepo;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	public Usuario registrar(RegistroDTO dto) {
+
+		ValidadorUsuario.verificarUsuario(
+				dto.getUsuario());
+
+		ValidadorUsuario.verificarCorreo(
+				dto.getCorreo());
+
+		ValidadorUsuario.verificarContrasena(
+				dto.getContrasena());
+
+		ValidadorUsuario.verificarEdad(
+				dto.getFechaNacimiento());
 
 		Optional<Usuario> usuarioExistente =
 				usuarioRepo.findByUsuario(
 						dto.getUsuario());
 
-		if(usuarioExistente.isPresent()) {
-
+		if (usuarioExistente.isPresent()) {
 			throw new UsuarioYaExisteException();
 		}
 
@@ -38,52 +56,25 @@ public class AutenticacionService {
 				usuarioRepo.findByCorreo(
 						dto.getCorreo());
 
-		if(correoExistente.isPresent()) {
-
+		if (correoExistente.isPresent()) {
 			throw new CorreoYaExisteException();
-		
 		}
 
-		if(!UsuarioValidator.validarUsuario(
-				dto.getUsuario())) {
+		Usuario nuevo =
+				new Usuario();
 
-			throw new RuntimeException(
-					"Usuario inválido");
-		}
+		nuevo.setUsuario(
+				dto.getUsuario());
 
-		if(!UsuarioValidator.validarCorreo(
-				dto.getCorreo())) {
-
-			throw new RuntimeException(
-					"Correo inválido");
-		}
-
-		if(!UsuarioValidator.validarContrasena(
-				dto.getContrasena())) {
-
-			throw new RuntimeException(
-					"La contraseña debe tener mínimo 8 caracteres");
-		}
-
-		if(!UsuarioValidator.validarEdad(
-				dto.getFechaNacimiento())) {
-
-			throw new RuntimeException(
-					"Debes tener mínimo 13 años");
-		}
-
-		Usuario nuevo = new Usuario();
-
-		nuevo.setUsuario(dto.getUsuario());
-
-		nuevo.setCorreo(dto.getCorreo());
+		nuevo.setCorreo(
+				dto.getCorreo());
 
 		nuevo.setNombrePersona(
 				dto.getNombrePersona());
 
-		// DESPUÉS meter BCrypt
 		nuevo.setContrasenaHash(
-				dto.getContrasena());
+				passwordEncoder.encode(
+						dto.getContrasena()));
 
 		nuevo.setFechaNacimiento(
 				dto.getFechaNacimiento());
@@ -107,17 +98,26 @@ public class AutenticacionService {
 				usuarioRepo.findByUsuario(
 						dto.getUsuario());
 
-		if(usuario.isEmpty()) {
+		if (usuario.isEmpty()) {
+			throw new CredencialesInvalidasException();
+		}
+
+		Usuario user =
+				usuario.get();
+
+		if (!contrasenaValida(
+				dto.getContrasena(),
+				user.getContrasenaHash())) {
 
 			throw new CredencialesInvalidasException();
 		}
 
-		Usuario user = usuario.get();
+		if (!user.getContrasenaHash()
+				.startsWith("$2")) {
 
-		if(!user.getContrasenaHash()
-				.equals(dto.getContrasena())) {
-
-			throw new CredencialesInvalidasException();
+			user.setContrasenaHash(
+					passwordEncoder.encode(
+							dto.getContrasena()));
 		}
 
 		user.setEnLinea(true);
@@ -129,28 +129,45 @@ public class AutenticacionService {
 
 		return user;
 	}
-	
-	public boolean verificarCuenta(
-	        String token){
 
-	    Optional<TokenVerificacion> tv =
-	            tokenRepo.findByToken(token);
+	private boolean contrasenaValida(
+			String contrasena,
+			String contrasenaGuardada) {
 
-	    if (!tv.isPresent()) {
-	        return false;
-	    }
+		if (contrasenaGuardada == null) {
+			return false;
+		}
 
-	    TokenVerificacion tokenVerificacion =
-	            tv.get();
+		if (contrasenaGuardada.startsWith("$2")) {
+			return passwordEncoder.matches(
+					contrasena,
+					contrasenaGuardada);
+		}
 
-	    Usuario usuario =
-	            tokenVerificacion.getUsuario();
-
-	    usuario.setHabilitado(true);
-
-	    usuarioRepo.save(usuario);
-
-	    return true;
+		return contrasenaGuardada.equals(
+				contrasena);
 	}
 
+	public boolean verificarCuenta(
+			String token) {
+
+		Optional<TokenVerificacion> tv =
+				tokenRepo.findByToken(token);
+
+		if (!tv.isPresent()) {
+			return false;
+		}
+
+		TokenVerificacion tokenVerificacion =
+				tv.get();
+
+		Usuario usuario =
+				tokenVerificacion.getUsuario();
+
+		usuario.setHabilitado(true);
+
+		usuarioRepo.save(usuario);
+
+		return true;
+	}
 }
