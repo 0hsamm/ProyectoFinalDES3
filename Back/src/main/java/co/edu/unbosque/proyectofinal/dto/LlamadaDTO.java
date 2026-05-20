@@ -1,11 +1,11 @@
 package co.edu.unbosque.proyectofinal.dto;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import co.edu.unbosque.proyectofinal.enums.EstadoLlamada;
 import co.edu.unbosque.proyectofinal.enums.TipoLlamada;
 
-// DTO general para consultar el historial de llamadas
 public class LlamadaDTO {
 
 	private long id;
@@ -21,6 +21,23 @@ public class LlamadaDTO {
 
 	public LlamadaDTO() {
 	}
+	
+	public LlamadaDTO(String canalAgora, TipoLlamada tipoLlamada, EstadoLlamada estadoLlamada,
+			LocalDateTime fechaInicio, LocalDateTime fechaFin, Long duracionSegundos, Long conversacionId,
+			Long usuarioLlamanteId, Long usuarioReceptorId) {
+		super();
+		this.canalAgora = canalAgora;
+		this.tipoLlamada = tipoLlamada;
+		this.estadoLlamada = estadoLlamada;
+		this.fechaInicio = fechaInicio;
+		this.fechaFin = fechaFin;
+		this.duracionSegundos = duracionSegundos;
+		this.conversacionId = conversacionId;
+		this.usuarioLlamanteId = usuarioLlamanteId;
+		this.usuarioReceptorId = usuarioReceptorId;
+	}
+
+
 
 	public long getId() {
 		return id;
@@ -100,6 +117,37 @@ public class LlamadaDTO {
 
 	public void setUsuarioReceptorId(Long usuarioReceptorId) {
 		this.usuarioReceptorId = usuarioReceptorId;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(canalAgora, conversacionId, duracionSegundos, estadoLlamada, fechaFin, fechaInicio, id,
+				tipoLlamada, usuarioLlamanteId, usuarioReceptorId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LlamadaDTO other = (LlamadaDTO) obj;
+		return Objects.equals(canalAgora, other.canalAgora) && Objects.equals(conversacionId, other.conversacionId)
+				&& Objects.equals(duracionSegundos, other.duracionSegundos) && estadoLlamada == other.estadoLlamada
+				&& Objects.equals(fechaFin, other.fechaFin) && Objects.equals(fechaInicio, other.fechaInicio)
+				&& id == other.id && tipoLlamada == other.tipoLlamada
+				&& Objects.equals(usuarioLlamanteId, other.usuarioLlamanteId)
+				&& Objects.equals(usuarioReceptorId, other.usuarioReceptorId);
+	}
+
+	@Override
+	public String toString() {
+		return "LlamadaDTO [id=" + id + ", canalAgora=" + canalAgora + ", tipoLlamada=" + tipoLlamada
+				+ ", estadoLlamada=" + estadoLlamada + ", fechaInicio=" + fechaInicio + ", fechaFin=" + fechaFin
+				+ ", duracionSegundos=" + duracionSegundos + ", conversacionId=" + conversacionId
+				+ ", usuarioLlamanteId=" + usuarioLlamanteId + ", usuarioReceptorId=" + usuarioReceptorId + "]";
 	}
 
 }

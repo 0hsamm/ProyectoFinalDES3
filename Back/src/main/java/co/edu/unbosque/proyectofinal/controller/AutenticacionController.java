@@ -19,7 +19,9 @@ import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.exception.CredencialesInvalidasException;
 import co.edu.unbosque.proyectofinal.exception.UsuarioYaExisteException;
 import co.edu.unbosque.proyectofinal.security.JwtUtil;
+import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.AutenticacionService;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Controlador encargado de manejar
@@ -35,6 +37,8 @@ import co.edu.unbosque.proyectofinal.service.AutenticacionService;
 public class AutenticacionController {
 
     private final AutenticacionService authService;
+    
+    private final AuditoriaService auditoriaService;
 
     private final JwtUtil jwtUtil;
 
@@ -44,15 +48,13 @@ public class AutenticacionController {
      */
     public AutenticacionController(
             AutenticacionService authService,
-            JwtUtil jwtUtil) {
+            JwtUtil jwtUtil,
+            AuditoriaService auditoriaService) {
 
-        this.authService =
-                authService;
-
-        this.jwtUtil =
-                jwtUtil;
+        this.authService = authService;
+        this.jwtUtil = jwtUtil;
+        this.auditoriaService = auditoriaService;
     }
-
     /**
      * Permite registrar
      * un nuevo usuario
@@ -120,37 +122,22 @@ public class AutenticacionController {
         }
     }
 
-    /**
-     * Realiza el proceso
-     * de autenticación
-     * de un usuario.
-     *
-     * @param loginRequest
-     * datos de login
-     *
-     * @return usuario autenticado
-     */
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @RequestBody LoginDTO loginRequest) {
+            @RequestBody LoginDTO loginRequest,
+            HttpServletRequest request) {
+
+        String ip = request.getRemoteAddr();
+        String navegador = request.getHeader("User-Agent");
 
         try {
+            LoginDTO dto = new LoginDTO();
+            dto.setUsuario(loginRequest.getUsuario());
+            dto.setContrasena(loginRequest.getContrasena());
 
-            LoginDTO dto =
-                    new LoginDTO();
+            Usuario usuarioLogeado = authService.login(dto);
 
-            dto.setUsuario(
-                    loginRequest.getUsuario());
-
-            dto.setContrasena(
-                    loginRequest.getContrasena());
-
-            Usuario usuarioLogeado =
-                    authService.login(dto);
-
-            String token =
-                    jwtUtil.generateToken(
-                            usuarioLogeado);
+            String token = jwtUtil.generateToken(usuarioLogeado);
 
             RespuestaAutenticacionDTO respuesta =
                     new RespuestaAutenticacionDTO(
@@ -161,21 +148,35 @@ public class AutenticacionController {
                             usuarioLogeado.getCorreo(),
                             usuarioLogeado.getNombrePersona());
 
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(respuesta);
-        }
+            auditoriaService.registrar(
+                    usuarioLogeado,
+                    "LOGIN",
+                    "AUTH",
+                    "Inicio de sesion exitoso",
+                    ip,
+                    navegador,
+                    null, null, null,
+                    true);
 
-        catch (
-                CredencialesInvalidasException e
-        ) {
+            return ResponseEntity.status(HttpStatus.OK).body(respuesta);
+
+        } catch (CredencialesInvalidasException e) {
+
+            auditoriaService.registrar(
+                    null,
+                    "LOGIN_FALLIDO",
+                    "AUTH",
+                    "Intento de login fallido: " + loginRequest.getUsuario(),
+                    ip,
+                    navegador,
+                    null, null, null,
+                    false);
 
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
         }
     }
-
     /**
      * Verifica una cuenta
      * utilizando el token

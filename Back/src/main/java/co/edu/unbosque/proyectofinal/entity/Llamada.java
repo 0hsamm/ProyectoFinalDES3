@@ -42,20 +42,16 @@ public class Llamada {
 
 	private LocalDateTime fechaFin;
 
-	// Duración en segundos (se calcula al finalizar)
 	private Long duracionSegundos;
 
-	// Quien inició la llamada
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "id_usuario_llamante", nullable = false)
 	private Usuario usuarioLlamante;
 
-	// Quien recibe la llamada
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "id_usuario_receptor", nullable = false)
 	private Usuario usuarioReceptor;
 
-	// La conversación a la que pertenece esta llamada
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "id_conversacion", nullable = false)
 	private Conversacion conversacion;

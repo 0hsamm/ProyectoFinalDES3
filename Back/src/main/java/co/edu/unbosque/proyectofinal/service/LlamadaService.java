@@ -78,17 +78,13 @@ public class LlamadaService {
 		Usuario receptor = receptorOpt.get();
 		Conversacion conversacion = convOpt.get();
 
-		// Nombre único del canal: conv_{id}_{timestamp}
 		String canal = "conv_" + dto.getConversacionId()
 				+ "_" + System.currentTimeMillis();
 
-		// UID de Agora: usamos el id del usuario como entero
 		int uidLlamante = (int) (llamante.getId() % Integer.MAX_VALUE);
 
-		// Generar token para el llamante
 		String token = agoraTokenService.generarToken(canal, uidLlamante);
 
-		// Persistir la llamada en la base de datos
 		Llamada llamada = new Llamada();
 		llamada.setCanalAgora(canal);
 		llamada.setTipoLlamada(
@@ -138,16 +134,13 @@ public class LlamadaService {
 
 		Llamada llamada = llamadaOpt.get();
 
-		// Validar que el receptor es quien debe contestar
 		if (llamada.getUsuarioReceptor().getId() != usuarioReceptorId) {
 			return null;
 		}
 
-		// Cambiar estado a ACTIVA
 		llamada.setEstadoLlamada(EstadoLlamada.ACTIVA);
 		llamadaRepo.save(llamada);
 
-		// Generar token para el receptor
 		int uidReceptor = (int) (usuarioReceptorId % Integer.MAX_VALUE);
 		String token = agoraTokenService.generarToken(
 				llamada.getCanalAgora(), uidReceptor);
@@ -188,7 +181,6 @@ public class LlamadaService {
 		llamada.setEstadoLlamada(EstadoLlamada.FINALIZADA);
 		llamada.setFechaFin(LocalDateTime.now());
 
-		// Calcular duración en segundos
 		long duracion = ChronoUnit.SECONDS.between(
 				llamada.getFechaInicio(),
 				llamada.getFechaFin());
@@ -254,7 +246,6 @@ public class LlamadaService {
 		todas.addAll(comoLlamante);
 		todas.addAll(comoReceptor);
 
-		// Ordenar por fecha de inicio descendente
 		todas.sort((a, b) -> b.getFechaInicio()
 				.compareTo(a.getFechaInicio()));
 
@@ -275,7 +266,6 @@ public class LlamadaService {
 		return mapear(opt.get());
 	}
 
-	// ─── Helpers de mapeo ─────────────────────────────────────────────────────
 
 	private List<LlamadaDTO> mapearLista(List<Llamada> lista) {
 

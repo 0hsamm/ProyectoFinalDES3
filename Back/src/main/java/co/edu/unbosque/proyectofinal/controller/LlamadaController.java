@@ -27,9 +27,6 @@ public class LlamadaController {
 	@Autowired
 	private LlamadaService llamadaService;
 
-	// ─── POST /api/llamadas/iniciar ────────────────────────────────────────────
-	// El llamante invoca esto para crear la llamada y obtener su token de Agora
-
 	@PostMapping("/iniciar")
 	@Operation(summary = "Iniciar una llamada",
 		description = "Crea la llamada en BD y devuelve el token de Agora para el llamante. "
@@ -51,9 +48,6 @@ public class LlamadaController {
 				.body(respuesta);
 	}
 
-	// ─── PUT /api/llamadas/{id}/aceptar/{usuarioReceptorId} ───────────────────
-	// El receptor acepta la llamada y obtiene su propio token de Agora
-
 	@PutMapping("/{id}/aceptar/{usuarioReceptorId}")
 	@Operation(summary = "Aceptar una llamada",
 		description = "El receptor acepta la llamada. "
@@ -74,9 +68,6 @@ public class LlamadaController {
 		return ResponseEntity.ok(respuesta);
 	}
 
-	// ─── PUT /api/llamadas/{id}/finalizar ─────────────────────────────────────
-	// Cualquiera de los dos usuarios puede finalizar la llamada
-
 	@PutMapping("/{id}/finalizar")
 	@Operation(summary = "Finalizar una llamada",
 		description = "Marca la llamada como FINALIZADA y calcula la duración.")
@@ -93,9 +84,6 @@ public class LlamadaController {
 
 		return ResponseEntity.ok("Llamada finalizada correctamente");
 	}
-
-	// ─── PUT /api/llamadas/{id}/rechazar ──────────────────────────────────────
-	// El receptor rechaza o no contesta → queda como PERDIDA
 
 	@PutMapping("/{id}/rechazar")
 	@Operation(summary = "Rechazar una llamada",
@@ -114,8 +102,6 @@ public class LlamadaController {
 		return ResponseEntity.ok("Llamada marcada como perdida");
 	}
 
-	// ─── GET /api/llamadas/{id} ───────────────────────────────────────────────
-
 	@GetMapping("/{id}")
 	@Operation(summary = "Obtener una llamada por ID")
 	public ResponseEntity<?> getById(@PathVariable Long id) {
@@ -131,9 +117,6 @@ public class LlamadaController {
 		return ResponseEntity.ok(dto);
 	}
 
-	// ─── GET /api/llamadas/conversacion/{conversacionId} ──────────────────────
-	// Historial de llamadas de una conversación
-
 	@GetMapping("/conversacion/{conversacionId}")
 	@Operation(summary = "Historial de llamadas de una conversación")
 	public ResponseEntity<List<LlamadaDTO>> getByConversacion(
@@ -145,8 +128,6 @@ public class LlamadaController {
 		return ResponseEntity.ok(lista);
 	}
 
-	// ─── GET /api/llamadas/historial/{usuarioId} ──────────────────────────────
-	// Historial completo de un usuario (llamadas hechas y recibidas)
 
 	@GetMapping("/historial/{usuarioId}")
 	@Operation(summary = "Historial de llamadas de un usuario",
