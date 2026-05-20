@@ -121,6 +121,12 @@ public class SecurityConfig {
 
                         .permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/usuarios")
+                        .permitAll()
+                        
+                        .requestMatchers("/admin/**")
+                        .hasAuthority("ROLE_ADMIN")
+                        
                         /**
                          * TODO:
                          * Configurar permisos

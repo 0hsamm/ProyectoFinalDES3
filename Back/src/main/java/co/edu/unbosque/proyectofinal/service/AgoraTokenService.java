@@ -29,7 +29,6 @@ public class AgoraTokenService {
 	@Value("${agora.app-certificate}")
 	private String appCertificate;
 
-	// Duración del token: 1 hora (en segundos)
 	private static final int DURACION_TOKEN_SEGUNDOS = 3600;
 
 	// Privilegio para unirse a un canal de voz/video
@@ -48,13 +47,10 @@ public class AgoraTokenService {
 			int expiracion = (int) (System.currentTimeMillis() / 1000)
 					+ DURACION_TOKEN_SEGUNDOS;
 
-			// Construir el mensaje a firmar
 			byte[] msg = buildMessage(canal, uid, expiracion);
 
-			// Firmar con HMAC-SHA256
 			byte[] firma = hmacSha256(appCertificate.getBytes(StandardCharsets.UTF_8), msg);
 
-			// Armar el token final
 			return buildToken(firma, canal, uid, expiracion);
 
 		} catch (Exception e) {
@@ -66,14 +62,11 @@ public class AgoraTokenService {
 		return appId;
 	}
 
-	// ─── Métodos internos de construcción del token ────────────────────────────
 
 	private byte[] buildMessage(String canal, int uid, int expiracion) {
 
-		// Contenido: appId + timestamp + uid + canal + privilegio + expiración
 		String uidStr = uid == 0 ? "" : String.valueOf(uid);
 
-		// CRC del canal y del UID
 		CRC32 crcCanal = new CRC32();
 		crcCanal.update(canal.getBytes(StandardCharsets.UTF_8));
 
@@ -132,7 +125,6 @@ public class AgoraTokenService {
 		return mac.doFinal(data);
 	}
 
-	// ─── Clase auxiliar para serializar bytes ──────────────────────────────────
 
 	private static class ByteBuffer {
 

@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+Back/src/main/resources/application.properties
+Back/src/main/resources/application.properties

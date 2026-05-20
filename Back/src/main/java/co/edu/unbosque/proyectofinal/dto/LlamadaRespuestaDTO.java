@@ -3,17 +3,16 @@ package co.edu.unbosque.proyectofinal.dto;
 import co.edu.unbosque.proyectofinal.enums.EstadoLlamada;
 import co.edu.unbosque.proyectofinal.enums.TipoLlamada;
 
-// DTO que devuelve el servidor cuando se inicia o consulta una llamada
-// Incluye el token de Agora que el frontend necesita para unirse al canal
+
 public class LlamadaRespuestaDTO {
 
 	private long id;
-	private String canalAgora;   // nombre del canal en Agora
-	private String tokenAgora;   // token temporal generado por el servidor
-	private int uidAgora;        // UID numérico del usuario dentro de Agora
+	private String canalAgora;   
+	private String tokenAgora;   
+	private int uidAgora;        
 	private TipoLlamada tipoLlamada;
 	private EstadoLlamada estadoLlamada;
-	private String appIdAgora;   // App ID de Agora que el frontend también necesita
+	private String appIdAgora;   
 	private Long conversacionId;
 	private Long usuarioLlamanteId;
 	private Long usuarioReceptorId;

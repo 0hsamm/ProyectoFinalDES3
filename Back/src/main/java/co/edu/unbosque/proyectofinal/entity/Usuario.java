@@ -10,11 +10,15 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import co.edu.unbosque.proyectofinal.enums.RolUsuario;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -57,6 +61,10 @@ public class Usuario implements UserDetails{
 	
 	@Column(nullable = false)
 	private boolean habilitado = false;
+	
+	@Column(nullable = false, length = 20)
+	@Enumerated(EnumType.STRING)
+	private RolUsuario rol = RolUsuario.ROLE_USER;
 
 	@OneToMany(
 			mappedBy = "usuario",
@@ -232,16 +240,22 @@ public class Usuario implements UserDetails{
 		this.habilitado = habilitado;
 	}
 
+	public RolUsuario getRol() {
+	    return rol;
+	}
+
+	public void setRol(RolUsuario rol) {
+	    this.rol = rol;
+	}
 
 
-	
 	@Override
 	public String toString() {
 		return "Usuario [id=" + id + ", usuario=" + usuario + ", correo=" + correo + ", nombrePersona=" + nombrePersona
 				+ ", contrasenaHash=" + contrasenaHash + ", sobreMi=" + sobreMi + ", fechaNacimiento=" + fechaNacimiento
 				+ ", fechaCreacionCuenta=" + fechaCreacionCuenta + ", ultimaVezEnLinea=" + ultimaVezEnLinea
-				+ ", enLinea=" + enLinea + ", habilitado=" + habilitado + ", numeroSesion=" + numeroSesion
-				+ ", numeroConversacion=" + numeroConversacion + "]";
+				+ ", enLinea=" + enLinea + ", habilitado=" + habilitado + ", rol=" + rol + ", numeroSesion="
+				+ numeroSesion + ", numeroConversacion=" + numeroConversacion + "]";
 	}
 
 
@@ -249,7 +263,7 @@ public class Usuario implements UserDetails{
 	@Override
 	public int hashCode() {
 		return Objects.hash(contrasenaHash, correo, enLinea, fechaCreacionCuenta, fechaNacimiento, habilitado, id,
-				nombrePersona, numeroConversacion, numeroSesion, sobreMi, ultimaVezEnLinea, usuario);
+				nombrePersona, numeroConversacion, numeroSesion, rol, sobreMi, ultimaVezEnLinea, usuario);
 	}
 
 
@@ -268,15 +282,18 @@ public class Usuario implements UserDetails{
 				&& Objects.equals(fechaNacimiento, other.fechaNacimiento) && habilitado == other.habilitado
 				&& id == other.id && Objects.equals(nombrePersona, other.nombrePersona)
 				&& Objects.equals(numeroConversacion, other.numeroConversacion)
-				&& Objects.equals(numeroSesion, other.numeroSesion) && Objects.equals(sobreMi, other.sobreMi)
-				&& Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea) && Objects.equals(usuario, other.usuario);
+				&& Objects.equals(numeroSesion, other.numeroSesion) && rol == other.rol
+				&& Objects.equals(sobreMi, other.sobreMi) && Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea)
+				&& Objects.equals(usuario, other.usuario);
 	}
 
 
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return Collections.emptyList();
+	    return Collections.singletonList(
+	        new SimpleGrantedAuthority(rol.name())
+	    );
 	}
 
 	@Override

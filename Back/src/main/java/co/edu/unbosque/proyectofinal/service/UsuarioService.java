@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import co.edu.unbosque.proyectofinal.dto.UsuarioDTO;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.enums.RolUsuario;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 
 @Service
@@ -74,6 +75,12 @@ public class UsuarioService {
 			usuario.setUltimaVezEnLinea(null);
 
 			usuario.setHabilitado(false);
+			
+			if (dto.getRol() != null) {
+			    usuario.setRol(dto.getRol());
+			} else {
+			    usuario.setRol(RolUsuario.ROLE_USER);
+			}
 
 			usuarioRepository.save(usuario);
 

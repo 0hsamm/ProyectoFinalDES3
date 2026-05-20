@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import co.edu.unbosque.proyectofinal.enums.RolUsuario;
+
 public class UsuarioDTO {
 
 	private Long id;
@@ -23,22 +25,15 @@ public class UsuarioDTO {
 	private LocalDateTime ultimaVezEnLinea;
 	
 	private String contrasena;
+	
+	private RolUsuario rol;
 
 	public UsuarioDTO() {
 	}
 
-	public UsuarioDTO(
-			Long id,
-			String usuario,
-			String correo,
-			String nombrePersona,
-			String sobreMi,
-			boolean enLinea,
-			LocalDate fechaNacimiento,
-			LocalDateTime ultimaVezEnLinea,
-			String contrasena
-	) {
-
+	public UsuarioDTO(Long id, String usuario, String correo, String nombrePersona, String sobreMi, boolean enLinea,
+			LocalDate fechaNacimiento, LocalDateTime ultimaVezEnLinea, String contrasena, RolUsuario rol) {
+		super();
 		this.id = id;
 		this.usuario = usuario;
 		this.correo = correo;
@@ -48,8 +43,17 @@ public class UsuarioDTO {
 		this.fechaNacimiento = fechaNacimiento;
 		this.ultimaVezEnLinea = ultimaVezEnLinea;
 		this.contrasena = contrasena;
+		this.rol = rol;
 	}
 
+	public RolUsuario getRol() {
+	    return rol;
+	}
+
+	public void setRol(RolUsuario rol) {
+	    this.rol = rol;
+	}
+	
 	public Long getId() {
 		return id;
 	}
@@ -130,8 +134,8 @@ public class UsuarioDTO {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(contrasena, correo, enLinea, fechaNacimiento, id, nombrePersona, sobreMi, ultimaVezEnLinea,
-				usuario);
+		return Objects.hash(contrasena, correo, enLinea, fechaNacimiento, id, nombrePersona, rol, sobreMi,
+				ultimaVezEnLinea, usuario);
 	}
 
 	@Override
@@ -146,16 +150,18 @@ public class UsuarioDTO {
 		return Objects.equals(contrasena, other.contrasena) && Objects.equals(correo, other.correo)
 				&& enLinea == other.enLinea && Objects.equals(fechaNacimiento, other.fechaNacimiento)
 				&& Objects.equals(id, other.id) && Objects.equals(nombrePersona, other.nombrePersona)
-				&& Objects.equals(sobreMi, other.sobreMi) && Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea)
-				&& Objects.equals(usuario, other.usuario);
+				&& rol == other.rol && Objects.equals(sobreMi, other.sobreMi)
+				&& Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea) && Objects.equals(usuario, other.usuario);
 	}
 
 	@Override
 	public String toString() {
 		return "UsuarioDTO [id=" + id + ", usuario=" + usuario + ", correo=" + correo + ", nombrePersona="
 				+ nombrePersona + ", sobreMi=" + sobreMi + ", enLinea=" + enLinea + ", fechaNacimiento="
-				+ fechaNacimiento + ", ultimaVezEnLinea=" + ultimaVezEnLinea + ", contrasena=" + contrasena + "]";
+				+ fechaNacimiento + ", ultimaVezEnLinea=" + ultimaVezEnLinea + ", contrasena=" + contrasena + ", rol="
+				+ rol + "]";
 	}
+
 
 	
 

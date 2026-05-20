@@ -16,7 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.unbosque.proyectofinal.dto.MensajeDTO;
+import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
+import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.MensajeService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/mensajes")
@@ -25,55 +29,60 @@ public class MensajeController {
 
 	@Autowired
 	private MensajeService mensajeService;
+	
+	@Autowired
+	private AuditoriaService auditoriaService;
+
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 
 	@PostMapping
 	public ResponseEntity<String> enviarMensaje(
-			@RequestBody MensajeDTO dto) {
+	        @RequestBody MensajeDTO dto,
+	        HttpServletRequest request) {
 
-		int status =
-				mensajeService.create(dto);
+	    String ip = request.getRemoteAddr();
+	    String navegador = request.getHeader("User-Agent");
 
-		if (status == 0) {
-			return new ResponseEntity<>(
-					"Mensaje enviado correctamente",
-					HttpStatus.OK);
-		}
+	    int status = mensajeService.create(dto);
 
-		else if (status == 1) {
-			return new ResponseEntity<>(
-					"Usuario no encontrado",
-					HttpStatus.BAD_REQUEST);
-		}
+	    if (status == 0) {
 
-		else if (status == 2) {
-			return new ResponseEntity<>(
-					"Conversacion no encontrada",
-					HttpStatus.BAD_REQUEST);
-		}
+	    	Usuario usuario = dto.getRemitenteId() != null
+	    	        ? usuarioRepository.findById(dto.getRemitenteId()).orElse(null)
+	    	        : null;
 
-		else if (status == 4) {
-			return new ResponseEntity<>(
-					"El usuario no tiene permiso para enviar mensajes en esta conversacion",
-					HttpStatus.FORBIDDEN);
-		}
+	        auditoriaService.registrar(
+	                usuario,
+	                "ENVIAR_MENSAJE",
+	                "MENSAJES",
+	                "Mensaje enviado en conversacion: " + dto.getConversacionId(),	                ip,
+	                navegador,
+	                null, null, null,
+	                true);
 
-		else if (status == 5) {
-			return new ResponseEntity<>(
-					"Datos del mensaje incompletos",
-					HttpStatus.BAD_REQUEST);
-		}
-
-		else if (status == 6) {
-			return new ResponseEntity<>(
-					"Frase secreta invalida o no configurada",
-					HttpStatus.FORBIDDEN);
-		}
-
-		else {
-			return new ResponseEntity<>(
-					"Error interno al enviar mensaje",
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	        return new ResponseEntity<>(
+	                "Mensaje enviado correctamente",
+	                HttpStatus.OK);
+	    }
+	    else if (status == 1) {
+	        return new ResponseEntity<>("Usuario no encontrado", HttpStatus.BAD_REQUEST);
+	    }
+	    else if (status == 2) {
+	        return new ResponseEntity<>("Conversacion no encontrada", HttpStatus.BAD_REQUEST);
+	    }
+	    else if (status == 4) {
+	        return new ResponseEntity<>("El usuario no tiene permiso para enviar mensajes en esta conversacion", HttpStatus.FORBIDDEN);
+	    }
+	    else if (status == 5) {
+	        return new ResponseEntity<>("Datos del mensaje incompletos", HttpStatus.BAD_REQUEST);
+	    }
+	    else if (status == 6) {
+	        return new ResponseEntity<>("Frase secreta invalida o no configurada", HttpStatus.FORBIDDEN);
+	    }
+	    else {
+	        return new ResponseEntity<>("Error interno al enviar mensaje", HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
 
 	@GetMapping
