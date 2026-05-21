@@ -75,6 +75,14 @@ public class AutenticacionService {
 
 	    usuario.setHabilitado(false);
 
+	    usuario.setNombrePersona(dto.getNombrePersona());
+	    usuario.setContrasenaHash(
+	        passwordEncoder.encode(dto.getContrasena()));
+	    usuario.setFechaNacimiento(dto.getFechaNacimiento());
+	    usuario.setFechaCreacionCuenta(LocalDateTime.now());
+	    usuario.setEnLinea(false);
+	    usuario.setRol(co.edu.unbosque.proyectofinal.enums.RolUsuario.ROLE_USER);
+	    
 	    usuarioRepo.save(usuario);
 
 	    String token =

@@ -59,3 +59,4 @@ temp/
 *.sqlite3
 
 uploads/
+Back/src/main/resources/application.properties
