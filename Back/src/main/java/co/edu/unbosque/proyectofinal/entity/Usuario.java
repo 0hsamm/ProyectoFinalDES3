@@ -3,307 +3,199 @@ package co.edu.unbosque.proyectofinal.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import co.edu.unbosque.proyectofinal.enums.RolUsuario;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "chat_usuarios")
-public class Usuario implements UserDetails{
-
-	private @Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	long id;
-
-	@Column(nullable = false, unique = true, length = 60)
-	private String usuario;
-
-	@Column(nullable = false, unique = true, length = 120)
-	private String correo;
-
-	@Column(nullable = false, length = 120)
-	private String nombrePersona;
-
-	@Column(nullable = false, length = 180)
-	private String contrasenaHash;
-
-	@Column(length = 220)
-	private String sobreMi;
-
-	private LocalDate fechaNacimiento;
-
-	@Column(nullable = false)
-	private LocalDateTime fechaCreacionCuenta;
-
-	private LocalDateTime ultimaVezEnLinea;
-
-	@Column(nullable = false)
-	private boolean enLinea;
-	
-	@Column(nullable = false)
-	private boolean habilitado = false;
-	
-	@Column(nullable = false, length = 20)
-	@Enumerated(EnumType.STRING)
-	private RolUsuario rol = RolUsuario.ROLE_USER;
-
-	@OneToMany(
-			mappedBy = "usuario",
-			cascade = CascadeType.ALL,
-			orphanRemoval = true,
-			fetch = FetchType.LAZY)
-	private List<InicioSesionUsuario>
-	numeroSesion = new ArrayList<>();
-
-	@OneToMany(
-			mappedBy = "usuario",
-			cascade = CascadeType.ALL,
-			orphanRemoval = true,
-			fetch = FetchType.LAZY)
-	private List<ParticipanteConversacion>
-	numeroConversacion = new ArrayList<>();
-
-	public Usuario() {
-	}
-	
-	
-
-	public Usuario(String usuario, String correo, String nombrePersona, String contrasenaHash, String sobreMi,
-			LocalDate fechaNacimiento, LocalDateTime fechaCreacionCuenta, LocalDateTime ultimaVezEnLinea,
-			boolean enLinea, boolean habilitado, List<InicioSesionUsuario> numeroSesion,
-			List<ParticipanteConversacion> numeroConversacion) {
-		super();
-		this.usuario = usuario;
-		this.correo = correo;
-		this.nombrePersona = nombrePersona;
-		this.contrasenaHash = contrasenaHash;
-		this.sobreMi = sobreMi;
-		this.fechaNacimiento = fechaNacimiento;
-		this.fechaCreacionCuenta = fechaCreacionCuenta;
-		this.ultimaVezEnLinea = ultimaVezEnLinea;
-		this.enLinea = enLinea;
-		this.habilitado = habilitado;
-		this.numeroSesion = numeroSesion;
-		this.numeroConversacion = numeroConversacion;
-	}
-
-	@Override
-	public boolean isEnabled() {
-
-	    return habilitado;
-	}
-
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getUsuario() {
-		return usuario;
-	}
-
-	public void setUsuario(String usuario) {
-		this.usuario = usuario;
-	}
-
-	public String getCorreo() {
-		return correo;
-	}
+public class Usuario implements UserDetails {
 
-	public void setCorreo(String correo) {
-		this.correo = correo;
-	}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	public String getNombrePersona() {
-		return nombrePersona;
-	}
+    private String usuario;
 
-	public void setNombrePersona(String nombrePersona) {
-		this.nombrePersona = nombrePersona;
-	}
+    private String correo;
 
-	public String getContrasenaHash() {
-		return contrasenaHash;
-	}
+    private String nombrePersona;
 
-	public void setContrasenaHash(
-			String contrasenaHash) {
+    @Column(name = "contrasena")
+    private String contrasenaHash;
 
-		this.contrasenaHash = contrasenaHash;
-	}
+    private String sobreMi;
 
-	public String getSobreMi() {
-		return sobreMi;
-	}
+    private boolean enLinea;
 
-	public void setSobreMi(String sobreMi) {
-		this.sobreMi = sobreMi;
-	}
+    private boolean habilitado;
 
-	public LocalDate getFechaNacimiento() {
-		return fechaNacimiento;
-	}
+    private LocalDate fechaNacimiento;
 
-	public void setFechaNacimiento(
-			LocalDate fechaNacimiento) {
+    private LocalDateTime ultimaVezEnLinea;
 
-		this.fechaNacimiento = fechaNacimiento;
-	}
+    private LocalDateTime fechaCreacionCuenta;
 
-	public LocalDateTime getFechaCreacionCuenta() {
-		return fechaCreacionCuenta;
-	}
+    @Enumerated(EnumType.STRING)
+    private RolUsuario rol;
 
-	public void setFechaCreacionCuenta(
-			LocalDateTime fechaCreacionCuenta) {
+    /*
+     * =========================
+     * RELACIONES
+     * =========================
+     */
 
-		this.fechaCreacionCuenta =
-				fechaCreacionCuenta;
-	}
+    @OneToMany(
+            mappedBy = "usuario",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<TokenVerificacion> tokens =
+            new ArrayList<>();
 
-	public LocalDateTime getUltimaVezEnLinea() {
-		return ultimaVezEnLinea;
-	}
+    @OneToMany(
+            mappedBy = "usuario",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<RegistroAuditoria> auditorias =
+            new ArrayList<>();
 
-	public void setUltimaVezEnLinea(
-			LocalDateTime ultimaVezEnLinea) {
+    public Usuario() {
+    }
 
-		this.ultimaVezEnLinea =
-				ultimaVezEnLinea;
-	}
+    /*
+     * =========================
+     * GETTERS Y SETTERS
+     * =========================
+     */
 
-	public boolean isEnLinea() {
-		return enLinea;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setEnLinea(boolean enLinea) {
-		this.enLinea = enLinea;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public List<InicioSesionUsuario>
-	getNumeroSesion() {
+    public String getUsuario() {
+        return usuario;
+    }
 
-		return numeroSesion;
-	}
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
+    }
 
-	public void setNumeroSesion(
-			List<InicioSesionUsuario>
-			numeroSesion) {
+    public String getCorreo() {
+        return correo;
+    }
 
-		this.numeroSesion = numeroSesion;
-	}
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
 
-	public List<ParticipanteConversacion>
-	getNumeroConversacion() {
+    public String getNombrePersona() {
+        return nombrePersona;
+    }
 
-		return numeroConversacion;
-	}
+    public void setNombrePersona(String nombrePersona) {
+        this.nombrePersona = nombrePersona;
+    }
 
-	public void setNumeroConversacion(
-			List<ParticipanteConversacion>
-			numeroConversacion) {
+    public String getContrasenaHash() {
+        return contrasenaHash;
+    }
 
-		this.numeroConversacion =
-				numeroConversacion;
-	}
+    public void setContrasenaHash(String contrasenaHash) {
+        this.contrasenaHash = contrasenaHash;
+    }
 
-	public boolean isHabilitado() {
-		return habilitado;
-	}
-
-
-
-	public void setHabilitado(boolean habilitado) {
-		this.habilitado = habilitado;
-	}
-
-	public RolUsuario getRol() {
-	    return rol;
-	}
-
-	public void setRol(RolUsuario rol) {
-	    this.rol = rol;
-	}
-
-
-	@Override
-	public String toString() {
-		return "Usuario [id=" + id + ", usuario=" + usuario + ", correo=" + correo + ", nombrePersona=" + nombrePersona
-				+ ", contrasenaHash=" + contrasenaHash + ", sobreMi=" + sobreMi + ", fechaNacimiento=" + fechaNacimiento
-				+ ", fechaCreacionCuenta=" + fechaCreacionCuenta + ", ultimaVezEnLinea=" + ultimaVezEnLinea
-				+ ", enLinea=" + enLinea + ", habilitado=" + habilitado + ", rol=" + rol + ", numeroSesion="
-				+ numeroSesion + ", numeroConversacion=" + numeroConversacion + "]";
-	}
-
-
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(contrasenaHash, correo, enLinea, fechaCreacionCuenta, fechaNacimiento, habilitado, id,
-				nombrePersona, numeroConversacion, numeroSesion, rol, sobreMi, ultimaVezEnLinea, usuario);
-	}
-
-
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Usuario other = (Usuario) obj;
-		return Objects.equals(contrasenaHash, other.contrasenaHash) && Objects.equals(correo, other.correo)
-				&& enLinea == other.enLinea && Objects.equals(fechaCreacionCuenta, other.fechaCreacionCuenta)
-				&& Objects.equals(fechaNacimiento, other.fechaNacimiento) && habilitado == other.habilitado
-				&& id == other.id && Objects.equals(nombrePersona, other.nombrePersona)
-				&& Objects.equals(numeroConversacion, other.numeroConversacion)
-				&& Objects.equals(numeroSesion, other.numeroSesion) && rol == other.rol
-				&& Objects.equals(sobreMi, other.sobreMi) && Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea)
-				&& Objects.equals(usuario, other.usuario);
-	}
-
-
-
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-	    return Collections.singletonList(
-	        new SimpleGrantedAuthority(rol.name())
-	    );
-	}
-
-	@Override
-	public @Nullable String getPassword() {
-		return contrasenaHash;
-	}
-
-	@Override
-	public String getUsername() {
-		return correo;
-	}
-
+    public String getSobreMi() {
+        return sobreMi;
+    }
+
+    public void setSobreMi(String sobreMi) {
+        this.sobreMi = sobreMi;
+    }
+
+    public boolean isEnLinea() {
+        return enLinea;
+    }
+
+    public void setEnLinea(boolean enLinea) {
+        this.enLinea = enLinea;
+    }
+
+    public boolean isHabilitado() {
+        return habilitado;
+    }
+
+    public void setHabilitado(boolean habilitado) {
+        this.habilitado = habilitado;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public LocalDateTime getUltimaVezEnLinea() {
+        return ultimaVezEnLinea;
+    }
+
+    public void setUltimaVezEnLinea(
+            LocalDateTime ultimaVezEnLinea) {
+
+        this.ultimaVezEnLinea =
+                ultimaVezEnLinea;
+    }
+
+    public LocalDateTime getFechaCreacionCuenta() {
+        return fechaCreacionCuenta;
+    }
+
+    public void setFechaCreacionCuenta(
+            LocalDateTime fechaCreacionCuenta) {
+
+        this.fechaCreacionCuenta =
+                fechaCreacionCuenta;
+    }
+
+    public RolUsuario getRol() {
+        return rol;
+    }
+
+    public void setRol(RolUsuario rol) {
+        this.rol = rol;
+    }
+
+    /*
+     * =========================
+     * SPRING SECURITY
+     * =========================
+     */
+
+    @Override
+    public java.util.Collection<? extends GrantedAuthority>
+    getAuthorities() {
+
+        return List.of(rol);
+    }
+
+    @Override
+    public String getPassword() {
+        return contrasenaHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return correo;
+    }
 }

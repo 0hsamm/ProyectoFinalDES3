@@ -84,17 +84,17 @@ public class UsuarioService {
 
 			usuario.setUltimaVezEnLinea(null);
 
-			usuario.setHabilitado(false);
+			usuario.setHabilitado(true);
 
 			if (dto.getRol() != null) {
 
-			    usuario.setRol(
-			    		dto.getRol());
+				usuario.setRol(
+						dto.getRol());
 
 			} else {
 
-			    usuario.setRol(
-			    		RolUsuario.ROLE_USER);
+				usuario.setRol(
+						RolUsuario.ROLE_USER);
 			}
 
 			usuarioRepository.save(usuario);
@@ -121,7 +121,9 @@ public class UsuarioService {
 				"Obteniendo todos los usuarios");
 
 		return usuarioRepository.findAll()
+
 				.stream()
+
 				.map(usuario ->
 
 						modelMapper.map(
@@ -137,6 +139,7 @@ public class UsuarioService {
 				"Buscando usuario con id: " + id);
 
 		return usuarioRepository.findById(id)
+
 				.map(usuario ->
 
 						modelMapper.map(
@@ -146,46 +149,41 @@ public class UsuarioService {
 				.orElse(null);
 	}
 
-	public int deleteById(Long id) {
+	public String deleteById(Long id) {
 
-		try {
+	    try {
 
-			Usuario usuario =
+	        Usuario usuario =
 
-					usuarioRepository
-					.findById(id)
-					.orElse(null);
+	                usuarioRepository
+	                .findById(id)
+	                .orElse(null);
 
-			if (usuario == null) {
+	        if (usuario == null) {
 
-				System.out.println(
-						"Usuario no encontrado");
+	            System.out.println(
+	                    "Usuario no encontrado");
 
-				return 1;
-			}
+	            return "Usuario no encontrado";
+	        }
 
-			usuario.setHabilitado(false);
+	        usuarioRepository.delete(usuario);
 
-			usuario.setEnLinea(false);
+	        System.out.println(
+	                "Usuario eliminado correctamente");
 
-			usuarioRepository.save(usuario);
+	        return "Usuario eliminado";
 
-			System.out.println(
-					"Usuario deshabilitado correctamente");
+	    } catch (Exception e) {
 
-			return 0;
+	        System.out.println(
+	                "Error al eliminar usuario");
 
-		} catch (Exception e) {
+	        e.printStackTrace();
 
-			System.out.println(
-					"Error al eliminar usuario");
-
-			e.printStackTrace();
-
-			return 1;
-		}
+	        return "Error al eliminar usuario";
+	    }
 	}
-
 	public int updateById(
 			Long id,
 			UsuarioDTO dto) {
@@ -271,6 +269,7 @@ public class UsuarioService {
 
 		return usuarioRepository
 				.findByUsuario(username)
+
 				.map(usuario ->
 
 						modelMapper.map(
