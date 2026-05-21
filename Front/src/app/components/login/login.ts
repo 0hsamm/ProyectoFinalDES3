@@ -174,7 +174,7 @@ export class Login {
         this.cargando = false;
 
         this.mensaje =
-          'Cuenta creada correctamente';
+          'Cuenta creada. Revisa tu correo para verificar tu cuenta.';
 
         this.modoRegistro = false;
 

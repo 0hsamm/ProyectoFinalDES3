@@ -1,0 +1,97 @@
+.verify-page {
+
+  width: 100vw;
+
+  height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #05050a,
+      #0b0714,
+      #12091d
+    );
+
+  font-family: Inter, Arial, sans-serif;
+}
+
+.verify-card {
+
+  width: 420px;
+
+  padding: 50px;
+
+  border-radius: 30px;
+
+  background:
+    rgba(12,12,18,0.78);
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  backdrop-filter: blur(18px);
+
+  text-align: center;
+
+  color: white;
+}
+
+.status-circle {
+
+  width: 90px;
+
+  height: 90px;
+
+  border-radius: 50%;
+
+  margin: 0 auto 30px auto;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  background:
+    rgba(168,85,247,0.18);
+
+  font-size: 34px;
+
+  font-weight: bold;
+}
+
+.success {
+
+  background:
+    rgba(34,197,94,0.18);
+
+  color: #22c55e;
+}
+
+.error-circle {
+
+  background:
+    rgba(239,68,68,0.18);
+
+  color: #ef4444;
+}
+
+.verify-card h1 {
+
+  font-size: 32px;
+
+  margin-bottom: 16px;
+}
+
+.verify-card p {
+
+  opacity: 0.75;
+
+  line-height: 1.7;
+}
