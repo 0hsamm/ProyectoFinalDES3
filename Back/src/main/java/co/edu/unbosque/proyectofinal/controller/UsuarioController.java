@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.unbosque.proyectofinal.dto.UsuarioDTO;
+import co.edu.unbosque.proyectofinal.security.JwtUtil;
+import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -26,22 +29,45 @@ public class UsuarioController {
 	@Autowired
 	private UsuarioService usuarioService;
 
+	@Autowired
+	private AuditoriaService auditoriaService;
+	
+    @Autowired
+    private JwtUtil jwtUtil;
+	
+    
+    private String extraerCorreo(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return jwtUtil.extractUsername(authHeader.substring(7));
+        }
+        return null;
+    }
+
 	@PostMapping
 	public ResponseEntity<String> crear(
-			@RequestBody UsuarioDTO dto) {
+	        @RequestBody UsuarioDTO dto,
+	        HttpServletRequest request) {
 
-		int status =
-				usuarioService.create(dto);
+	    String ip = request.getRemoteAddr();
+	    String navegador = request.getHeader("User-Agent");
 
-		if (status == 0) {
-			return new ResponseEntity<>(
-					"Usuario creado correctamente",
-					HttpStatus.CREATED);
-		}
+	    int status = usuarioService.create(dto);
 
-		return new ResponseEntity<>(
-				"Error al crear el usuario",
-				HttpStatus.BAD_REQUEST);
+	    if (status == 0) {
+	    	 auditoriaService.registrarConCorreo(
+	                    extraerCorreo(request),
+	                    "CREAR_USUARIO",
+	                    "USUARIOS",
+	                    "Nuevo usuario creado: " + dto.getUsuario(),
+	                    ip, navegador, null, null, null, true);
+	        return new ResponseEntity<>(
+	                "Usuario creado correctamente",
+	                HttpStatus.CREATED);
+	    }
+	    return new ResponseEntity<>(
+	            "Error al crear el usuario",
+	            HttpStatus.BAD_REQUEST);
 	}
 
 	@GetMapping
@@ -71,22 +97,24 @@ public class UsuarioController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> eliminar(
-			@PathVariable Long id) {
-		String mensaje =
+	        @PathVariable Long id,
+	        HttpServletRequest request) {
 
-		        usuarioService.deleteById(id);
+	    String ip = request.getRemoteAddr();
+	    String navegador = request.getHeader("User-Agent");
 
-		if (mensaje.equals(
-		        "Usuario eliminado")) {
+	    String mensaje = usuarioService.deleteById(id);
 
-		    return new ResponseEntity<>(
-		            mensaje,
-		            HttpStatus.OK);
-		}
-
-		return new ResponseEntity<>(
-		        mensaje,
-		        HttpStatus.NOT_FOUND);
+	    if (mensaje.equals("Usuario eliminado")) {
+	        auditoriaService.registrarConCorreo(
+	                extraerCorreo(request),
+	                "ELIMINAR_USUARIO",
+	                "USUARIOS",
+	                "Usuario eliminado: " + id,
+	                ip, navegador, null, null, null, true);
+	        return new ResponseEntity<>(mensaje, HttpStatus.OK);
+	    }
+	    return new ResponseEntity<>(mensaje, HttpStatus.NOT_FOUND);
 	}
 
 	@PutMapping("/{id}")
@@ -123,4 +151,5 @@ public class UsuarioController {
 		return new ResponseEntity<>(
 				HttpStatus.NOT_FOUND);
 	}
+	
 }

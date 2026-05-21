@@ -1,6 +1,7 @@
 package co.edu.unbosque.proyectofinal.controller;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,50 +73,26 @@ public class AutenticacionController {
             @RequestBody RegistroDTO registerRequest) {
 
         try {
-
-            RegistroDTO dto =
-                    new RegistroDTO();
-
-            dto.setUsuario(
-                    registerRequest.getUsuario());
-
-            dto.setCorreo(
-                    registerRequest.getCorreo());
-
-            dto.setNombrePersona(
-                    registerRequest.getNombrePersona());
-
-            dto.setContrasena(
-                    registerRequest.getContrasena());
-
+            RegistroDTO dto = new RegistroDTO();
+            dto.setUsuario(registerRequest.getUsuario());
+            dto.setCorreo(registerRequest.getCorreo());
+            dto.setNombrePersona(registerRequest.getNombrePersona());
+            dto.setContrasena(registerRequest.getContrasena());
             dto.setFechaNacimiento(
                     LocalDate.parse(
-                            registerRequest
-                                    .getFechaNacimiento()
-                                    .toString()));
+                            registerRequest.getFechaNacimiento().toString()));
 
-            Usuario usuarioCreado =
-                    authService.registrar(dto);
+            authService.registrar(dto);
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(usuarioCreado);
+                    .body("Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.");
 
-        }
-
-        catch (
-                UsuarioYaExisteException e
-        ) {
-
+        } catch (UsuarioYaExisteException e) {
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(HttpStatus.CONFLICT)
                     .body(e.getMessage());
-        }
-
-        catch (
-                RuntimeException e
-        ) {
-
+        } catch (RuntimeException e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
@@ -202,5 +179,28 @@ public class AutenticacionController {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body("Token invalido o expirado");
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            HttpServletRequest request) {
+
+        String authHeader = request.getHeader("Authorization");
+        
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String jwt = authHeader.substring(7);
+            String correo = jwtUtil.extractUsername(jwt);
+            
+            Optional<Usuario> usuarioOpt = 
+                    authService.buscarPorCorreo(correo);
+                    
+            if (usuarioOpt.isPresent()) {
+                Usuario usuario = usuarioOpt.get();
+                usuario.setEnLinea(false);
+                authService.guardar(usuario);
+            }
+        }
+        
+        return ResponseEntity.ok("Sesion cerrada correctamente");
     }
 }

@@ -196,6 +196,12 @@ public class AutenticacionService {
 
 		return true;
 	}
-	
+	public Optional<Usuario> buscarPorCorreo(String correo) {
+	    return usuarioRepo.findByCorreo(correo);
+	}
+
+	public void guardar(Usuario usuario) {
+	    usuarioRepo.save(usuario);
+	}
 	
 }

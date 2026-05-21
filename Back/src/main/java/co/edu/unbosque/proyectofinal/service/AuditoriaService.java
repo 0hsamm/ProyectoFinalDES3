@@ -9,9 +9,11 @@ import co.edu.unbosque.proyectofinal.entity.RegistroAuditoria;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.enums.TipoAccionIa;
 import co.edu.unbosque.proyectofinal.repository.RegistroAuditoriaRepository;
+import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
+
 import java.util.List;
 import co.edu.unbosque.proyectofinal.dto.RegistroAuditoriaDTO;
-
+import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 /**
  * Servicio centralizado para registrar auditoria administrativa.
  */
@@ -19,14 +21,36 @@ import co.edu.unbosque.proyectofinal.dto.RegistroAuditoriaDTO;
 public class AuditoriaService {
 
     private RegistroAuditoriaRepository registroAuditoriaRepository;
+    
+    private UsuarioRepository usuarioRepository;
 
     public AuditoriaService(
-            RegistroAuditoriaRepository registroAuditoriaRepository) {
-
-        this.registroAuditoriaRepository =
-                registroAuditoriaRepository;
+            RegistroAuditoriaRepository registroAuditoriaRepository,
+            UsuarioRepository usuarioRepository) {
+        this.registroAuditoriaRepository = registroAuditoriaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
+    
+    public void registrarConCorreo(
+            String correo,
+            String accion,
+            String modulo,
+            String descripcion,
+            String ip,
+            String navegador,
+            Double latitud,
+            Double longitud,
+            String ubicacion,
+            boolean exitoso) {
 
+        Usuario usuario = null;
+        if (correo != null) {
+            usuario = usuarioRepository.findByCorreo(correo).orElse(null);
+        }
+
+        registrar(usuario, accion, modulo, descripcion,
+                ip, navegador, latitud, longitud, ubicacion, exitoso);
+    }
     /**
      * Registra el uso de una funcion de IA sin guardar el prompt completo.
      *

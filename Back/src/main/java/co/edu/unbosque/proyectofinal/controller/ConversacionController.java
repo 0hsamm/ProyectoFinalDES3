@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.unbosque.proyectofinal.dto.ConversacionDTO;
 import co.edu.unbosque.proyectofinal.dto.ParticipanteConversacionDTO;
+import co.edu.unbosque.proyectofinal.security.JwtUtil;
+import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.ConversacionService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/conversaciones")
@@ -25,29 +28,50 @@ public class ConversacionController {
 
 	@Autowired
 	private ConversacionService conversacionService;
+	
+	@Autowired
+	private AuditoriaService auditoriaService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    private String extraerCorreo(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return jwtUtil.extractUsername(authHeader.substring(7));
+        }
+        return null;
+    }
+    
 	@PostMapping
 	public ResponseEntity<String> crear(
-			@RequestBody ConversacionDTO dto) {
+	        @RequestBody ConversacionDTO dto,
+	        HttpServletRequest request) {
 
-		int status =
-				conversacionService.create(dto);
+	    String ip = request.getRemoteAddr();
+	    String navegador = request.getHeader("User-Agent");
 
-		if (status == 0) {
-			return new ResponseEntity<>(
-					"Conversacion creada correctamente",
-					HttpStatus.CREATED);
-		}
+	    int status = conversacionService.create(dto);
 
-		if (status == 5) {
-			return new ResponseEntity<>(
-					"La frase secreta es obligatoria para proteger la conversacion",
-					HttpStatus.BAD_REQUEST);
-		}
-
-		return new ResponseEntity<>(
-				"Error al crear la conversacion",
-				HttpStatus.BAD_REQUEST);
+	    if (status == 0) {
+	    	 auditoriaService.registrarConCorreo(
+	                    extraerCorreo(request),
+	                    "CREAR_CONVERSACION",
+	                    "CONVERSACIONES",
+	                    "Nueva conversacion creada",
+	                    ip, navegador, null, null, null, true);
+	    	 return new ResponseEntity<>(
+	                "Conversacion creada correctamente",
+	                HttpStatus.CREATED);
+	    }
+	    if (status == 5) {
+	        return new ResponseEntity<>(
+	                "La frase secreta es obligatoria para proteger la conversacion",
+	                HttpStatus.BAD_REQUEST);
+	    }
+	    return new ResponseEntity<>(
+	            "Error al crear la conversacion",
+	            HttpStatus.BAD_REQUEST);
 	}
 
 	@GetMapping
@@ -77,21 +101,27 @@ public class ConversacionController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> delete(
-			@PathVariable Long id) {
+	        @PathVariable Long id,
+	        HttpServletRequest request) {
 
-		int status =
-				conversacionService.deleteById(id);
+	    String ip = request.getRemoteAddr();
+	    String navegador = request.getHeader("User-Agent");
 
-		if (status == 0) {
-			return new ResponseEntity<>(
-					"Conversacion eliminada",
-					HttpStatus.OK);
-		}
+	    int status = conversacionService.deleteById(id);
 
-		return new ResponseEntity<>(
-				"No se encontro la conversacion",
-				HttpStatus.NOT_FOUND);
-	}
+	    if (status == 0) {
+            auditoriaService.registrarConCorreo(
+                    extraerCorreo(request),
+                    "ELIMINAR_CONVERSACION",
+                    "CONVERSACIONES",
+                    "Conversacion eliminada: " + id,
+                    ip, navegador, null, null, null, true);
+            return new ResponseEntity<>("Conversacion eliminada", HttpStatus.OK);
+        }
+        return new ResponseEntity<>(
+                "No se encontro la conversacion",
+                HttpStatus.NOT_FOUND);
+    }
 
 	@PostMapping("/agregarParticipante")
 	public ResponseEntity<String> agregarParticipante(
@@ -156,4 +186,6 @@ public class ConversacionController {
 		return ResponseEntity.badRequest()
 				.body("No se pudo unir");
 	}
+	
+
 }

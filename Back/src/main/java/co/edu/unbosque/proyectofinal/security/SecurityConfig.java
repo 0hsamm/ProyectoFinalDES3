@@ -124,6 +124,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/usuarios")
                         .permitAll()
                         
+                     
                         .requestMatchers("/admin/**")
                         .hasAuthority("ROLE_ADMIN")
                         

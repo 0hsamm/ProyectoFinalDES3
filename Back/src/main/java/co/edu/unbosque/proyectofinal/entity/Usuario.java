@@ -25,7 +25,7 @@ public class Usuario implements UserDetails {
 
     private String nombrePersona;
 
-    @Column(name = "contrasena")
+    @Column(name = "contrasena_hash")
     private String contrasenaHash;
 
     private String sobreMi;
@@ -185,10 +185,11 @@ public class Usuario implements UserDetails {
     @Override
     public java.util.Collection<? extends GrantedAuthority>
     getAuthorities() {
-
+        if (rol == null) {
+            return List.of();
+        }
         return List.of(rol);
     }
-
     @Override
     public String getPassword() {
         return contrasenaHash;
