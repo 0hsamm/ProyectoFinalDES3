@@ -47,41 +47,24 @@ public class MensajeController {
 	    int status = mensajeService.create(dto);
 
 	    if (status == 0) {
-
-	    	Usuario usuario = dto.getRemitenteId() != null
-	    	        ? usuarioRepository.findById(dto.getRemitenteId()).orElse(null)
-	    	        : null;
-
+	        Usuario usuario = dto.getRemitenteId() != null
+	                ? usuarioRepository.findById(dto.getRemitenteId()).orElse(null)
+	                : null;
 	        auditoriaService.registrar(
 	                usuario,
 	                "ENVIAR_MENSAJE",
 	                "MENSAJES",
-	                "Mensaje enviado en conversacion: " + dto.getConversacionId(),	                ip,
-	                navegador,
-	                null, null, null,
-	                true);
-
-	        return new ResponseEntity<>(
-	                "Mensaje enviado correctamente",
-	                HttpStatus.OK);
-	    }
-	    else if (status == 1) {
+	                "Mensaje enviado en conversacion: " + dto.getConversacionId(),
+	                ip, navegador, null, null, null, true);
+	        return new ResponseEntity<>("Mensaje enviado correctamente", HttpStatus.OK);
+	    } else if (status == 1) {
 	        return new ResponseEntity<>("Usuario no encontrado", HttpStatus.BAD_REQUEST);
-	    }
-	    else if (status == 2) {
-	        return new ResponseEntity<>("Conversacion no encontrada", HttpStatus.BAD_REQUEST);
-	    }
-	    else if (status == 4) {
-	        return new ResponseEntity<>("El usuario no tiene permiso para enviar mensajes en esta conversacion", HttpStatus.FORBIDDEN);
-	    }
-	    else if (status == 5) {
+	    } else if (status == 4) {
+	        return new ResponseEntity<>("El usuario no tiene permiso", HttpStatus.FORBIDDEN);
+	    } else if (status == 5) {
 	        return new ResponseEntity<>("Datos del mensaje incompletos", HttpStatus.BAD_REQUEST);
-	    }
-	    else if (status == 6) {
-	        return new ResponseEntity<>("Frase secreta invalida o no configurada", HttpStatus.FORBIDDEN);
-	    }
-	    else {
-	        return new ResponseEntity<>("Error interno al enviar mensaje", HttpStatus.INTERNAL_SERVER_ERROR);
+	    } else {
+	        return new ResponseEntity<>("Error interno", HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
 

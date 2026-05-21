@@ -20,6 +20,9 @@ import co.edu.unbosque.proyectofinal.enums.EstatusMensaje;
 import co.edu.unbosque.proyectofinal.enums.RolParticipante;
 import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
 import co.edu.unbosque.proyectofinal.enums.TipoMensaje;
+import co.edu.unbosque.proyectofinal.exception.ConversacionNoEncontradaException;
+import co.edu.unbosque.proyectofinal.exception.FraseSecretaInvalidaException;
+import co.edu.unbosque.proyectofinal.exception.MensajeNoEncontradoException;
 import co.edu.unbosque.proyectofinal.repository.ConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.MensajeRepository;
 import co.edu.unbosque.proyectofinal.repository.ParticipanteConversacionRepository;
@@ -49,133 +52,106 @@ public class MensajeService {
 
 	public int create(MensajeDTO dto) {
 
-		try {
+	    if (dto == null
+	            || dto.getRemitenteId() == null
+	            || dto.getConversacionId() == null) {
+	        return 5;
+	    }
 
-			if (dto == null
-					|| dto.getRemitenteId() == null
-					|| dto.getConversacionId() == null) {
+	    Optional<Usuario> remitente =
+	            usuarioRepo.findById(dto.getRemitenteId());
 
-				return 5;
-			}
+	    if (!remitente.isPresent()) {
+	        return 1;
+	    }
 
-			Optional<Usuario> remitente =
-					usuarioRepo.findById(
-							dto.getRemitenteId());
+	    Optional<Conversacion> conversacion =
+	            conversacionRepo.findById(dto.getConversacionId());
 
-			if (!remitente.isPresent()) {
-				return 1;
-			}
+	    if (!conversacion.isPresent()) {
+	        throw new ConversacionNoEncontradaException();
+	    }
 
-			Optional<Conversacion> conversacion =
-					conversacionRepo.findById(
-							dto.getConversacionId());
+	    boolean esParticipante =
+	            participanteRepo
+	                    .existsByConversacion_IdAndUsuario_Id(
+	                            dto.getConversacionId(),
+	                            dto.getRemitenteId());
 
-			if (!conversacion.isPresent()) {
-				return 2;
-			}
+	    if (!esParticipante) {
+	        return 4;
+	    }
 
-			boolean esParticipante =
-					participanteRepo
-							.existsByConversacion_IdAndUsuario_Id(
-									dto.getConversacionId(),
-									dto.getRemitenteId());
+	    if (conversacion.get().getTipoConversacion()
+	            == TipoConversacion.CANAL) {
 
-			if (!esParticipante) {
-				return 4;
-			}
+	        boolean esAdmin =
+	                participanteRepo
+	                        .existsByConversacion_IdAndUsuario_IdAndRol(
+	                                dto.getConversacionId(),
+	                                dto.getRemitenteId(),
+	                                RolParticipante.ADMIN);
 
-			if (conversacion.get().getTipoConversacion()
-					== TipoConversacion.CANAL) {
+	        if (!esAdmin) {
+	            return 4;
+	        }
+	    }
 
-				boolean esAdmin =
-						participanteRepo
-								.existsByConversacion_IdAndUsuario_IdAndRol(
-										dto.getConversacionId(),
-										dto.getRemitenteId(),
-										RolParticipante.ADMIN);
+	    if (dto.getTipoMensaje() == null) {
+	        dto.setTipoMensaje(TipoMensaje.TEXTO);
+	    }
 
-				if (!esAdmin) {
-					return 4;
-				}
-			}
+	    if ((dto.getTipoMensaje() == TipoMensaje.TEXTO
+	            || dto.getTipoMensaje() == TipoMensaje.IA)
+	            && (dto.getContenido() == null
+	            || dto.getContenido().trim().isEmpty())) {
+	        return 5;
+	    }
 
-			if (dto.getTipoMensaje() == null) {
-				dto.setTipoMensaje(TipoMensaje.TEXTO);
-			}
+	    if ((dto.getTipoMensaje() == TipoMensaje.TEXTO
+	            || dto.getTipoMensaje() == TipoMensaje.IA)
+	            && !cifradoService.validarFrase(
+	                    dto.getFraseSecreta(),
+	                    conversacion.get().getEncripado())) {
+	        throw new FraseSecretaInvalidaException();
+	    }
 
-			if ((dto.getTipoMensaje() == TipoMensaje.TEXTO
-					|| dto.getTipoMensaje() == TipoMensaje.IA)
-					&& (dto.getContenido() == null
-					|| dto.getContenido().trim().isEmpty())) {
+	    try {
+	        Mensaje mensaje = new Mensaje();
+	        mensaje.setRemitente(remitente.get());
+	        mensaje.setConversacion(conversacion.get());
+	        mensaje.setTipoMensaje(dto.getTipoMensaje());
+	        mensaje.setHoraEnvio(LocalDateTime.now());
+	        mensaje.setHoraLlegada(null);
+	        mensaje.setHoraLeido(null);
+	        mensaje.setEstatusMensaje(EstatusMensaje.ENVIADO);
 
-				return 5;
-			}
+	        if (dto.getTipoMensaje() == TipoMensaje.TEXTO
+	                || dto.getTipoMensaje() == TipoMensaje.IA) {
 
-			if ((dto.getTipoMensaje() == TipoMensaje.TEXTO
-					|| dto.getTipoMensaje() == TipoMensaje.IA)
-					&& !cifradoService.validarFrase(
-							dto.getFraseSecreta(),
-							conversacion.get().getEncripado())) {
+	            CifradoService.ResultadoCifrado resultadoCifrado =
+	                    cifradoService.cifrar(
+	                            dto.getContenido(),
+	                            dto.getFraseSecreta(),
+	                            conversacion.get().getEncripado());
 
-				return 6;
-			}
+	            mensaje.setContenidoCifrado(
+	                    resultadoCifrado.getTextoCifrado());
+	            mensaje.setVi(resultadoCifrado.getIv());
+	        }
 
-			Mensaje mensaje =
-					new Mensaje();
+	        mensajeRepo.save(mensaje);
 
-			mensaje.setRemitente(
-					remitente.get());
+	        Conversacion conversacionActual = conversacion.get();
+	        conversacionActual.setFechaUltimoMensaje(mensaje.getHoraEnvio());
+	        conversacionRepo.save(conversacionActual);
 
-			mensaje.setConversacion(
-					conversacion.get());
+	        return 0;
 
-			mensaje.setTipoMensaje(
-					dto.getTipoMensaje());
-
-			mensaje.setHoraEnvio(
-					LocalDateTime.now());
-
-			mensaje.setHoraLlegada(null);
-
-			mensaje.setHoraLeido(null);
-
-			mensaje.setEstatusMensaje(
-					EstatusMensaje.ENVIADO);
-
-			if (dto.getTipoMensaje() == TipoMensaje.TEXTO
-					|| dto.getTipoMensaje() == TipoMensaje.IA) {
-
-				CifradoService.ResultadoCifrado resultadoCifrado =
-						cifradoService.cifrar(
-								dto.getContenido(),
-								dto.getFraseSecreta(),
-								conversacion.get().getEncripado());
-
-				mensaje.setContenidoCifrado(
-						resultadoCifrado.getTextoCifrado());
-
-				mensaje.setVi(
-						resultadoCifrado.getIv());
-			}
-
-			mensajeRepo.save(mensaje);
-
-			Conversacion conversacionActual =
-					conversacion.get();
-
-			conversacionActual.setFechaUltimoMensaje(
-					mensaje.getHoraEnvio());
-
-			conversacionRepo.save(conversacionActual);
-
-			return 0;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-
-			return 3;
-		}
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return 3;
+	    }
 	}
 
 	public List<MensajeDTO> getAll() {
@@ -255,19 +231,18 @@ public class MensajeService {
 
 	public int deleteById(Long id) {
 
-		Optional<Mensaje> mensaje =
-				mensajeRepo.findById(id);
+	    Optional<Mensaje> mensaje =
+	            mensajeRepo.findById(id);
 
-		if (mensaje.isPresent()) {
+	    if (mensaje.isPresent()) {
+	        mensajeRepo.delete(mensaje.get());
+	        return 0;
+	    }
 
-			mensajeRepo.delete(mensaje.get());
-
-			return 0;
-		}
-
-		return 1;
+	    throw new MensajeNoEncontradoException();
 	}
-
+	
+	
 	public Map<String, Object> subirAudio(
 			MultipartFile archivo)
 			throws IOException {

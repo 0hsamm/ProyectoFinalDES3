@@ -14,6 +14,7 @@ import co.edu.unbosque.proyectofinal.entity.TokenVerificacion;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.exception.CorreoYaExisteException;
 import co.edu.unbosque.proyectofinal.exception.CredencialesInvalidasException;
+import co.edu.unbosque.proyectofinal.exception.UsuarioNoHabilitadoException;
 import co.edu.unbosque.proyectofinal.exception.UsuarioYaExisteException;
 import co.edu.unbosque.proyectofinal.exception.ValidadorUsuario;
 import co.edu.unbosque.proyectofinal.repository.TokenVerificacionRepository;
@@ -134,8 +135,7 @@ public class AutenticacionService {
 					passwordEncoder.encode(
 							dto.getContrasena()));
 		}if (!user.isHabilitado()) {
-
-		    throw new CredencialesInvalidasException();
+		    throw new UsuarioNoHabilitadoException();
 		}
 		
 
