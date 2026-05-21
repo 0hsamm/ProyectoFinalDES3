@@ -2,6 +2,7 @@ package co.edu.unbosque.proyectofinal.service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +30,9 @@ public class AutenticacionService {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private EmailService eService;
 
 	public Usuario registrar(RegistroDTO dto) {
 
@@ -60,36 +64,39 @@ public class AutenticacionService {
 			throw new CorreoYaExisteException();
 		}
 
-		Usuario nuevo =
-				new Usuario();
+		Usuario usuario =
+	            new Usuario();
 
-		nuevo.setUsuario(
-				dto.getUsuario());
+	    usuario.setUsuario(
+	            dto.getUsuario());
 
-		nuevo.setCorreo(
-				dto.getCorreo());
+	    usuario.setCorreo(
+	            dto.getCorreo());
 
-		nuevo.setNombrePersona(
-				dto.getNombrePersona());
+	    usuario.setHabilitado(false);
 
-		nuevo.setContrasenaHash(
-				passwordEncoder.encode(
-						dto.getContrasena()));
+	    usuarioRepo.save(usuario);
 
-		nuevo.setFechaNacimiento(
-				dto.getFechaNacimiento());
+	    String token =
+	            UUID.randomUUID().toString();
 
-		nuevo.setFechaCreacionCuenta(
-				LocalDateTime.now());
+	    TokenVerificacion tv =
+	            new TokenVerificacion();
 
-		nuevo.setEnLinea(false);
+	    tv.setToken(token);
 
-		nuevo.setSobreMi(
-				"Hola! Estoy usando WZ");
+	    tv.setUsuario(usuario);
 
-		usuarioRepo.save(nuevo);
+	    tv.setFechaExpiracion(
+	            LocalDateTime.now().plusHours(24));
 
-		return nuevo;
+	    tokenRepo.save(tv);
+
+	    eService.enviarCorreoVerificacion(
+	            usuario.getCorreo(),
+	            token);
+
+	    return usuario;
 	}
 
 	public Usuario login(LoginDTO dto) {
@@ -118,7 +125,11 @@ public class AutenticacionService {
 			user.setContrasenaHash(
 					passwordEncoder.encode(
 							dto.getContrasena()));
+		}if (!user.isHabilitado()) {
+
+		    throw new CredencialesInvalidasException();
 		}
+		
 
 		user.setEnLinea(true);
 
@@ -161,6 +172,13 @@ public class AutenticacionService {
 		TokenVerificacion tokenVerificacion =
 				tv.get();
 
+		 if (tokenVerificacion
+		            .getFechaExpiracion()
+		            .isBefore(LocalDateTime.now())) {
+
+		        return false;
+		    }
+		
 		Usuario usuario =
 				tokenVerificacion.getUsuario();
 
@@ -170,4 +188,6 @@ public class AutenticacionService {
 
 		return true;
 	}
+	
+	
 }

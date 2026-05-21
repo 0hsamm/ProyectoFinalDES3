@@ -60,7 +60,7 @@ public class AsistenteIaController {
      * @param peticionHttp peticion HTTP original
      * @return respuestas sugeridas
      */
-    @PostMapping({"/sugerir-respuesta", "/suggest-reply"})
+    @PostMapping({"/sugerir-respuesta"})
     public ResponseEntity<?> sugerirRespuesta(
             @RequestBody SolicitudGeminiDTO solicitud,
             HttpServletRequest peticionHttp) {
@@ -79,7 +79,7 @@ public class AsistenteIaController {
      * @param peticionHttp peticion HTTP original
      * @return resumen
      */
-    @PostMapping({"/resumir", "/summarize"})
+    @PostMapping({"/resumir"})
     public ResponseEntity<?> resumir(
             @RequestBody SolicitudGeminiDTO solicitud,
             HttpServletRequest peticionHttp) {
@@ -98,7 +98,7 @@ public class AsistenteIaController {
      * @param peticionHttp peticion HTTP original
      * @return traduccion
      */
-    @PostMapping({"/traducir", "/translate"})
+    @PostMapping({"/traducir"})
     public ResponseEntity<?> traducir(
             @RequestBody SolicitudGeminiDTO solicitud,
             HttpServletRequest peticionHttp) {
@@ -115,7 +115,7 @@ public class AsistenteIaController {
      *
      * @return historial seguro de interacciones con IA
      */
-    @GetMapping({"/historial", "/history"})
+    @GetMapping({"/historial"})
     public ResponseEntity<List<HistorialIaDTO>> historial() {
 
         return ResponseEntity.ok(

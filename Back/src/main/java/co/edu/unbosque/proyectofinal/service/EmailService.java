@@ -10,16 +10,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private JavaMailSender mailSender;
     
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    public EmailService(
-            JavaMailSender mailSender) {
-
-        this.mailSender = mailSender;
-    }
+  
 
     public void enviarCorreoVerificacion(
 
