@@ -27,7 +27,7 @@ import {
 
   templateUrl: './login.html',
 
-  styleUrl: './login.css'
+  styleUrls: ['./login.css']
 })
 export class Login {
 
@@ -98,6 +98,16 @@ export class Login {
 
       next: (respuesta) => {
 
+        if (!respuesta.token) {
+
+          this.error =
+            'No se pudo iniciar sesion';
+
+          this.cargando = false;
+
+          return;
+        }
+
         this.authService.guardarSesion(
           respuesta
         );
@@ -105,7 +115,7 @@ export class Login {
         this.cargando = false;
 
         this.router.navigate([
-          '/chat'
+          '/app'
         ]);
       },
 
@@ -176,9 +186,17 @@ export class Login {
         this.mensaje =
           respuesta;
 
-        this.modoRegistro = false;
+        this.usuario = '';
+
+        this.correo = '';
+
+        this.nombrePersona = '';
+
+        this.fechaNacimiento = '';
 
         this.contrasena = '';
+
+        this.modoRegistro = false;
       },
 
       error: (err) => {

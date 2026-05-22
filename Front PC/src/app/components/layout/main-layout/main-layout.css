@@ -1,0 +1,23 @@
+.main-layout {
+
+  display: grid;
+
+  grid-template-columns:
+        85px
+        340px
+        1fr
+        320px;
+
+  height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      #1d0036 0%,
+      #090909 45%
+    ),
+    #050505;
+
+  overflow: hidden;
+
+}
