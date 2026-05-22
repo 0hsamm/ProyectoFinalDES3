@@ -1,5 +1,7 @@
 package co.edu.unbosque.proyectofinal.service;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -8,31 +10,174 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
-    
-    @Value("${app.frontend.url}")
-    private String frontendUrl;
-  
+    private static final Set<String> ORIGENES_FRONT_PERMITIDOS =
+            Set.of(
+                    "http://localhost:4200",
+                    "http://localhost:4201");
+
+    private final JavaMailSender mailSender;
+
+    private final String mailHost;
+
+    private final int mailPort;
+
+    private final String mailUsername;
+
+    private final String mailPassword;
+
+    private final String frontendUrl;
+
+    private final String mailFrom;
+
+    public EmailService(
+            JavaMailSender mailSender,
+            @Value("${spring.mail.host:}")
+            String mailHost,
+            @Value("${spring.mail.port:0}")
+            int mailPort,
+            @Value("${spring.mail.username:}")
+            String mailUsername,
+            @Value("${spring.mail.password:}")
+            String mailPassword,
+            @Value("${app.frontend.url}")
+            String frontendUrl,
+            @Value("${app.mail.from:}")
+            String mailFrom) {
+
+        this.mailSender = mailSender;
+        this.mailHost = mailHost;
+        this.mailPort = mailPort;
+        this.mailUsername = mailUsername;
+        this.mailPassword = mailPassword;
+        this.frontendUrl = frontendUrl;
+        this.mailFrom = mailFrom;
+    }
+
     public void enviarCorreoVerificacion(
             String destino,
             String token) {
 
+        enviarCorreoVerificacion(
+                destino,
+                token,
+                null);
+    }
+
+    public void enviarCorreoVerificacion(
+            String destino,
+            String token,
+            String frontendUrlOverride) {
+
+        validarConfiguracionCorreo();
+
         String enlace =
-                frontendUrl + "/verificar?token="
+                resolverFrontendUrl(
+                        frontendUrlOverride)
+                        + "/verificar?token="
                         + token;
 
         SimpleMailMessage mensaje =
                 new SimpleMailMessage();
 
-        mensaje.setFrom("wzchat.noreply@gmail.com");
+        mensaje.setFrom(mailFrom);
         mensaje.setTo(destino);
         mensaje.setSubject("Verifica tu cuenta");
         mensaje.setText(
-        	    "Tu token de verificación es:\n\n"
-        	    + token
-        	    + "\n\nÚsalo en la aplicación para verificar tu cuenta.");
+                "Haz clic en este enlace para verificar tu cuenta:\n\n"
+                        + enlace
+                        + "\n\n"
+                        + "Si prefieres hacerlo manualmente, usa este token:\n\n"
+                        + token);
 
         mailSender.send(mensaje);
+    }
+
+    private void validarConfiguracionCorreo() {
+
+        validarTexto(
+                mailHost,
+                "spring.mail.host");
+
+        if (mailPort <= 0) {
+            throw new IllegalStateException(
+                    "No hay un puerto SMTP valido configurado. "
+                            + "Define spring.mail.port o SPRING_MAIL_PORT.");
+        }
+
+        validarTexto(
+                mailUsername,
+                "spring.mail.username");
+
+        validarTexto(
+                mailPassword,
+                "spring.mail.password");
+
+        if (mailFrom == null
+                || mailFrom.isBlank()) {
+            throw new IllegalStateException(
+                    "No hay remitente configurado para el correo. "
+                            + "Define app.mail.from o SPRING_MAIL_USERNAME.");
+        }
+
+        if (frontendUrl == null
+                || frontendUrl.isBlank()) {
+            throw new IllegalStateException(
+                    "No hay URL de frontend configurada para la verificacion. "
+                            + "Define APP_FRONTEND_URL.");
+        }
+    }
+
+    private void validarTexto(
+            String valor,
+            String propiedad) {
+
+        if (valor == null
+                || valor.isBlank()) {
+            throw new IllegalStateException(
+                    "Falta configurar la propiedad "
+                            + propiedad
+                            + " para el envio de correos.");
+        }
+    }
+
+    private String normalizarFrontendUrl() {
+
+        if (frontendUrl.endsWith("/")) {
+            return frontendUrl.substring(
+                    0,
+                    frontendUrl.length() - 1);
+        }
+
+        return frontendUrl;
+    }
+
+    private String resolverFrontendUrl(
+            String frontendUrlOverride) {
+
+        if (frontendUrlOverride != null
+                && !frontendUrlOverride.isBlank()) {
+
+            String origenNormalizado =
+                    normalizarUrl(frontendUrlOverride);
+
+            if (ORIGENES_FRONT_PERMITIDOS.contains(
+                    origenNormalizado)) {
+                return origenNormalizado;
+            }
+        }
+
+        return normalizarFrontendUrl();
+    }
+
+    private String normalizarUrl(
+            String url) {
+
+        if (url.endsWith("/")) {
+            return url.substring(
+                    0,
+                    url.length() - 1);
+        }
+
+        return url;
     }
 }

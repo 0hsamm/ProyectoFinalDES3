@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +53,15 @@ public class AutenticacionService {
     }
 
 	public RegistroResultado registrar(RegistroDTO dto) {
+
+        return registrar(
+                dto,
+                null);
+    }
+
+	public RegistroResultado registrar(
+            RegistroDTO dto,
+            String origenFrontend) {
 
 		ValidadorUsuario.verificarUsuario(
 				dto.getUsuario());
@@ -120,7 +131,8 @@ public class AutenticacionService {
         boolean correoEnviado =
                 enviarCorreoVerificacionSeguro(
                         usuario.getCorreo(),
-                        token);
+                        token,
+                        origenFrontend);
 
 	    return new RegistroResultado(
                 usuario,
@@ -225,14 +237,33 @@ public class AutenticacionService {
 
     private boolean enviarCorreoVerificacionSeguro(
             String correo,
-            String token) {
+            String token,
+            String origenFrontend) {
 
         try {
             emailService.enviarCorreoVerificacion(
                     correo,
-                    token);
+                    token,
+                    origenFrontend);
 
             return true;
+
+        } catch (MailAuthenticationException e) {
+            LOGGER.warn(
+                    "No se pudo autenticar el SMTP para enviar el correo a {}. "
+                            + "Configura SPRING_MAIL_USERNAME y un app password valido.",
+                    correo,
+                    e);
+
+            return false;
+
+        } catch (MailException e) {
+            LOGGER.warn(
+                    "No se pudo enviar el correo de verificacion a {}",
+                    correo,
+                    e);
+
+            return false;
 
         } catch (RuntimeException e) {
             LOGGER.warn(

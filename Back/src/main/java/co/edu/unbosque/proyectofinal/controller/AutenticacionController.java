@@ -66,7 +66,8 @@ public class AutenticacionController {
      */
     @PostMapping("/registro")
     public ResponseEntity<?> registro(
-            @RequestBody RegistroDTO registerRequest) {
+            @RequestBody RegistroDTO registerRequest,
+            HttpServletRequest request) {
 
         try {
             RegistroDTO dto = new RegistroDTO();
@@ -78,12 +79,14 @@ public class AutenticacionController {
                     registerRequest.getFechaNacimiento());
 
             AutenticacionService.RegistroResultado resultado =
-                    authService.registrar(dto);
+                    authService.registrar(
+                            dto,
+                            request.getHeader("Origin"));
 
             String mensaje =
                     resultado.correoEnviado()
                             ? "Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta."
-                            : "Usuario registrado correctamente, pero no se pudo enviar el correo de verificacion.";
+                            : "Usuario registrado correctamente, pero no se pudo enviar el correo de verificacion. Revisa la configuracion SMTP del servidor.";
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)

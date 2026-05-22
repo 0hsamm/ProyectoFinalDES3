@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -82,7 +83,8 @@ class AutenticacionServiceTest {
         assertTrue(resultado.correoEnviado());
         verify(emailService).enviarCorreoVerificacion(
                 eq("usuario@correo.com"),
-                any(String.class));
+                any(String.class),
+                isNull());
     }
 
     @Test
@@ -100,7 +102,8 @@ class AutenticacionServiceTest {
                 .when(emailService)
                 .enviarCorreoVerificacion(
                         eq("usuario@correo.com"),
-                        any(String.class));
+                        any(String.class),
+                        isNull());
 
         AutenticacionService.RegistroResultado resultado =
                 autenticacionService.registrar(dto);
