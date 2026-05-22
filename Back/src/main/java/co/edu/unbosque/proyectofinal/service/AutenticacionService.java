@@ -4,7 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,19 +24,33 @@ import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 @Service
 public class AutenticacionService {
 
-	@Autowired
-	private UsuarioRepository usuarioRepo;
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AutenticacionService.class);
 
-	@Autowired
-	private TokenVerificacionRepository tokenRepo;
+    private static final String SOBRE_MI_POR_DEFECTO =
+            "Hola! Estoy usando WZ";
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
-	
-	@Autowired
-	private EmailService eService;
+    private final UsuarioRepository usuarioRepo;
 
-	public Usuario registrar(RegistroDTO dto) {
+    private final TokenVerificacionRepository tokenRepo;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
+
+    public AutenticacionService(
+            UsuarioRepository usuarioRepo,
+            TokenVerificacionRepository tokenRepo,
+            PasswordEncoder passwordEncoder,
+            EmailService emailService) {
+
+        this.usuarioRepo = usuarioRepo;
+        this.tokenRepo = tokenRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
+
+	public RegistroResultado registrar(RegistroDTO dto) {
 
 		ValidadorUsuario.verificarUsuario(
 				dto.getUsuario());
@@ -79,6 +94,7 @@ public class AutenticacionService {
 	    usuario.setNombrePersona(dto.getNombrePersona());
 	    usuario.setContrasenaHash(
 	        passwordEncoder.encode(dto.getContrasena()));
+        usuario.setSobreMi(SOBRE_MI_POR_DEFECTO);
 	    usuario.setFechaNacimiento(dto.getFechaNacimiento());
 	    usuario.setFechaCreacionCuenta(LocalDateTime.now());
 	    usuario.setEnLinea(false);
@@ -101,11 +117,14 @@ public class AutenticacionService {
 
 	    tokenRepo.save(tv);
 
-	    eService.enviarCorreoVerificacion(
-	            usuario.getCorreo(),
-	            token);
+        boolean correoEnviado =
+                enviarCorreoVerificacionSeguro(
+                        usuario.getCorreo(),
+                        token);
 
-	    return usuario;
+	    return new RegistroResultado(
+                usuario,
+                correoEnviado);
 	}
 
 	public Usuario login(LoginDTO dto) {
@@ -203,5 +222,31 @@ public class AutenticacionService {
 	public void guardar(Usuario usuario) {
 	    usuarioRepo.save(usuario);
 	}
-	
+
+    private boolean enviarCorreoVerificacionSeguro(
+            String correo,
+            String token) {
+
+        try {
+            emailService.enviarCorreoVerificacion(
+                    correo,
+                    token);
+
+            return true;
+
+        } catch (RuntimeException e) {
+            LOGGER.warn(
+                    "No se pudo enviar el correo de verificacion a {}",
+                    correo,
+                    e);
+
+            return false;
+        }
+    }
+
+    public record RegistroResultado(
+            Usuario usuario,
+            boolean correoEnviado) {
+    }
+
 }

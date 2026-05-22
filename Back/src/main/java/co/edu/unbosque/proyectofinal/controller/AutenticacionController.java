@@ -17,6 +17,7 @@ import co.edu.unbosque.proyectofinal.dto.RespuestaAutenticacionDTO;
 import co.edu.unbosque.proyectofinal.dto.LoginDTO;
 import co.edu.unbosque.proyectofinal.dto.RegistroDTO;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.exception.CorreoYaExisteException;
 import co.edu.unbosque.proyectofinal.exception.CredencialesInvalidasException;
 import co.edu.unbosque.proyectofinal.exception.UsuarioYaExisteException;
 import co.edu.unbosque.proyectofinal.security.JwtUtil;
@@ -79,16 +80,25 @@ public class AutenticacionController {
             dto.setNombrePersona(registerRequest.getNombrePersona());
             dto.setContrasena(registerRequest.getContrasena());
             dto.setFechaNacimiento(
-                    LocalDate.parse(
-                            registerRequest.getFechaNacimiento().toString()));
+                    registerRequest.getFechaNacimiento());
 
-            authService.registrar(dto);
+            AutenticacionService.RegistroResultado resultado =
+                    authService.registrar(dto);
+
+            String mensaje =
+                    resultado.correoEnviado()
+                            ? "Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta."
+                            : "Usuario registrado correctamente, pero no se pudo enviar el correo de verificacion.";
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body("Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.");
+                    .body(mensaje);
 
         } catch (UsuarioYaExisteException e) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(e.getMessage());
+        } catch (CorreoYaExisteException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(e.getMessage());

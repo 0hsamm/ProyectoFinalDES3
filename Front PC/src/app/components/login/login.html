@@ -1,0 +1,293 @@
+<div class="page" [class.light-mode]="modoClaro">
+
+  <div class="background-blur blur-1"></div>
+
+  <div class="background-blur blur-2"></div>
+
+  <div class="topbar">
+
+    <div class="logo-section">
+
+      <div class="logo-circle">
+        R
+      </div>
+
+      <div class="logo-texts">
+
+        <h2>
+          Reload
+        </h2>
+
+        <p>
+          communication platform
+        </p>
+
+      </div>
+
+    </div>
+
+    <button
+      class="theme-btn"
+      (click)="toggleTheme()"
+    >
+
+      {{ modoClaro ? 'Dark Mode' : 'Light Mode' }}
+
+    </button>
+
+  </div>
+
+  <div class="content">
+
+    <div class="left-side">
+
+      <p class="mini-title">
+        MODERN • FAST • SECURE
+      </p>
+
+      <h1 class="brand">
+        Reload
+      </h1>
+
+      <p class="description">
+        A modern communication ecosystem designed for private messaging,
+        communities, collaboration and real-time interaction
+        across every device.
+      </p>
+
+      <div class="features">
+
+        <div class="feature-card">
+
+          <div class="feature-icon">
+            S
+          </div>
+
+          <div>
+
+            <h3>
+              Enterprise Security
+            </h3>
+
+            <p>
+              Advanced infrastructure and session protection.
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="feature-card">
+
+          <div class="feature-icon">
+            R
+          </div>
+
+          <div>
+
+            <h3>
+              Real-Time Experience
+            </h3>
+
+            <p>
+              Instant communication optimized for every platform.
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="feature-card">
+
+          <div class="feature-icon">
+            C
+          </div>
+
+          <div>
+
+            <h3>
+              Connected Everywhere
+            </h3>
+
+            <p>
+              Access your conversations from any device instantly.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="right-side">
+
+      <div class="login-panel">
+
+        <p class="panel-top">
+
+          {{
+            modoRegistro
+              ? 'CREATE ACCOUNT'
+              : 'WELCOME BACK'
+          }}
+
+        </p>
+
+        <h2 class="panel-title">
+
+          {{
+            modoRegistro
+              ? 'Join Reload'
+              : 'Sign in'
+          }}
+
+        </h2>
+
+        <p class="panel-subtitle">
+
+          {{
+            modoRegistro
+              ? 'Create your account and start your experience.'
+              : 'Access your workspace and continue instantly.'
+          }}
+
+        </p>
+
+        <div class="input-group">
+
+          <label>
+            USERNAME
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="usuario"
+            placeholder="your_username"
+          >
+
+        </div>
+
+        <div
+          class="input-group"
+          *ngIf="modoRegistro"
+        >
+
+          <label>
+            EMAIL
+          </label>
+
+          <input
+            type="email"
+            [(ngModel)]="correo"
+            placeholder="example@mail.com"
+          >
+
+        </div>
+
+        <div
+          class="input-group"
+          *ngIf="modoRegistro"
+        >
+
+          <label>
+            DISPLAY NAME
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="nombrePersona"
+            placeholder="Daniel Zapata"
+          >
+
+        </div>
+
+        <div
+          class="input-group"
+          *ngIf="modoRegistro"
+        >
+
+          <label>
+            BIRTH DATE
+          </label>
+
+          <input
+            type="date"
+            [(ngModel)]="fechaNacimiento"
+          >
+
+        </div>
+
+        <div class="input-group">
+
+          <label>
+            PASSWORD
+          </label>
+
+          <input
+            type="password"
+            [(ngModel)]="contrasena"
+            placeholder="••••••••••"
+          >
+
+        </div>
+
+        <button
+          class="main-btn"
+          *ngIf="!modoRegistro"
+          (click)="entrar()"
+        >
+
+          LOGIN
+
+        </button>
+
+        <button
+          class="main-btn"
+          *ngIf="modoRegistro"
+          (click)="registrar()"
+        >
+
+          CREATE ACCOUNT
+
+        </button>
+
+        <button
+          class="switch-btn"
+          (click)="cambiarModo()"
+        >
+
+          {{
+            modoRegistro
+              ? 'already have an account?'
+              : 'create new account'
+          }}
+
+        </button>
+
+        <p
+          class="error"
+          *ngIf="error != ''"
+        >
+
+          {{ error }}
+
+        </p>
+
+        <p
+          class="success"
+          *ngIf="mensaje != ''"
+        >
+
+          {{ mensaje }}
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
