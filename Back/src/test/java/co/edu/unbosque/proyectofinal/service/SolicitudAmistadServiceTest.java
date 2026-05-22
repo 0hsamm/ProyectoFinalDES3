@@ -264,6 +264,7 @@ class SolicitudAmistadServiceTest {
         usuario.setNombrePersona(nombre);
         usuario.setSobreMi("Hola");
         usuario.setEnLinea(true);
+        usuario.setHabilitado(true);
 
         return usuario;
     }

@@ -590,6 +590,16 @@ export class StatesPanelComponent
       return err.error;
     }
 
+    if (typeof err?.error?.mensaje == 'string') {
+
+      return err.error.mensaje;
+    }
+
+    if (typeof err?.error?.error == 'string') {
+
+      return err.error.error;
+    }
+
     if (typeof err?.error?.message == 'string') {
 
       return err.error.message;

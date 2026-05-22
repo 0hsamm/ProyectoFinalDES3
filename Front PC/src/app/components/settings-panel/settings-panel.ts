@@ -482,6 +482,21 @@ export class SettingsPanelComponent
       return err.error;
     }
 
+    if (typeof err?.error?.mensaje == 'string') {
+
+      return err.error.mensaje;
+    }
+
+    if (typeof err?.error?.error == 'string') {
+
+      return err.error.error;
+    }
+
+    if (typeof err?.error?.message == 'string') {
+
+      return err.error.message;
+    }
+
     if (err?.name == 'TimeoutError') {
 
       return 'El backend tardo demasiado en responder';

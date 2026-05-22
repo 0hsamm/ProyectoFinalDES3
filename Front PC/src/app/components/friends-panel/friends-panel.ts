@@ -606,10 +606,15 @@ export class FriendsPanelComponent
         err.error.includes('trace')
       ) {
 
-        return 'El backend activo todavia no tiene este endpoint. Copia los parches de Back_Patches y reinicia Spring Boot.';
+        return 'El backend activo todavia no tiene este endpoint. Revisa que el back este actualizado y reinicia Spring Boot.';
       }
 
       return err.error;
+    }
+
+    if (typeof err?.error?.mensaje == 'string') {
+
+      return err.error.mensaje;
     }
 
     if (typeof err?.error?.error == 'string') {
@@ -617,9 +622,14 @@ export class FriendsPanelComponent
       return err.error.error;
     }
 
+    if (typeof err?.error?.message == 'string') {
+
+      return err.error.message;
+    }
+
     if (err?.status == 404) {
 
-      return 'El backend no encontro esta ruta o recurso. Revisa que los parches del back esten aplicados.';
+      return 'El backend no encontro esta ruta o recurso. Revisa que el back este actualizado y reinicia Spring Boot.';
     }
 
     return mensajeDefecto;

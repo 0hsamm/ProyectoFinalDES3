@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +33,9 @@ import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 @Service
 @Transactional
 public class MensajeService {
+
+	private static final Logger LOGGER =
+			LoggerFactory.getLogger(MensajeService.class);
 
 	@Autowired
 	private MensajeRepository mensajeRepo;
@@ -149,7 +154,7 @@ public class MensajeService {
 	        return 0;
 
 	    } catch (Exception e) {
-	        e.printStackTrace();
+	        LOGGER.error("Error creando mensaje", e);
 	        return 3;
 	    }
 	}

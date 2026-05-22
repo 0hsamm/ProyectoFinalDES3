@@ -30,6 +30,17 @@ public class CloudinaryService {
             MultipartFile archivo)
             throws IOException {
 
+        if (!cloudinaryConfigurado()) {
+
+            String url = guardarArchivoLocal(archivo);
+
+            return Map.of(
+                    "secure_url", url,
+                    "url", url,
+                    "public_id", url,
+                    "resource_type", "video");
+        }
+
         return cloudinary.uploader().upload(
 
                 archivo.getBytes(),
@@ -61,10 +72,16 @@ public class CloudinaryService {
 
             return resultado.get("secure_url").toString();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
 
-            throw new RuntimeException(
-                    "Error subiendo archivo a Cloudinary");
+            try {
+                return guardarArchivoLocal(archivo);
+            } catch (RuntimeException localException) {
+                throw new RuntimeException(
+                        "No se pudo guardar el archivo en el servidor",
+                        localException);
+            }
+
         }
     }
 

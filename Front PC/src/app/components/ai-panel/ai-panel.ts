@@ -112,6 +112,16 @@ export class AiPanelComponent
       return err.error.error;
     }
 
+    if (typeof err?.error?.mensaje == 'string') {
+
+      return err.error.mensaje;
+    }
+
+    if (typeof err?.error?.message == 'string') {
+
+      return err.error.message;
+    }
+
     if (typeof err?.error == 'string') {
 
       return err.error;

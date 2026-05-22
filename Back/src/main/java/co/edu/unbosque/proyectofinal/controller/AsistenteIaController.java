@@ -98,7 +98,7 @@ public class AsistenteIaController {
      * @param peticionHttp peticion HTTP original
      * @return traduccion
      */
-    @PostMapping({"/traducir"})
+    @PostMapping({"/traducir", "/translate"})
     public ResponseEntity<?> traducir(
             @RequestBody SolicitudGeminiDTO solicitud,
             HttpServletRequest peticionHttp) {
