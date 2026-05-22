@@ -1,6 +1,7 @@
 import {
   Component,
-  OnInit
+  OnInit,
+  ChangeDetectorRef
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
@@ -12,6 +13,8 @@ import { HistorialIa } from '../../models/ia';
 import { IaService } from '../../services/ia.service';
 
 import { ToastService } from '../../services/toast.service';
+
+import { timeout } from 'rxjs/operators';
 
 interface AiMessage {
   role: 'user' | 'assistant';
@@ -41,7 +44,8 @@ export class AiPanelComponent
 
   constructor(
     private iaService: IaService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -72,6 +76,7 @@ export class AiPanelComponent
       .consultar({
         mensaje: pregunta
       })
+      .pipe(timeout(120000))
       .subscribe({
         next: (respuesta) => {
           this.enviando = false;
@@ -79,6 +84,7 @@ export class AiPanelComponent
             role: 'assistant',
             content: respuesta.respuesta
           });
+          this.cdr.detectChanges();
           this.cargarHistorial();
         },
         error: (err) => {
