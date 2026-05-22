@@ -1,0 +1,31 @@
+<div class="llamada-overlay">
+  <div class="llamada-modal">
+
+    <div class="llamada-tipo">
+      {{ llamada.tipoLlamada === 'VIDEO' ? 'Videollamada' : 'Llamada de voz' }}
+    </div>
+
+    <div class="llamada-estado">
+      {{ conectado ? 'Conectado' : 'Conectando...' }}
+    </div>
+
+    <div class="llamada-error" *ngIf="error !== ''">
+      {{ error }}
+    </div>
+
+    <div class="videos" *ngIf="llamada.tipoLlamada === 'VIDEO'">
+      <div id="video-remoto" class="video-box"></div>
+      <div id="video-local" class="video-box small"></div>
+    </div>
+
+    <div class="llamada-acciones">
+      <button *ngIf="!conectado" (click)="unirse()">
+        Conectar
+      </button>
+      <button class="colgar" (click)="salir()">
+        Colgar
+      </button>
+    </div>
+
+  </div>
+</div>
