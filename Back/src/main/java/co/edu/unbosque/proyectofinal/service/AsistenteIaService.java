@@ -66,7 +66,7 @@ public class AsistenteIaService {
         this.interaccionIaRepository = interaccionIaRepository;
         this.httpClient =
                 HttpClient.newBuilder()
-                        .connectTimeout(Duration.ofSeconds(30))
+                        .connectTimeout(Duration.ofSeconds(15))
                         .build();
     }
 
@@ -315,7 +315,7 @@ public class AsistenteIaService {
             HttpRequest httpRequest =
                     HttpRequest.newBuilder()
                             .uri(URI.create(construirUrlGemini()))
-                            .timeout(Duration.ofSeconds(120))
+                            .timeout(Duration.ofSeconds(45))
                             .header("Content-Type", "application/json")
                             .header("x-goog-api-key", apiKey.trim())
                             .POST(HttpRequest.BodyPublishers.ofString(
