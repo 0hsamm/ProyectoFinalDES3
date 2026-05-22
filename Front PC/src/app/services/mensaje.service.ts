@@ -13,6 +13,9 @@ import { Observable }
 import { environment }
   from '../../environment/environment';
 
+import { Mensaje }
+  from '../models/mensaje';
+
 @Injectable({
 
   providedIn: 'root'
@@ -30,50 +33,59 @@ export class MensajeService {
   ) {}
 
   obtenerMensajesPorConversacion(
-    id: number
-  ): Observable<any[]> {
+    id: number,
+    fraseSecreta?: string
+  ): Observable<Mensaje[]> {
 
-    return this.http.get<any[]>(
+    let params =
+      new HttpParams();
 
-      `${this.apiUrl}/conversacion/${id}`
+    if (
+      fraseSecreta != null &&
+      fraseSecreta.trim() != ''
+    ) {
+
+      params = params.set(
+        'fraseSecreta',
+        fraseSecreta
+      );
+    }
+
+    return this.http.get<Mensaje[]>(
+
+      `${this.apiUrl}/conversacion/${id}`,
+
+      { params }
 
     );
   }
 
   enviarMensaje(
 
-    usuario: string,
+    remitenteId: number,
 
     conversacionId: number,
 
-    contenido: string
+    contenido: string,
+
+    fraseSecreta?: string,
+
+    tipoMensaje: string = 'TEXTO'
 
   ): Observable<any> {
 
-    const body = null;
+    const body: Mensaje = {
 
-    const params =
-      new HttpParams()
+      remitenteId,
 
-        .set(
-          'usuario',
-          usuario
-        )
+      conversacionId,
 
-        .set(
-          'conversacionId',
-          conversacionId.toString()
-        )
+      tipoMensaje,
 
-        .set(
-          'tipoMensaje',
-          'TEXTO'
-        )
+      contenido,
 
-        .set(
-          'contenido',
-          contenido
-        );
+      fraseSecreta
+    };
 
     return this.http.post(
 
@@ -81,7 +93,9 @@ export class MensajeService {
 
       body,
 
-      { params }
+      {
+        responseType: 'text'
+      }
 
     );
   }

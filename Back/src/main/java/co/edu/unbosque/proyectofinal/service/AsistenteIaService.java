@@ -506,9 +506,26 @@ public class AsistenteIaService {
             if (error != null
                     && error.has("message")) {
 
-                return "Gemini rechazo la solicitud: "
-                        + error.get("message")
+                String mensaje =
+                        error.get("message")
                                 .getAsString();
+
+                if (mensaje != null
+                        && mensaje.toLowerCase()
+                                .contains("api key was reported as leaked")) {
+
+                    return "La llave de Gemini configurada en el backend fue marcada como filtrada por Google. Genera una llave nueva y configurala en GEMINI_API_KEY.";
+                }
+
+                if (mensaje != null
+                        && mensaje.toLowerCase()
+                                .contains("api key not valid")) {
+
+                    return "La llave de Gemini configurada en el backend no es valida. Revisa GEMINI_API_KEY.";
+                }
+
+                return "Gemini rechazo la solicitud: "
+                        + mensaje;
             }
 
         } catch (Exception ignored) {

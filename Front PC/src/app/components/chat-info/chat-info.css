@@ -65,28 +65,8 @@
   margin-bottom: 16px;
 }
 
-.media-grid {
-  display: grid;
-
-  grid-template-columns: repeat(2, 1fr);
-
-  gap: 12px;
-}
-
-.media-item {
-  aspect-ratio: 1;
-
-  border-radius: 16px;
-
-  background:
-    linear-gradient(135deg,
-    rgba(139, 92, 246, 0.3),
-    rgba(255, 255, 255, 0.03));
-
-  cursor: pointer;
-}
-
-.file-item {
+.detail-item,
+.participant-item {
   padding: 14px;
 
   border-radius: 14px;
@@ -96,12 +76,81 @@
   color: white;
 
   margin-bottom: 12px;
-
-  cursor: pointer;
-
-  transition: 0.2s;
 }
 
-.file-item:hover {
-  background: rgba(139, 92, 246, 0.15);
+.detail-item {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 16px;
+}
+
+.detail-item span {
+
+  color: #a1a1aa;
+}
+
+.detail-item strong {
+
+  font-weight: 600;
+}
+
+.empty-info {
+
+  min-height: 100%;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  color: white;
+}
+
+.empty-avatar {
+
+  width: 78px;
+
+  height: 78px;
+
+  border-radius: 24px;
+
+  background: linear-gradient(135deg,
+  #8b5cf6,
+  #6d28d9);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 30px;
+
+  font-weight: 800;
+
+  margin-bottom: 20px;
+}
+
+.empty-info h3 {
+
+  margin: 0 0 10px;
+}
+
+.empty-info p {
+
+  margin: 0;
+
+  max-width: 240px;
+
+  color: #a1a1aa;
+
+  line-height: 1.6;
 }

@@ -2,7 +2,13 @@
 
   height: 100vh;
 
-  background: rgba(15, 15, 15, 0.95);
+  background:
+    radial-gradient(circle at 0 0, rgba(34, 211, 238, 0.12), transparent 32%),
+    linear-gradient(
+      180deg,
+      rgba(14, 18, 28, 0.98),
+      rgba(8, 11, 18, 0.98)
+    );
 
   border-right: 1px solid rgba(255, 255, 255, 0.05);
 
@@ -10,19 +16,77 @@
 
 }
 
+.chat-header {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+}
+
 .chat-header h2 {
 
   color: white;
 
-  margin-bottom: 20px;
+  margin: 0;
 
 }
 
-.chat-header input {
+.search-box {
+
+  position: relative;
+
+  width: 100%;
+}
+
+.search-icon {
+
+  width: 16px;
+
+  height: 16px;
+
+  position: absolute;
+
+  top: 50%;
+
+  left: 14px;
+
+  border: 2px solid #a1a1aa;
+
+  border-radius: 50%;
+
+  transform: translateY(-50%);
+}
+
+.search-icon::after {
+
+  content: '';
+
+  width: 7px;
+
+  height: 2px;
+
+  position: absolute;
+
+  right: -6px;
+
+  bottom: -3px;
+
+  background: #a1a1aa;
+
+  border-radius: 2px;
+
+  transform: rotate(45deg);
+}
+
+.search-box input {
 
   width: 100%;
 
   padding: 14px;
+
+  padding-left: 42px;
 
   border: none;
 
@@ -30,7 +94,9 @@
 
   border-radius: 14px;
 
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: rgba(255, 255, 255, 0.07);
 
   color: white;
 
@@ -58,11 +124,19 @@
 
   padding: 14px;
 
+  width: 100%;
+
+  border: 0;
+
   border-radius: 16px;
 
   cursor: pointer;
 
   transition: 0.2s;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  text-align: left;
 
 }
 
@@ -86,11 +160,7 @@
 
   border-radius: 50%;
 
-  background: linear-gradient(
-    135deg,
-    #8b5cf6,
-    #6d28d9
-  );
+  background: linear-gradient(135deg, #22d3ee, #7c3aed);
 
   display: flex;
 
@@ -110,6 +180,12 @@
 
   font-weight: 600;
 
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
 }
 
 .message {
@@ -118,4 +194,60 @@
 
   font-size: 14px;
 
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+}
+
+.chat-info {
+
+  min-width: 0;
+}
+
+.state {
+
+  margin-top: 25px;
+
+  padding: 18px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  color: #a1a1aa;
+
+  line-height: 1.5;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.state.error {
+
+  color: #fb7185;
+}
+
+.search-box input,
+.chat-item,
+.state {
+
+  border-radius: 8px;
+}
+
+.chat-item:hover {
+
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.chat-item.active {
+
+  background: rgba(139, 92, 246, 0.16);
+
+  box-shadow: inset 3px 0 0 #8b5cf6;
 }

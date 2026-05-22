@@ -12,12 +12,24 @@
 
   background:
     radial-gradient(
-      circle at top left,
-      #1d0036 0%,
-      #090909 45%
+      circle at 8% 0%,
+      rgba(34, 211, 238, 0.16) 0%,
+      rgba(9, 9, 9, 0) 38%
     ),
-    #050505;
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(124, 58, 237, 0.17) 0%,
+      rgba(9, 9, 9, 0) 34%
+    ),
+    #05070b;
 
   overflow: hidden;
 
+}
+
+.main-layout.single-panel {
+
+  grid-template-columns:
+        85px
+        minmax(0, 1fr);
 }

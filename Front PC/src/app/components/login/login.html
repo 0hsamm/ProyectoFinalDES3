@@ -42,7 +42,7 @@
     <div class="left-side">
 
       <p class="mini-title">
-        MODERN • FAST • SECURE
+        MENSAJERIA SEGURA
       </p>
 
       <h1 class="brand">
@@ -50,9 +50,8 @@
       </h1>
 
       <p class="description">
-        A modern communication ecosystem designed for private messaging,
-        communities, collaboration and real-time interaction
-        across every device.
+        Plataforma de comunicacion para mensajeria privada,
+        comunidades, colaboracion e interaccion en tiempo real.
       </p>
 
       <div class="features">
@@ -66,11 +65,11 @@
           <div>
 
             <h3>
-              Enterprise Security
+              Seguridad de cuenta
             </h3>
 
             <p>
-              Advanced infrastructure and session protection.
+              Inicio de sesion protegido y verificacion de usuarios.
             </p>
 
           </div>
@@ -86,11 +85,11 @@
           <div>
 
             <h3>
-              Real-Time Experience
+              Mensajeria directa
             </h3>
 
             <p>
-              Instant communication optimized for every platform.
+              Conversaciones organizadas para el uso diario.
             </p>
 
           </div>
@@ -106,11 +105,11 @@
           <div>
 
             <h3>
-              Connected Everywhere
+              Acceso continuo
             </h3>
 
             <p>
-              Access your conversations from any device instantly.
+              Continua tus conversaciones desde tu cuenta.
             </p>
 
           </div>
@@ -129,8 +128,8 @@
 
           {{
             modoRegistro
-              ? 'CREATE ACCOUNT'
-              : 'WELCOME BACK'
+              ? 'CREAR CUENTA'
+              : 'BIENVENIDO'
           }}
 
         </p>
@@ -139,8 +138,8 @@
 
           {{
             modoRegistro
-              ? 'Join Reload'
-              : 'Sign in'
+              ? 'Unete a Reload'
+              : 'Iniciar sesion'
           }}
 
         </h2>
@@ -149,8 +148,8 @@
 
           {{
             modoRegistro
-              ? 'Create your account and start your experience.'
-              : 'Access your workspace and continue instantly.'
+              ? 'Crea tu cuenta para empezar a conversar.'
+              : 'Ingresa a tu cuenta para continuar.'
           }}
 
         </p>
@@ -158,13 +157,13 @@
         <div class="input-group">
 
           <label>
-            USERNAME
+            USUARIO
           </label>
 
           <input
             type="text"
             [(ngModel)]="usuario"
-            placeholder="your_username"
+            placeholder="tu_usuario"
           >
 
         </div>
@@ -175,13 +174,13 @@
         >
 
           <label>
-            EMAIL
+            CORREO
           </label>
 
           <input
             type="email"
             [(ngModel)]="correo"
-            placeholder="example@mail.com"
+            placeholder="correo@dominio.com"
           >
 
         </div>
@@ -192,13 +191,13 @@
         >
 
           <label>
-            NAME
+            NOMBRE
           </label>
 
           <input
             type="text"
             [(ngModel)]="nombrePersona"
-            placeholder="Daniel Zapata"
+            placeholder="Nombre completo"
           >
 
         </div>
@@ -209,7 +208,7 @@
         >
 
           <label>
-            BIRTH DATE
+            FECHA DE NACIMIENTO
           </label>
 
           <input
@@ -222,13 +221,13 @@
         <div class="input-group">
 
           <label>
-            PASSWORD
+            CONTRASENA
           </label>
 
           <input
             type="password"
             [(ngModel)]="contrasena"
-            placeholder="••••••••••"
+            placeholder="Contrasena"
           >
 
         </div>
@@ -239,7 +238,7 @@
           (click)="entrar()"
         >
 
-          LOGIN
+          ENTRAR
 
         </button>
 
@@ -249,7 +248,7 @@
           (click)="registrar()"
         >
 
-          CREATE ACCOUNT
+          CREAR CUENTA
 
         </button>
 
@@ -260,8 +259,8 @@
 
           {{
             modoRegistro
-              ? 'already have an account?'
-              : 'create new account'
+              ? 'ya tienes una cuenta?'
+              : 'crear cuenta nueva'
           }}
 
         </button>

@@ -131,7 +131,8 @@ public class AutenticacionController {
                             usuarioLogeado.getId(),
                             usuarioLogeado.getUsuario(),
                             usuarioLogeado.getCorreo(),
-                            usuarioLogeado.getNombrePersona());
+                            usuarioLogeado.getNombrePersona(),
+                            usuarioLogeado.getFotoPerfil());
 
             auditoriaService.registrar(
                     usuarioLogeado,

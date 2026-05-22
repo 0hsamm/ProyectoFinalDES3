@@ -30,6 +30,8 @@ public class Usuario implements UserDetails {
 
     private String sobreMi;
 
+    private String fotoPerfil;
+
     private boolean enLinea;
 
     private boolean habilitado;
@@ -120,6 +122,14 @@ public class Usuario implements UserDetails {
 
     public void setSobreMi(String sobreMi) {
         this.sobreMi = sobreMi;
+    }
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 
     public boolean isEnLinea() {

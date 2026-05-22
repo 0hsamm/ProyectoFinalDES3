@@ -2,55 +2,73 @@
 
   <div class="chat-header">
 
-    <h2>Chats</h2>
+    <h2>Conversaciones</h2>
 
-    <input
-      type="text"
-      placeholder="Buscar conversación..."
-    >
+    <div class="search-box">
 
-  </div>
+      <span class="search-icon"></span>
 
-  <div class="chat-items">
-
-    <div class="chat-item active">
-
-      <div class="avatar">
-        V
-      </div>
-
-      <div class="chat-info">
-
-        <div class="name">
-          Valentina
-        </div>
-
-        <div class="message">
-          Hola 😄
-        </div>
-
-      </div>
+      <input
+        type="text"
+        placeholder="Buscar conversacion"
+        [(ngModel)]="filtro"
+      >
 
     </div>
 
-    <div class="chat-item">
+  </div>
+
+  <div
+    class="state"
+    *ngIf="cargando"
+  >
+    <i class="pi pi-spin pi-spinner"></i>
+    Cargando conversaciones...
+  </div>
+
+  <div
+    class="state error"
+    *ngIf="!cargando && error != ''"
+  >
+    {{ error }}
+  </div>
+
+  <div
+    class="chat-items"
+    *ngIf="!cargando && error == ''"
+  >
+
+    <button
+      class="chat-item"
+      type="button"
+      *ngFor="let conversacion of obtenerConversacionesFiltradas()"
+      [class.active]="estaSeleccionada(conversacion)"
+      (click)="seleccionarConversacion(conversacion)"
+    >
 
       <div class="avatar">
-        C
+        {{ obtenerIniciales(conversacion) }}
       </div>
 
       <div class="chat-info">
 
         <div class="name">
-          Carlos
+          {{ obtenerNombre(conversacion) }}
         </div>
 
         <div class="message">
-          ¿Cómo vas?
+          {{ obtenerUltimoMensaje(conversacion) }}
         </div>
 
       </div>
 
+    </button>
+
+    <div
+      class="state"
+      *ngIf="obtenerConversacionesFiltradas().length == 0"
+    >
+      No hay conversaciones para mostrar
     </div>
 
   </div>

@@ -8,6 +8,8 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../../services/auth.service';
 
+import { ToastService } from '../../services/toast.service';
+
 import {
   RegistroDTO
 } from '../../models/usuario';
@@ -55,7 +57,9 @@ export class Login {
 
     private authService: AuthService,
 
-    private router: Router
+    private router: Router,
+
+    private toastService: ToastService
   ) {}
 
   toggleTheme(): void {
@@ -86,6 +90,11 @@ export class Login {
       this.error =
         'Debes llenar todos los campos';
 
+      this.toastService.warning(
+        'Campos incompletos',
+        this.error
+      );
+
       return;
     }
 
@@ -114,14 +123,17 @@ export class Login {
 
         this.cargando = false;
 
+        this.toastService.success(
+          'Sesion iniciada',
+          'Bienvenido a Reload'
+        );
+
         this.router.navigate([
           '/app'
         ]);
       },
 
       error: (err) => {
-
-        console.log(err);
 
         this.cargando = false;
 
@@ -134,8 +146,13 @@ export class Login {
         } else {
 
           this.error =
-            'Usuario o contraseña incorrectos';
+            'Usuario o contrasena incorrectos';
         }
+
+        this.toastService.error(
+          'No se pudo iniciar sesion',
+          this.error
+        );
       }
     });
   }
@@ -156,6 +173,11 @@ export class Login {
 
       this.error =
         'Debes llenar todos los campos';
+
+      this.toastService.warning(
+        'Campos incompletos',
+        this.error
+      );
 
       return;
     }
@@ -186,6 +208,11 @@ export class Login {
         this.mensaje =
           respuesta;
 
+        this.toastService.success(
+          'Cuenta creada',
+          respuesta
+        );
+
         this.usuario = '';
 
         this.correo = '';
@@ -201,8 +228,6 @@ export class Login {
 
       error: (err) => {
 
-        console.log(err);
-
         this.cargando = false;
 
         if (
@@ -216,6 +241,11 @@ export class Login {
           this.error =
             'No se pudo crear la cuenta';
         }
+
+        this.toastService.error(
+          'Registro fallido',
+          this.error
+        );
       }
     });
   }

@@ -10,6 +10,9 @@ import { Observable }
 import { environment }
   from '../../environment/environment';
 
+import { Conversacion }
+  from '../models/conversacion';
+
 @Injectable({
 
   providedIn: 'root'
@@ -27,12 +30,34 @@ export class ConversacionService {
   ) {}
 
   obtenerConversaciones():
-    Observable<any[]> {
+    Observable<Conversacion[]> {
 
-    return this.http.get<any[]>(
+    return this.http.get<Conversacion[]>(
 
-      this.apiUrl
+      this.apiUrl + '/mis'
 
+    );
+  }
+
+  crearConversacionPrivada(
+    participanteAId: number,
+    participanteBId: number,
+    fraseSecreta: string
+  ): Observable<string> {
+
+    return this.http.post(
+      this.apiUrl,
+      {
+        tipoConversacion: 'PRIVADA',
+        participantesIds: [
+          participanteAId,
+          participanteBId
+        ],
+        fraseSecreta
+      },
+      {
+        responseType: 'text'
+      }
     );
   }
 

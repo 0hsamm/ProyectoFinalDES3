@@ -1,116 +1,201 @@
 <div class="chat-window">
 
-  <div class="chat-topbar">
+  <ng-container *ngIf="conversacion; else sinConversacion">
 
-    <div class="user-info">
+    <div class="chat-topbar">
 
-      <div class="avatar">
-        V
-      </div>
+      <div class="user-info">
 
-      <div class="texts">
-
-        <div class="name">
-          Valentina García
+        <div class="avatar">
+          {{ obtenerIniciales() }}
         </div>
 
-        <div class="status">
-          En línea
+        <div class="texts">
+
+          <div class="name">
+            {{ obtenerNombreConversacion() }}
+          </div>
+
+          <div class="status">
+            Conversacion activa
+          </div>
+
         </div>
 
       </div>
 
-    </div>
+      <div class="actions">
 
-    <div class="actions">
+        <button
+          class="action-btn"
+          type="button"
+          title="Llamada de voz"
+          aria-label="Llamada de voz"
+          (click)="iniciarLlamada('VOZ')"
+        >
+          <span class="icon icon-phone"></span>
+        </button>
 
-      <div class="action-btn">
-        📞
-      </div>
+        <button
+          class="action-btn"
+          type="button"
+          title="Videollamada"
+          aria-label="Videollamada"
+          (click)="iniciarLlamada('VIDEO')"
+        >
+          <span class="icon icon-video"></span>
+        </button>
 
-      <div class="action-btn">
-        🎥
-      </div>
+        <button
+          class="action-btn end-call"
+          type="button"
+          title="Finalizar llamada"
+          aria-label="Finalizar llamada"
+          *ngIf="llamadaActivaId != null"
+          (click)="finalizarLlamada()"
+        >
+          <span class="icon icon-phone"></span>
+        </button>
 
-      <div class="action-btn">
-        🔍
-      </div>
+        <button
+          class="action-btn"
+          type="button"
+          title="Actualizar mensajes"
+          aria-label="Actualizar mensajes"
+          (click)="cargarMensajes()"
+        >
+          <span class="icon icon-refresh"></span>
+        </button>
 
-    </div>
-
-  </div>
-
-  <div class="messages-container">
-
-    <div class="message other">
-
-      <div class="message-content">
-        Hola 👋
-      </div>
-
-      <div class="time">
-        10:28 AM
-      </div>
-
-    </div>
-
-    <div class="message me">
-
-      <div class="message-content">
-        Hola Vale 😄
-      </div>
-
-      <div class="time">
-        10:29 AM
-      </div>
-
-    </div>
-
-    <div class="message me">
-
-      <div class="message-content">
-        Ya casi terminamos Reload 🔥
-      </div>
-
-      <div class="time">
-        10:30 AM
       </div>
 
     </div>
 
-  </div>
+    <div class="messages-container">
 
-  <div class="message-input-container">
+      <div
+        class="secret-bar"
+        *ngIf="conversacion.fraseSecretaConfigurada"
+      >
 
-    <div class="input-actions">
+        <input
+          type="password"
+          placeholder="Frase secreta de la conversacion"
+          [(ngModel)]="fraseSecreta"
+        >
 
-      <div class="input-btn">
-        ➕
+        <button
+          type="button"
+          (click)="cargarMensajes()"
+        >
+          Desbloquear
+        </button>
+
       </div>
+
+      <div
+        class="state"
+        *ngIf="cargando"
+      >
+        <i class="pi pi-spin pi-spinner"></i>
+        Cargando mensajes...
+      </div>
+
+      <div
+        class="state error"
+        *ngIf="!cargando && error != ''"
+      >
+        {{ error }}
+      </div>
+
+      <ng-container *ngIf="!cargando">
+
+        <div
+          class="message"
+          *ngFor="let mensaje of mensajes"
+          [class.me]="esMensajePropio(mensaje)"
+          [class.other]="!esMensajePropio(mensaje)"
+        >
+
+          <div class="message-content">
+            {{ obtenerContenido(mensaje) }}
+          </div>
+
+          <div
+            class="time"
+            *ngIf="obtenerHoraMensaje(mensaje) != ''"
+          >
+            {{ obtenerHoraMensaje(mensaje) }}
+          </div>
+
+        </div>
+
+        <div
+          class="state"
+          *ngIf="mensajes.length == 0 && error == ''"
+        >
+          Aun no hay mensajes en esta conversacion
+        </div>
+
+      </ng-container>
 
     </div>
 
-    <input
-      type="text"
-      placeholder="Escribe un mensaje..."
+    <form
+      class="message-input-container"
+      (ngSubmit)="enviarMensaje()"
     >
 
-    <div class="right-actions">
+      <label
+        class="attach-btn"
+        title="Adjuntar archivo"
+        aria-label="Adjuntar archivo"
+      >
+        <span class="icon icon-clip"></span>
+        <input
+          type="file"
+          (change)="adjuntoSeleccionado()"
+        >
+      </label>
 
-      <div class="input-btn">
-        😊
-      </div>
+      <input
+        type="text"
+        name="nuevoMensaje"
+        placeholder="Escribe un mensaje"
+        [(ngModel)]="nuevoMensaje"
+        [disabled]="enviando"
+      >
 
-      <div class="input-btn">
-        🎤
-      </div>
-
-      <button class="send-btn">
-        ➤
+      <button
+        class="send-btn"
+        type="submit"
+        title="Enviar mensaje"
+        aria-label="Enviar mensaje"
+        [disabled]="nuevoMensaje.trim() == '' || enviando"
+      >
+        <span class="icon icon-send"></span>
       </button>
+
+    </form>
+
+  </ng-container>
+
+  <ng-template #sinConversacion>
+
+    <div class="empty-window">
+
+      <div class="empty-icon">
+        R
+      </div>
+
+      <h2>Selecciona una conversacion</h2>
+
+      <p>
+        Tus mensajes apareceran aqui cuando elijas una conversacion.
+      </p>
 
     </div>
 
-  </div>
+  </ng-template>
 
 </div>

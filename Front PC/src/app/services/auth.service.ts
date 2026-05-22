@@ -87,6 +87,17 @@ export class AuthService {
       'nombrePersona',
       respuesta.nombrePersona
     );
+
+    if (respuesta.fotoPerfil) {
+
+      localStorage.setItem(
+        'fotoPerfil',
+        respuesta.fotoPerfil
+      );
+    } else {
+
+      localStorage.removeItem('fotoPerfil');
+    }
   }
 
   obtenerToken(): string | null {

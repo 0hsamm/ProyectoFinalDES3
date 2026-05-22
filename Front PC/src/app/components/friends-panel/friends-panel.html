@@ -1,0 +1,288 @@
+<div class="friends-panel">
+
+  <div class="panel-header">
+
+    <div>
+
+      <p>Contactos</p>
+
+      <h2>Amigos</h2>
+
+    </div>
+
+    <button
+      class="icon-button"
+      type="button"
+      title="Actualizar"
+      aria-label="Actualizar"
+      (click)="cargarDatos()"
+    >
+      <span class="icon icon-refresh"></span>
+    </button>
+
+  </div>
+
+  <section class="add-section">
+
+    <div class="section-title">
+      Agregar amigo
+    </div>
+
+    <form
+      class="add-form"
+      (ngSubmit)="buscarUsuario()"
+    >
+
+      <input
+        type="text"
+        name="usernameDestino"
+        placeholder="Nombre de usuario"
+        [(ngModel)]="usernameDestino"
+      >
+
+      <button
+        type="submit"
+        [disabled]="buscando || usernameDestino.trim() == ''"
+      >
+        Buscar
+      </button>
+
+    </form>
+
+    <div
+      class="user-result"
+      *ngIf="usuarioEncontrado"
+    >
+
+      <div class="avatar">
+        {{ obtenerIniciales(usuarioEncontrado.nombrePersona, usuarioEncontrado.usuario) }}
+      </div>
+
+      <div class="result-text">
+
+        <strong>{{ usuarioEncontrado.nombrePersona }}</strong>
+
+        <span>{{ usuarioEncontrado.usuario }}</span>
+
+      </div>
+
+      <button
+        class="primary-action"
+        type="button"
+        [disabled]="procesando"
+        (click)="enviarSolicitud()"
+      >
+        Enviar solicitud
+      </button>
+
+    </div>
+
+    <p
+      class="feedback success"
+      *ngIf="mensaje != ''"
+    >
+      {{ mensaje }}
+    </p>
+
+    <p
+      class="feedback error"
+      *ngIf="error != ''"
+    >
+      {{ error }}
+    </p>
+
+  </section>
+
+  <div
+    class="state"
+    *ngIf="cargando"
+  >
+    <i class="pi pi-spin pi-spinner"></i>
+    Cargando informacion...
+  </div>
+
+  <div
+    class="content-grid"
+    *ngIf="!cargando"
+  >
+
+    <section class="panel-section">
+
+      <div class="section-title">
+        Solicitudes recibidas
+      </div>
+
+      <div
+        class="request-item"
+        *ngFor="let solicitud of solicitudesRecibidas"
+      >
+
+        <div class="avatar">
+          {{ obtenerIniciales(solicitud.solicitanteNombre, solicitud.solicitanteUsuario) }}
+        </div>
+
+        <div class="item-text">
+
+          <strong>{{ solicitud.solicitanteNombre }}</strong>
+
+          <span>{{ solicitud.solicitanteUsuario }}</span>
+
+        </div>
+
+        <div class="item-actions">
+
+          <button
+            type="button"
+            class="small-action accept"
+            [disabled]="procesando"
+            (click)="aceptarSolicitud(solicitud)"
+          >
+            Aceptar
+          </button>
+
+          <button
+            type="button"
+            class="small-action"
+            [disabled]="procesando"
+            (click)="rechazarSolicitud(solicitud)"
+          >
+            Rechazar
+          </button>
+
+        </div>
+
+      </div>
+
+      <div
+        class="empty-state"
+        *ngIf="solicitudesRecibidas.length == 0"
+      >
+        No tienes solicitudes recibidas
+      </div>
+
+    </section>
+
+    <section class="panel-section">
+
+      <div class="section-title">
+        Amigos
+      </div>
+
+      <div
+        class="chat-secret"
+        *ngIf="amigos.length > 0"
+      >
+
+        <input
+          type="password"
+          placeholder="Frase secreta para nuevos chats"
+          [(ngModel)]="fraseSecretaChat"
+        >
+
+      </div>
+
+      <div
+        class="friend-item"
+        *ngFor="let amigo of amigos"
+      >
+
+        <div class="avatar">
+          {{ obtenerIniciales(amigo.nombrePersona, amigo.usuario) }}
+        </div>
+
+        <div class="item-text">
+
+          <strong>{{ amigo.nombrePersona }}</strong>
+
+          <span>{{ amigo.usuario }}</span>
+
+        </div>
+
+        <span
+          class="status"
+          [class.online]="amigo.enLinea"
+        >
+          {{ amigo.enLinea ? 'En linea' : 'Desconectado' }}
+        </span>
+
+        <button
+          class="small-action"
+          type="button"
+          [disabled]="procesando"
+          (click)="crearChatPrivado(amigo)"
+        >
+          Crear chat
+        </button>
+
+        <button
+          class="icon-button danger"
+          type="button"
+          title="Eliminar amistad"
+          aria-label="Eliminar amistad"
+          [disabled]="procesando"
+          (click)="eliminarAmigo(amigo)"
+        >
+          <span class="icon icon-trash"></span>
+        </button>
+
+      </div>
+
+      <div
+        class="empty-state"
+        *ngIf="amigos.length == 0"
+      >
+        Todavia no tienes amigos agregados
+      </div>
+
+    </section>
+
+    <section class="panel-section">
+
+      <div class="section-title">
+        Solicitudes enviadas
+      </div>
+
+      <div
+        class="request-item"
+        *ngFor="let solicitud of solicitudesEnviadas"
+      >
+
+        <div class="avatar">
+          {{ obtenerIniciales(solicitud.receptorNombre, solicitud.receptorUsuario) }}
+        </div>
+
+        <div class="item-text">
+
+          <strong>{{ solicitud.receptorNombre }}</strong>
+
+          <span>{{ solicitud.receptorUsuario }}</span>
+
+        </div>
+
+        <span class="status">
+          {{ solicitud.estado }}
+        </span>
+
+        <button
+          type="button"
+          class="small-action"
+          [disabled]="procesando"
+          (click)="cancelarSolicitud(solicitud)"
+        >
+        Cancelar solicitud
+      </button>
+
+      </div>
+
+      <div
+        class="empty-state"
+        *ngIf="solicitudesEnviadas.length == 0"
+      >
+        No tienes solicitudes enviadas
+      </div>
+
+    </section>
+
+  </div>
+
+</div>

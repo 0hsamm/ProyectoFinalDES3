@@ -1,52 +1,83 @@
 <div class="chat-info">
 
-  <div class="profile-section">
+  <ng-container *ngIf="conversacion; else sinInformacion">
 
-    <div class="profile-avatar">
-      V
-    </div>
+    <div class="profile-section">
 
-    <div class="profile-name">
-      Valentina García
-    </div>
+      <div class="profile-avatar">
+        {{ obtenerIniciales() }}
+      </div>
 
-    <div class="profile-status">
-      En línea
-    </div>
+      <div class="profile-name">
+        {{ obtenerNombre() }}
+      </div>
 
-  </div>
-
-  <div class="info-section">
-
-    <div class="section-title">
-      Multimedia
-    </div>
-
-    <div class="media-grid">
-
-      <div class="media-item"></div>
-      <div class="media-item"></div>
-      <div class="media-item"></div>
-      <div class="media-item"></div>
+      <div class="profile-status">
+        {{ obtenerTipo() }}
+      </div>
 
     </div>
 
-  </div>
+    <div class="info-section">
 
-  <div class="info-section">
+      <div class="section-title">
+        Detalles
+      </div>
 
-    <div class="section-title">
-      Archivos
+      <div class="detail-item">
+
+        <span>Identificador</span>
+
+        <strong>{{ conversacion.id }}</strong>
+
+      </div>
+
+      <div class="detail-item">
+
+        <span>Participantes</span>
+
+        <strong>{{ obtenerCantidadParticipantes() }}</strong>
+
+      </div>
+
     </div>
 
-    <div class="file-item">
-      📄 Requisitos.pdf
+    <div
+      class="info-section"
+      *ngIf="conversacion.participantes && conversacion.participantes.length > 0"
+    >
+
+      <div class="section-title">
+        Usuarios
+      </div>
+
+      <div
+        class="participant-item"
+        *ngFor="let participante of conversacion.participantes"
+      >
+        {{ participante.nombrePersona || participante.usuario || participante.correo }}
+      </div>
+
     </div>
 
-    <div class="file-item">
-      🎨 Diseño.fig
+  </ng-container>
+
+  <ng-template #sinInformacion>
+
+    <div class="empty-info">
+
+      <div class="empty-avatar">
+        R
+      </div>
+
+      <h3>Sin conversacion seleccionada</h3>
+
+      <p>
+        La informacion del chat aparecera cuando selecciones una conversacion.
+      </p>
+
     </div>
 
-  </div>
+  </ng-template>
 
 </div>
