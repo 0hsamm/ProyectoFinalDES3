@@ -169,12 +169,12 @@ export class Login {
       datos
     ).subscribe({
 
-      next: () => {
+      next: (respuesta) => {
 
         this.cargando = false;
 
         this.mensaje =
-          'Cuenta creada. Revisa tu correo para verificar tu cuenta.';
+          respuesta;
 
         this.modoRegistro = false;
 

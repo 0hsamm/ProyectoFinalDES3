@@ -43,11 +43,14 @@ export class AuthService {
 
   registro(
     datos: RegistroDTO
-  ): Observable<any> {
+  ): Observable<string> {
 
-    return this.http.post<any>(
+    return this.http.post(
       this.apiUrl + '/registro',
-      datos
+      datos,
+      {
+        responseType: 'text'
+      }
     );
   }
 

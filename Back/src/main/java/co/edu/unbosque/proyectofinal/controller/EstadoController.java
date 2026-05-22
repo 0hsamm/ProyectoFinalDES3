@@ -3,7 +3,6 @@ package co.edu.unbosque.proyectofinal.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +18,6 @@ import co.edu.unbosque.proyectofinal.service.EstadoService;
 
 @RestController
 @RequestMapping("/estados")
-@CrossOrigin(origins = "*")
 public class EstadoController {
 
 	private EstadoService estadoService;

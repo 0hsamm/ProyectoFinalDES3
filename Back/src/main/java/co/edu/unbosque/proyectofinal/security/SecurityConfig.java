@@ -213,7 +213,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
 
                 List.of(
-                        "http://localhost:4200"));
+                        "http://localhost:4200",
+                        "http://localhost:4201"));
 
         configuration.setAllowedMethods(
 
