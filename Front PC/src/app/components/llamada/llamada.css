@@ -1,77 +1,110 @@
 .llamada-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(3, 7, 18, 0.74);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(14px);
 }
 
 .llamada-modal {
-  background: #1e1e2e;
-  border-radius: 16px;
-  padding: 2rem;
-  min-width: 320px;
+  width: min(760px, calc(100vw - 32px));
+  background: rgba(13, 17, 26, 0.96);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 14px;
   color: white;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
 }
 
 .llamada-tipo {
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .llamada-estado {
-  color: #aaa;
-  font-size: 0.9rem;
+  color: var(--text-2);
+  font-size: 14px;
 }
 
 .llamada-error {
-  color: #f87171;
-  font-size: 0.85rem;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(251, 113, 133, 0.24);
+  border-radius: var(--radius);
+  background: rgba(251, 113, 133, 0.1);
+  color: #fecdd3;
+  font-size: 14px;
+  text-align: center;
 }
 
 .videos {
+  width: 100%;
+  min-height: 320px;
   display: flex;
+  justify-content: center;
   gap: 1rem;
   position: relative;
 }
 
 .video-box {
-  width: 320px;
-  height: 240px;
-  background: #000;
-  border-radius: 8px;
+  width: 100%;
+  max-width: 620px;
+  height: 340px;
+  background: #020617;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .video-box.small {
-  width: 120px;
-  height: 90px;
+  width: 150px;
+  height: 110px;
   position: absolute;
-  bottom: 8px;
-  right: 8px;
+  bottom: 12px;
+  right: 12px;
+  border-color: rgba(56, 189, 248, 0.34);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.36);
 }
 
 .llamada-acciones {
   display: flex;
-  gap: 1rem;
+  gap: 12px;
 }
 
 button {
-  padding: 0.6rem 1.4rem;
-  border-radius: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: var(--radius);
   border: none;
   cursor: pointer;
-  background: #4ade80;
-  color: #000;
-  font-weight: bold;
+  background: rgba(34, 197, 94, 0.18);
+  color: #bbf7d0;
+  font-weight: 800;
 }
 
 button.colgar {
-  background: #f87171;
-  color: white;
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+}
+
+@media (max-width: 720px) {
+  .videos {
+    min-height: 240px;
+  }
+
+  .video-box {
+    height: 260px;
+  }
+
+  .video-box.small {
+    width: 112px;
+    height: 84px;
+  }
 }

@@ -1,49 +1,66 @@
 .llamada-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(3, 7, 18, 0.74);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(14px);
 }
 
 .llamada-modal {
-  background: #1e1e2e;
-  border-radius: 16px;
-  padding: 2rem;
-  min-width: 300px;
+  width: min(360px, calc(100vw - 32px));
+  background: rgba(13, 17, 26, 0.97);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 18px;
   color: white;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
 }
 
 .llamada-tipo {
-  font-size: 1.2rem;
-  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.llamada-tipo i {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  background: rgba(34, 197, 94, 0.16);
+  color: #bbf7d0;
 }
 
 .llamada-acciones {
   display: flex;
-  gap: 1rem;
+  gap: 12px;
 }
 
 button {
-  padding: 0.6rem 1.4rem;
-  border-radius: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: var(--radius);
   border: none;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 800;
 }
 
 button.contestar {
-  background: #4ade80;
-  color: #000;
+  background: rgba(34, 197, 94, 0.18);
+  color: #bbf7d0;
 }
 
 button.colgar {
-  background: #f87171;
-  color: white;
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
 }

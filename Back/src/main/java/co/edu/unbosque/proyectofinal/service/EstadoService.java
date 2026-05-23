@@ -14,9 +14,11 @@ import co.edu.unbosque.proyectofinal.entity.EstadoLike;
 import co.edu.unbosque.proyectofinal.entity.EstadoVisto;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.enums.TipoEstado;
+import co.edu.unbosque.proyectofinal.enums.EstadoSolicitudAmistad;
 import co.edu.unbosque.proyectofinal.repository.EstadoLikeRepository;
 import co.edu.unbosque.proyectofinal.repository.EstadoRepository;
 import co.edu.unbosque.proyectofinal.repository.EstadoVistoRepository;
+import co.edu.unbosque.proyectofinal.repository.SolicitudAmistadRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 
 @Service
@@ -26,6 +28,7 @@ public class EstadoService {
     private final EstadoVistoRepository estadoVistoRepo;
     private final EstadoLikeRepository estadoLikeRepo;
     private final UsuarioRepository usuarioRepo;
+    private final SolicitudAmistadRepository solicitudAmistadRepo;
     private final CloudinaryService cloudinaryService;
 
     public EstadoService(
@@ -33,12 +36,14 @@ public class EstadoService {
             EstadoVistoRepository estadoVistoRepo,
             EstadoLikeRepository estadoLikeRepo,
             UsuarioRepository usuarioRepo,
+            SolicitudAmistadRepository solicitudAmistadRepo,
             CloudinaryService cloudinaryService) {
 
         this.estadoRepo = estadoRepo;
         this.estadoVistoRepo = estadoVistoRepo;
         this.estadoLikeRepo = estadoLikeRepo;
         this.usuarioRepo = usuarioRepo;
+        this.solicitudAmistadRepo = solicitudAmistadRepo;
         this.cloudinaryService = cloudinaryService;
     }
 
@@ -81,10 +86,17 @@ public class EstadoService {
     public List<EstadoDTO> obtenerEstadosActivos(
             Long usuarioId) {
 
+        Usuario usuarioActual =
+                obtenerUsuarioActivo(usuarioId);
+
         return estadoRepo
                 .findByFechaExpiracionAfterOrderByFechaCreacionDesc(
                         LocalDateTime.now())
                 .stream()
+                .filter(estado ->
+                        puedeVerEstado(
+                                estado,
+                                usuarioActual.getId()))
                 .map(estado -> convertirDTO(estado, usuarioId))
                 .toList();
     }
@@ -94,6 +106,14 @@ public class EstadoService {
             Long viewerId) {
 
         Usuario usuario = obtenerUsuarioActivo(usuarioId);
+        Usuario viewer = obtenerUsuarioActivo(viewerId);
+
+        if (!puedeVerUsuario(
+                usuario.getId(),
+                viewer.getId())) {
+
+            return List.of();
+        }
 
         return estadoRepo
                 .findByUsuarioAndFechaExpiracionAfterOrderByFechaCreacionDesc(
@@ -115,6 +135,7 @@ public class EstadoService {
         validarPropietario(estado, usuarioId);
 
         estadoLikeRepo.deleteByEstado(estado);
+        estadoVistoRepo.deleteByEstado(estado);
         estadoRepo.delete(estado);
     }
 
@@ -132,6 +153,8 @@ public class EstadoService {
                 && estado.getUsuario().getId().equals(usuario.getId())) {
             return;
         }
+
+        validarPuedeVer(estado, usuario.getId());
 
         boolean yaExiste =
                 estadoVistoRepo.existsByEstadoAndUsuario(
@@ -157,6 +180,8 @@ public class EstadoService {
 
         Usuario usuario =
                 obtenerUsuarioActivo(usuarioId);
+
+        validarPuedeVer(estado, usuario.getId());
 
         boolean yaExiste =
                 estadoLikeRepo.existsByEstadoAndUsuario(
@@ -186,6 +211,8 @@ public class EstadoService {
         Usuario usuario =
                 obtenerUsuarioActivo(usuarioId);
 
+        validarPuedeVer(estado, usuario.getId());
+
         estadoLikeRepo
                 .findByEstadoAndUsuario(estado, usuario)
                 .ifPresent(estadoLikeRepo::delete);
@@ -193,10 +220,14 @@ public class EstadoService {
         return convertirDTO(estado, usuarioId);
     }
 
-    public int obtenerCantidadVistas(Long estadoId) {
+    public int obtenerCantidadVistas(
+            Long estadoId,
+            Long usuarioId) {
 
         Estado estado =
                 obtenerEstado(estadoId);
+
+        validarPuedeVer(estado, usuarioId);
 
         return estadoVistoRepo.countByEstado(estado);
     }
@@ -239,11 +270,17 @@ public class EstadoService {
                 .toList();
     }
 
+    @Transactional
     public void eliminarEstadosExpirados() {
 
         List<Estado> expirados =
                 estadoRepo.findByFechaExpiracionBefore(
                         LocalDateTime.now());
+
+        expirados.forEach(estado -> {
+            estadoLikeRepo.deleteByEstado(estado);
+            estadoVistoRepo.deleteByEstado(estado);
+        });
 
         estadoRepo.deleteAll(expirados);
     }
@@ -272,6 +309,53 @@ public class EstadoService {
             throw new RuntimeException(
                     "Solo puedes administrar tus propios estados");
         }
+    }
+
+    private void validarPuedeVer(
+            Estado estado,
+            Long usuarioId) {
+
+        if (!puedeVerEstado(estado, usuarioId)) {
+            throw new RuntimeException(
+                    "Solo puedes ver estados de tus amigos");
+        }
+    }
+
+    private boolean puedeVerEstado(
+            Estado estado,
+            Long usuarioId) {
+
+        if (estado == null || estado.getUsuario() == null) {
+            return false;
+        }
+
+        return puedeVerUsuario(
+                estado.getUsuario().getId(),
+                usuarioId);
+    }
+
+    private boolean puedeVerUsuario(
+            Long propietarioId,
+            Long usuarioId) {
+
+        if (propietarioId == null || usuarioId == null) {
+            return false;
+        }
+
+        if (propietarioId.equals(usuarioId)) {
+            return true;
+        }
+
+        return solicitudAmistadRepo
+                .existsBySolicitante_IdAndReceptor_IdAndEstado(
+                        propietarioId,
+                        usuarioId,
+                        EstadoSolicitudAmistad.ACEPTADA)
+                || solicitudAmistadRepo
+                .existsBySolicitante_IdAndReceptor_IdAndEstado(
+                        usuarioId,
+                        propietarioId,
+                        EstadoSolicitudAmistad.ACEPTADA);
     }
 
     private TipoEstado resolverTipo(

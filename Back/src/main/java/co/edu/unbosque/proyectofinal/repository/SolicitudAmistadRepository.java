@@ -22,4 +22,9 @@ public interface SolicitudAmistadRepository
     Optional<SolicitudAmistad> findBySolicitante_IdAndReceptor_Id(
             Long solicitanteId,
             Long receptorId);
+
+    boolean existsBySolicitante_IdAndReceptor_IdAndEstado(
+            Long solicitanteId,
+            Long receptorId,
+            EstadoSolicitudAmistad estado);
 }

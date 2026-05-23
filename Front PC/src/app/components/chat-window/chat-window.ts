@@ -123,6 +123,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.nuevoMensaje = '';
       this.limpiarAdjuntoSeleccionado();
       this.refrescoSub?.unsubscribe();
+      this.pollingLlamadaSub?.unsubscribe();
     }
   }
 

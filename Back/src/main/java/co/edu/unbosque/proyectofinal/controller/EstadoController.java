@@ -121,10 +121,13 @@ public class EstadoController {
 
     @GetMapping("/{estadoId}/vistas")
     public ResponseEntity<Integer> obtenerCantidadVistas(
-            @PathVariable Long estadoId) {
+            @PathVariable Long estadoId,
+            @RequestParam Long usuarioId) {
 
         return ResponseEntity.ok(
-                estadoService.obtenerCantidadVistas(estadoId));
+                estadoService.obtenerCantidadVistas(
+                        estadoId,
+                        usuarioId));
     }
 
     @GetMapping("/{estadoId}/vistas/detalle")

@@ -2,14 +2,15 @@
   <div class="llamada-modal entrante">
 
     <div class="llamada-tipo">
-      📞 {{ llamada.tipoLlamada === 'VIDEO' ? 'Videollamada entrante' : 'Llamada de voz entrante' }}
+      <i class="pi pi-phone"></i>
+      {{ llamada.tipoLlamada === 'VIDEO' ? 'Videollamada entrante' : 'Llamada de voz entrante' }}
     </div>
 
     <div class="llamada-acciones">
-      <button class="contestar" (click)="aceptar()">
+      <button class="contestar" type="button" (click)="aceptar()">
         Contestar
       </button>
-      <button class="colgar" (click)="rechazar()">
+      <button class="colgar" type="button" (click)="rechazar()">
         Rechazar
       </button>
     </div>

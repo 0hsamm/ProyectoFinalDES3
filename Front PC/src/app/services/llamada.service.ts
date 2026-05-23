@@ -46,6 +46,19 @@ export class LlamadaService {
     );
   }
 
+  rechazarLlamada(
+    id: number
+  ): Observable<string> {
+
+    return this.http.put(
+      `${this.apiUrl}/${id}/rechazar`,
+      null,
+      {
+        responseType: 'text'
+      }
+    );
+  }
+
   obtenerPorConversacion(
     conversacionId: number
   ): Observable<Llamada[]> {

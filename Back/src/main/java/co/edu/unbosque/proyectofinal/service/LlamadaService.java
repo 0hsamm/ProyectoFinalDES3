@@ -18,6 +18,7 @@ import co.edu.unbosque.proyectofinal.enums.EstadoLlamada;
 import co.edu.unbosque.proyectofinal.enums.TipoLlamada;
 import co.edu.unbosque.proyectofinal.repository.ConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.LlamadaRepository;
+import co.edu.unbosque.proyectofinal.repository.ParticipanteConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 
 @Service
@@ -31,6 +32,9 @@ public class LlamadaService {
 
 	@Autowired
 	private ConversacionRepository conversacionRepo;
+
+	@Autowired
+	private ParticipanteConversacionRepository participanteRepo;
 
 	@Autowired
 	private AgoraTokenService agoraTokenService;
@@ -77,6 +81,25 @@ public class LlamadaService {
 		Usuario llamante = llamanteOpt.get();
 		Usuario receptor = receptorOpt.get();
 		Conversacion conversacion = convOpt.get();
+
+		if (!llamante.isHabilitado()
+				|| !receptor.isHabilitado()) {
+			return null;
+		}
+
+		boolean llamantePertenece =
+				participanteRepo.existsByConversacion_IdAndUsuario_Id(
+						conversacion.getId(),
+						llamante.getId());
+
+		boolean receptorPertenece =
+				participanteRepo.existsByConversacion_IdAndUsuario_Id(
+						conversacion.getId(),
+						receptor.getId());
+
+		if (!llamantePertenece || !receptorPertenece) {
+			return null;
+		}
 
 		String canal = "conv_" + dto.getConversacionId()
 				+ "_" + System.currentTimeMillis();
@@ -134,7 +157,9 @@ public class LlamadaService {
 
 		Llamada llamada = llamadaOpt.get();
 
-		if (llamada.getUsuarioReceptor().getId() != usuarioReceptorId) {
+		if (!llamada.getUsuarioReceptor()
+				.getId()
+				.equals(usuarioReceptorId)) {
 			return null;
 		}
 

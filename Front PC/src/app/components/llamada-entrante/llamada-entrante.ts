@@ -37,7 +37,7 @@ export class LlamadaEntranteComponent {
 
   rechazar(): void {
     this.llamadaService
-      .finalizarLlamada(this.llamada.id!)
+      .rechazarLlamada(this.llamada.id!)
       .subscribe({ next: () => {}, error: () => {} });
     this.rechazada.emit();
   }

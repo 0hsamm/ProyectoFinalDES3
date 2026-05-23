@@ -163,7 +163,7 @@
                 <span>
                   {{ obtenerDescripcionAdjunto(mensaje) }}
                   <ng-container *ngIf="obtenerTamanoHumano(mensaje.adjuntoTamano) != ''">
-                    · {{ obtenerTamanoHumano(mensaje.adjuntoTamano) }}
+                    - {{ obtenerTamanoHumano(mensaje.adjuntoTamano) }}
                   </ng-container>
                 </span>
               </div>
@@ -232,7 +232,7 @@
         <div class="attachment-preview-meta">
           {{ archivoPreviewEsImagen ? 'Imagen lista para enviar' : 'Archivo listo para enviar' }}
           <ng-container *ngIf="obtenerTamanoHumano(archivoAdjunto.size) != ''">
-            · {{ obtenerTamanoHumano(archivoAdjunto.size) }}
+            - {{ obtenerTamanoHumano(archivoAdjunto.size) }}
           </ng-container>
         </div>
       </div>

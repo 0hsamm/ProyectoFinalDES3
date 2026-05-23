@@ -41,6 +41,25 @@ export class LlamadaComponent implements OnDestroy {
     try {
       this.cliente = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
+      this.cliente.on(
+        'user-published',
+        async (user: any, mediaType: 'audio' | 'video') => {
+          if (!this.cliente) {
+            return;
+          }
+
+          await this.cliente.subscribe(user, mediaType);
+
+          if (mediaType == 'audio') {
+            user.audioTrack?.play();
+          }
+
+          if (mediaType == 'video') {
+            user.videoTrack?.play('video-remoto');
+          }
+        }
+      );
+
       await this.cliente.join(
         this.llamada.appIdAgora,
         this.llamada.canalAgora,
@@ -51,8 +70,24 @@ export class LlamadaComponent implements OnDestroy {
       this.audioTrack = await AgoraRTC.createMicrophoneAudioTrack()
         .catch(() => null);
 
-      if (this.audioTrack) {
-        await this.cliente.publish([this.audioTrack]);
+      if (this.llamada.tipoLlamada == 'VIDEO') {
+
+        this.videoTrack = await AgoraRTC.createCameraVideoTrack()
+          .catch(() => null);
+
+        this.videoTrack?.play('video-local');
+      }
+
+      const tracks =
+        [
+          this.audioTrack,
+          this.videoTrack
+        ].filter(Boolean) as Array<
+          ILocalAudioTrack | ILocalVideoTrack
+        >;
+
+      if (tracks.length > 0) {
+        await this.cliente.publish(tracks);
       }
 
       this.conectado = true;
