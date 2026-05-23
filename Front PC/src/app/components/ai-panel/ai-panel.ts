@@ -13,6 +13,8 @@ import { IaService } from '../../services/ia.service';
 
 import { ToastService } from '../../services/toast.service';
 
+import { ChangeDetectorRef } from '@angular/core';
+
 interface AiMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -41,7 +43,8 @@ export class AiPanelComponent
 
   constructor(
     private iaService: IaService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +82,7 @@ export class AiPanelComponent
             role: 'assistant',
             content: respuesta.respuesta
           });
+          this.cdr.detectChanges();
           this.cargarHistorial();
         },
         error: (err) => {
