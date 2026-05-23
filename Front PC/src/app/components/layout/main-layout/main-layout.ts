@@ -40,7 +40,7 @@ export class MainLayoutComponent {
 
   conversacionSeleccionada: Conversacion | null = null;
 
-  panelActivo: string = 'chats';
+  panelActivo = 'chats';
 
   seleccionarConversacion(
     conversacion: Conversacion | null
@@ -55,7 +55,7 @@ export class MainLayoutComponent {
 
     this.panelActivo = panel;
 
-    if (panel != 'chats') {
+    if (panel !== 'chats') {
 
       this.conversacionSeleccionada = null;
     }

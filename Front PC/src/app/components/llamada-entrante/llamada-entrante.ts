@@ -21,8 +21,8 @@ export class LlamadaEntranteComponent {
   @Input() llamada!: Llamada;
   @Input() idUsuarioActual!: number;
 
-  @Output() aceptada = new EventEmitter<LlamadaRespuesta>();
-  @Output() rechazada = new EventEmitter<void>();
+  @Output() readonly aceptada = new EventEmitter<LlamadaRespuesta>();
+  @Output() readonly rechazada = new  EventEmitter<void>();
 
   constructor(private llamadaService: LlamadaService) {}
 
@@ -33,6 +33,7 @@ export class LlamadaEntranteComponent {
   }
 
   aceptar(): void {
+    if (this.llamada.id == null) return;
     this.llamadaService
       .aceptarLlamada(this.llamada.id!, this.idUsuarioActual)
       .subscribe({
@@ -42,6 +43,7 @@ export class LlamadaEntranteComponent {
   }
 
   rechazar(): void {
+    if (this.llamada.id == null) return;
     this.llamadaService
       .rechazarLlamada(this.llamada.id!)
       .subscribe({ next: () => {}, error: () => {} });

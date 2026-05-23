@@ -42,7 +42,7 @@ import {
 export class FriendsPanelComponent
   implements OnInit, OnDestroy {
 
-  usernameDestino: string = '';
+  usernameDestino = '';
 
   usuarioEncontrado: Usuario | null = null;
 
@@ -52,26 +52,26 @@ export class FriendsPanelComponent
 
   solicitudesEnviadas: SolicitudAmistad[] = [];
 
-  cargando: boolean = true;
+  cargando = true;
 
-  buscando: boolean = false;
+  buscando = false;
 
-  procesando: boolean = false;
+  procesando = false;
 
-  mensaje: string = '';
+  mensaje = '';
 
-  error: string = '';
+  error = '';
 
-  fraseSecretaChat: string = '';
+  fraseSecretaChat = '';
 
   amigosSeleccionadosIds: number[] = [];
 
-  idUsuarioActual: number =
-    Number(localStorage.getItem('idUsuario') || 0);
+  idUsuarioActual = Number(localStorage.getItem('idUsuario') || 0);
+
 
   private refrescoSub?: Subscription;
 
-  private destruido: boolean = false;
+  private destruido = false;
 
   constructor(
     private amistadService: AmistadService,
@@ -100,7 +100,7 @@ export class FriendsPanelComponent
   }
 
   cargarDatos(
-    mostrarCarga: boolean = true
+    mostrarCarga = true
   ): void {
 
     if (mostrarCarga) {
@@ -117,7 +117,7 @@ export class FriendsPanelComponent
 
       pendientes--;
 
-      if (pendientes == 0) {
+      if (pendientes === 0) {
 
         this.cargando = false;
       }
@@ -135,7 +135,7 @@ export class FriendsPanelComponent
             (id) =>
               this.amigos.some(
                 (amigo) =>
-                  amigo.usuarioId == id
+                  amigo.usuarioId === id
               )
           );
 
@@ -235,7 +235,7 @@ export class FriendsPanelComponent
 
     this.usuarioEncontrado = null;
 
-    if (username == '') {
+    if (username === '') {
 
       this.error =
         'Ingresa un nombre de usuario';
@@ -293,7 +293,7 @@ export class FriendsPanelComponent
 
     this.error = '';
 
-    if (username == '') {
+    if (username === '') {
 
       this.error =
         'Ingresa un nombre de usuario';
@@ -474,7 +474,7 @@ export class FriendsPanelComponent
     const frase =
       this.fraseSecretaChat.trim();
 
-    if (this.idUsuarioActual == 0) {
+    if (this.idUsuarioActual === 0) {
 
       this.toastService.error(
         'Sesion incompleta',
@@ -544,7 +544,7 @@ export class FriendsPanelComponent
       this.amigosSeleccionadosIds =
         this.amigosSeleccionadosIds.filter(
           (id) =>
-            id != amigo.usuarioId
+            id !== amigo.usuarioId
         );
 
       return;
@@ -569,7 +569,7 @@ export class FriendsPanelComponent
     const frase =
       this.fraseSecretaChat.trim();
 
-    if (this.idUsuarioActual == 0) {
+    if (this.idUsuarioActual === 0) {
 
       this.toastService.error(
         'Sesion incompleta',
@@ -745,7 +745,7 @@ export class FriendsPanelComponent
       return err.error.message;
     }
 
-    if (err?.status == 404) {
+    if (err?.status === 404) {
 
       return 'El backend no encontro esta ruta o recurso. Revisa que el back este actualizado y reinicia Spring Boot.';
     }

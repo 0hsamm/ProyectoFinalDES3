@@ -51,24 +51,24 @@ export class SettingsPanelComponent
 
   fotoSeleccionada: File | null = null;
 
-  vistaPreviaFoto: string = '';
+  vistaPreviaFoto = '';
 
-  cargando: boolean = true;
+  cargando = true;
 
-  guardando: boolean = false;
+  guardando = false;
 
-  subiendoFoto: boolean = false;
+  subiendoFoto = false;
 
-  perfilError: string = '';
+  perfilError = '';
 
   pestanaActiva: 'perfil' | 'privacidad' | 'notificaciones' = 'perfil';
 
-  idUsuarioActual: number =
+  idUsuarioActual =
     Number(localStorage.getItem('idUsuario') || 0);
 
   private refrescoSub?: Subscription;
 
-  private destruido: boolean = false;
+  private destruido = false;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -95,10 +95,10 @@ export class SettingsPanelComponent
   }
 
   cargarPerfil(
-    mostrarCarga: boolean = true
+    mostrarCarga = true
   ): void {
 
-    if (this.idUsuarioActual == 0) {
+    if (this.idUsuarioActual === 0) {
 
       this.usuario =
         this.obtenerPerfilLocal();
@@ -166,7 +166,7 @@ export class SettingsPanelComponent
 
   guardarPerfil(): void {
 
-    if (this.idUsuarioActual == 0) {
+    if (this.idUsuarioActual === 0) {
 
       this.guardarPerfilLocal();
 
@@ -267,12 +267,12 @@ export class SettingsPanelComponent
   }
 
   subirFotoPerfil(
-    mostrarToast: boolean = true,
-    mostrarPerfilGuardado: boolean = false
+    mostrarToast = true,
+    mostrarPerfilGuardado = false
   ): void {
 
     if (
-      this.idUsuarioActual == 0 ||
+      this.idUsuarioActual === 0 ||
       this.fotoSeleccionada == null
     ) {
 
@@ -503,17 +503,17 @@ export class SettingsPanelComponent
       return err.error.message;
     }
 
-    if (err?.name == 'TimeoutError') {
+    if (err?.name === 'TimeoutError') {
 
       return 'El backend tardo demasiado en responder';
     }
 
-    if (err?.status == 413) {
+    if (err?.status === 413) {
 
       return 'El archivo es demasiado grande. Usa una imagen de maximo 25MB.';
     }
 
-    if (err?.status == 0) {
+    if (err?.status === 0) {
 
       return 'No hay conexion con el backend o el servidor rechazo la subida.';
     }

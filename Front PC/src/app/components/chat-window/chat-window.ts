@@ -54,36 +54,35 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   mensajes: Mensaje[] = [];
 
-  nuevoMensaje: string = '';
+  nuevoMensaje = '';
 
-  cargando: boolean = false;
+  cargando = false;
 
-  enviando: boolean = false;
+  enviando = false;
 
   llamadaActivaId: number | null = null;
   llamadaActiva: LlamadaRespuesta | null = null;
   llamadaEntrante: Llamada | null = null;
   private pollingLlamadaSub?: Subscription;
 
-  error: string = '';
+  error = '';
 
-  fraseSecreta: string = '';
+  fraseSecreta = '';
 
   archivoAdjunto: File | null = null;
 
   archivoPreviewUrl: string | null = null;
 
-  archivoPreviewEsImagen: boolean = false;
+  archivoPreviewEsImagen = false;
 
   usuarioActual: string =
     localStorage.getItem('usuario') || '';
 
-  idUsuarioActual: number =
-    Number(localStorage.getItem('idUsuario') || 0);
+  idUsuarioActual = Number(localStorage.getItem('idUsuario') || 0);
 
   private refrescoSub?: Subscription;
 
-  private destruido: boolean = false;
+  private destruido = false;
 
   constructor(
     private mensajeService: MensajeService,
@@ -136,7 +135,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   }
 
   cargarMensajes(
-    mostrarCarga: boolean = true
+    mostrarCarga = true
   ): void {
 
     if (!this.conversacion?.id) {
@@ -173,7 +172,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
           this.mensajes = mensajes || [];
 
-          if (this.mensajes.length == 0) {
+          if (this.mensajes.length === 0) {
             this.limpiarUltimoMensajeConversacion();
           }
 
@@ -256,7 +255,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.archivoAdjunto;
 
     if (
-      (contenido == '' && archivo == null) ||
+      (contenido === '' && archivo === null) ||
       !this.conversacion?.id ||
       this.enviando
     ) {
@@ -266,7 +265,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.enviando = true;
     this.marcarCambio();
 
-    if (this.idUsuarioActual == 0) {
+    if (this.idUsuarioActual === 0) {
       this.enviando = false;
       this.marcarCambio();
 
@@ -297,7 +296,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       .enviarMensaje(
         this.idUsuarioActual,
         this.conversacion.id,
-        contenido == '' ? null : contenido,
+        contenido === '' ? null : contenido,
         this.fraseSecreta,
         this.obtenerTipoMensajeAdjunto(
           archivo
@@ -356,7 +355,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     const receptorId = this.obtenerReceptorId();
 
-    if (!this.conversacion?.id || this.idUsuarioActual == 0 || receptorId == null) {
+    if (!this.conversacion?.id || this.idUsuarioActual === 0 || receptorId === null) {
       this.toastService.warning(
         'Llamada no disponible',
         'La conversacion no tiene un receptor valido para iniciar llamada'
@@ -377,7 +376,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
           this.llamadaActiva = respuesta;
           this.marcarCambio();
           this.toastService.success(
-            tipo == 'VOZ' ? 'Llamada iniciada' : 'Videollamada iniciada',
+            tipo === 'VOZ' ? 'Llamada iniciada' : 'Videollamada iniciada',
             `Conectando con ${this.obtenerNombreConversacion()}`
           );
         },
@@ -472,7 +471,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     if (
       this.conversacion?.fotoGrupo &&
-      this.conversacion.fotoGrupo.trim() != ''
+      this.conversacion.fotoGrupo.trim() !== ''
     ) {
       return this.conversacion.fotoGrupo;
     }
@@ -498,10 +497,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     mensaje: Mensaje
   ): boolean {
 
-    return mensaje.remitenteId == this.idUsuarioActual ||
-      mensaje.usuarioId == this.idUsuarioActual ||
-      mensaje.usuario == this.usuarioActual ||
-      mensaje.nombreUsuario == this.usuarioActual;
+    return mensaje.remitenteId === this.idUsuarioActual ||
+      mensaje.usuarioId === this.idUsuarioActual ||
+      mensaje.usuario === this.usuarioActual ||
+      mensaje.nombreUsuario === this.usuarioActual;
   }
 
   debeMostrarRemitente(
@@ -511,7 +510,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     return this.esConversacionGrupal() &&
       this.obtenerNombreRemitente(
         mensaje
-      ) != '';
+      ) !== '';
   }
 
   obtenerNombreRemitente(
@@ -579,7 +578,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     return this.obtenerContenido(
       mensaje
-    ) != '';
+    ) !== '';
   }
 
   tieneAdjuntoVisible(
@@ -632,11 +631,11 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       return 'Imagen adjunta';
     }
 
-    if (mensaje.tipoMensaje == 'AUDIO') {
+    if (mensaje.tipoMensaje === 'AUDIO') {
       return 'Audio adjunto';
     }
 
-    if (mensaje.tipoMensaje == 'VIDEO') {
+    if (mensaje.tipoMensaje === 'VIDEO') {
       return 'Video adjunto';
     }
 
@@ -669,7 +668,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     }
 
     const decimales =
-      valor >= 10 || indice == 0
+      valor >= 10 || indice === 0
         ? 0
         : 1;
 
@@ -690,11 +689,12 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     tipoMensaje?: string
   ): string {
 
-    if (tipoMensaje == 'VIDEO') {
+    if (tipoMensaje === 'VIDEO') {
       return 'VD';
     }
 
-    if (tipoMensaje == 'AUDIO') {
+
+    if (tipoMensaje === 'AUDIO') {
       return 'AU';
     }
 
@@ -740,7 +740,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     contenido: string
   ): void {
 
-    if (contenido == '') {
+    if (contenido === '') {
       this.mensajeService
         .eliminarMensaje(mensajeId)
         .subscribe({
@@ -757,7 +757,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     this.toastService.error(
       'No se pudo subir el archivo',
-      contenido == ''
+      contenido === ''
         ? this.obtenerMensajeError(
             err,
             'El archivo no se pudo enviar'
@@ -802,7 +802,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     const receptor =
       participantes.find(
-        (id) => id != this.idUsuarioActual
+        (id) => id !== this.idUsuarioActual
       );
 
     return receptor || null;
@@ -818,7 +818,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         mensaje
       );
 
-    if (contenido == '') {
+    if (contenido === '') {
       return descripcion;
     }
 
@@ -888,7 +888,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     if (
       !this.conversacion?.id ||
-      this.mensajes.length == 0
+      this.mensajes.length === 0
     ) {
       return;
     }
@@ -903,7 +903,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         ultimoMensaje
       );
 
-    if (vistaPrevia == '') {
+    if (vistaPrevia === '') {
       return;
     }
 
@@ -944,7 +944,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     const contenido =
       this.obtenerContenido(mensaje);
 
-    if (contenido != '') {
+    if (contenido !== '') {
       return contenido;
     }
 
@@ -970,7 +970,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   private esConversacionGrupal(): boolean {
 
-    return this.conversacion?.tipoConversacion ==
+    return this.conversacion?.tipoConversacion ===
       'GRUPAL';
   }
 
@@ -1063,7 +1063,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   iniciarPollingLlamadas(): void {
     this.pollingLlamadaSub?.unsubscribe();
     this.pollingLlamadaSub = interval(4000).subscribe(() => {
-      if (this.idUsuarioActual == 0) return;
+      if (this.idUsuarioActual === 0) return;
       this.llamadaService
         .obtenerLlamadasPendientes(this.idUsuarioActual)
         .subscribe({

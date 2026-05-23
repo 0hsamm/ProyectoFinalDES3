@@ -78,7 +78,7 @@ export class ChatInfoComponent {
       participanteVisible?.descripcion ||
       '';
 
-    if (descripcion.trim() != '') {
+    if (descripcion.trim() !== '') {
       return descripcion.trim();
     }
 

@@ -26,11 +26,11 @@ import { environment } from '../../../environment/environment';
 })
 export class Verificar implements OnInit {
 
-  cargando: boolean = true;
+  cargando = true;
 
-  correcto: boolean = false;
+  correcto = false;
 
-  mensaje: string = '';
+  mensaje = '';
 
   constructor(
 
@@ -50,7 +50,7 @@ export class Verificar implements OnInit {
 
     if (
       token == null ||
-      token.trim() == ''
+      token.trim() === ''
     ) {
 
       this.correcto = false;

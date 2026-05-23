@@ -136,11 +136,11 @@ export class AiPanelComponent
   }
 
   private static obtenerMensajeError(err: unknown): string {
-    const e = err as Record<string, unknown>;
-    if (typeof (e?.['error'] as Record<string, unknown>)?.['error'] === 'string') return (e['error'] as Record<string, unknown>)['error'] as string;
-    if (typeof (e?.['error'] as Record<string, unknown>)?.['mensaje'] === 'string') return (e['error'] as Record<string, unknown>)['mensaje'] as string;
-    if (typeof (e?.['error'] as Record<string, unknown>)?.['message'] === 'string') return (e['error'] as Record<string, unknown>)['message'] as string;
-    if (typeof e?.['error'] === 'string') return e['error'] as string;
+    const error = err as Record<string, unknown>;
+    if (typeof (error?.['error'] as Record<string, unknown>)?.['error'] === 'string') return (error['error'] as Record<string, unknown>)['error'] as string;
+    if (typeof (error?.['error'] as Record<string, unknown>)?.['mensaje'] === 'string') return (error['error'] as Record<string, unknown>)['mensaje'] as string;
+    if (typeof (error?.['error'] as Record<string, unknown>)?.['message'] === 'string') return (error['error'] as Record<string, unknown>)['message'] as string;
+    if (typeof error?.['error'] === 'string') return error['error'] as string;
     return 'Revisa la configuracion de GEMINI_API_KEY en el backend';
   }
 }

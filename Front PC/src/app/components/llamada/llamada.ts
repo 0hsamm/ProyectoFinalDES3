@@ -29,17 +29,17 @@ export class LlamadaComponent implements OnInit, OnDestroy {
   @Input() llamada!: LlamadaRespuesta;
   @Input() idUsuarioActual?: number;
 
-  @Output() colgar = new EventEmitter<void>();
+  @Output() readonly colgar = new EventEmitter<void>();
 
-  conectado: boolean = false;
-  error: string = '';
-  duracionSegundos: number = 0;
+  conectado = false;
+  error = '';
+  duracionSegundos = 0;
 
   private cliente: IAgoraRTCClient | null = null;
   private audioTrack: ILocalAudioTrack | null = null;
   private videoTrack: ILocalVideoTrack | null = null;
   private contadorDuracion?: ReturnType<typeof setInterval>;
-  private cerrando: boolean = false;
+  private cerrando = false;
 
   ngOnInit(): void {
 
@@ -64,11 +64,11 @@ export class LlamadaComponent implements OnInit, OnDestroy {
 
           await this.cliente.subscribe(user, mediaType);
 
-          if (mediaType == 'audio') {
+          if (mediaType === 'audio') {
             user.audioTrack?.play();
           }
 
-          if (mediaType == 'video') {
+          if (mediaType === 'video') {
             user.videoTrack?.play('video-remoto');
           }
         }
@@ -84,7 +84,7 @@ export class LlamadaComponent implements OnInit, OnDestroy {
       this.audioTrack = await AgoraRTC.createMicrophoneAudioTrack()
         .catch(() => null);
 
-      if (this.llamada.tipoLlamada == 'VIDEO') {
+      if (this.llamada.tipoLlamada === 'VIDEO') {
 
         this.videoTrack = await AgoraRTC.createCameraVideoTrack()
           .catch(() => null);
@@ -112,7 +112,7 @@ export class LlamadaComponent implements OnInit, OnDestroy {
   }
 
   async salir(
-    emitirEvento: boolean = true
+    emitirEvento = true
   ): Promise<void> {
 
     if (this.cerrando) {
@@ -142,7 +142,7 @@ export class LlamadaComponent implements OnInit, OnDestroy {
 
     if (
       this.idUsuarioActual != null &&
-      this.llamada.usuarioLlamanteId ==
+      this.llamada.usuarioLlamanteId ===
       this.idUsuarioActual
     ) {
       return this.llamada.usuarioReceptorNombre ||
