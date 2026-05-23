@@ -186,13 +186,30 @@ public class Usuario implements UserDetails {
         this.rol = rol;
     }
 
+    
     /*
      * =========================
      * SPRING SECURITY
      * =========================
      */
 
-    @Override
+    public List<TokenVerificacion> getTokens() {
+		return tokens;
+	}
+
+	public void setTokens(List<TokenVerificacion> tokens) {
+		this.tokens = tokens;
+	}
+
+	public List<RegistroAuditoria> getAuditorias() {
+		return auditorias;
+	}
+
+	public void setAuditorias(List<RegistroAuditoria> auditorias) {
+		this.auditorias = auditorias;
+	}
+
+	@Override
     public java.util.Collection<? extends GrantedAuthority>
     getAuthorities() {
         if (rol == null) {

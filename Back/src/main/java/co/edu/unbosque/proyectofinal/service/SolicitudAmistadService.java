@@ -40,88 +40,59 @@ public class SolicitudAmistadService {
             String correoSolicitante,
             CrearSolicitudAmistadDTO dto) {
 
-        if (correoSolicitante == null
-                || correoSolicitante.isBlank()) {
-            return 2;
-        }
+        if (correoSolicitante == null || correoSolicitante.isBlank()) return 2;
+        if (dto == null || dto.getUsernameDestino() == null || dto.getUsernameDestino().isBlank()) return 1;
 
-        if (dto == null
-                || dto.getUsernameDestino() == null
-                || dto.getUsernameDestino().isBlank()) {
-            return 1;
-        }
+        Optional<Usuario> solicitanteOpt = usuarioRepository.findByCorreo(correoSolicitante);
+        if (!solicitanteOpt.isPresent() || !solicitanteOpt.get().isHabilitado()) return 2;
 
-        Optional<Usuario> solicitanteOpt =
-                usuarioRepository.findByCorreo(
-                        correoSolicitante);
-
-        if (!solicitanteOpt.isPresent()
-                || !solicitanteOpt.get().isHabilitado()) {
-            return 2;
-        }
-
-        Optional<Usuario> receptorOpt =
-                usuarioRepository.findByUsuario(
-                        dto.getUsernameDestino().trim());
-
-        if (!receptorOpt.isPresent()
-                || !receptorOpt.get().isHabilitado()) {
-            return 3;
-        }
+        Optional<Usuario> receptorOpt = usuarioRepository.findByUsuario(dto.getUsernameDestino().trim());
+        if (!receptorOpt.isPresent() || !receptorOpt.get().isHabilitado()) return 3;
 
         Usuario solicitante = solicitanteOpt.get();
         Usuario receptor = receptorOpt.get();
 
-        if (solicitante.getId().equals(receptor.getId())) {
-            return 4;
-        }
+        if (solicitante.getId().equals(receptor.getId())) return 4;
 
-        Optional<SolicitudAmistad> directa =
-                solicitudAmistadRepository
-                        .findBySolicitante_IdAndReceptor_Id(
-                                solicitante.getId(),
-                                receptor.getId());
+        int resultadoDirecta = verificarRelacionDirecta(solicitante.getId(), receptor.getId());
+        if (resultadoDirecta != 0) return resultadoDirecta;
 
+        int resultadoInversa = verificarRelacionInversa(receptor.getId(), solicitante.getId());
+        if (resultadoInversa != 0) return resultadoInversa;
+
+        crearNuevaSolicitud(solicitante, receptor);
+        return 0;
+    }
+
+    private int verificarRelacionDirecta(Long solicitanteId, Long receptorId) {
+        Optional<SolicitudAmistad> directa = solicitudAmistadRepository
+                .findBySolicitante_IdAndReceptor_Id(solicitanteId, receptorId);
         if (directa.isPresent()) {
-            return manejarRelacionDirectaExistente(
-                    directa.get());
+            return manejarRelacionDirectaExistente(directa.get());
         }
+        return 0;
+    }
 
-        Optional<SolicitudAmistad> inversa =
-                solicitudAmistadRepository
-                        .findBySolicitante_IdAndReceptor_Id(
-                                receptor.getId(),
-                                solicitante.getId());
+    private int verificarRelacionInversa(Long receptorId, Long solicitanteId) {
+        Optional<SolicitudAmistad> inversa = solicitudAmistadRepository
+                .findBySolicitante_IdAndReceptor_Id(receptorId, solicitanteId);
+        if (!inversa.isPresent()) return 0;
 
-        if (inversa.isPresent()) {
-            EstadoSolicitudAmistad estado =
-                    inversa.get().getEstado();
+        EstadoSolicitudAmistad estado = inversa.get().getEstado();
+        if (estado == EstadoSolicitudAmistad.PENDIENTE) return 6;
+        if (estado == EstadoSolicitudAmistad.ACEPTADA) return 7;
+        if (estado == EstadoSolicitudAmistad.BLOQUEADA) return 8;
+        return 0;
+    }
 
-            if (estado == EstadoSolicitudAmistad.PENDIENTE) {
-                return 6;
-            }
-
-            if (estado == EstadoSolicitudAmistad.ACEPTADA) {
-                return 7;
-            }
-
-            if (estado == EstadoSolicitudAmistad.BLOQUEADA) {
-                return 8;
-            }
-        }
-
-        SolicitudAmistad solicitud =
-                new SolicitudAmistad();
-
+    private void crearNuevaSolicitud(Usuario solicitante, Usuario receptor) {
+        SolicitudAmistad solicitud = new SolicitudAmistad();
         solicitud.setSolicitante(solicitante);
         solicitud.setReceptor(receptor);
         solicitud.setEstado(EstadoSolicitudAmistad.PENDIENTE);
         solicitud.setFechaSolicitud(LocalDateTime.now());
         solicitud.setFechaRespuesta(null);
-
         solicitudAmistadRepository.save(solicitud);
-
-        return 0;
     }
 
     public List<SolicitudAmistadDTO>
