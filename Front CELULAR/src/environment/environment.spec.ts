@@ -1,7 +1,7 @@
-import { Environment } from './environment';
+import { environment } from './environment';
 
-describe('Environment', () => {
-  it('should create an instance', () => {
-    expect(new Environment()).toBeTruthy();
+describe('environment', () => {
+  it('should expose the api url', () => {
+    expect(environment.apiUrl).toBeDefined();
   });
 });

@@ -1,7 +1,9 @@
 import { Mensaje } from './mensaje';
 
 describe('Mensaje', () => {
-  it('should create an instance', () => {
-    expect(new Mensaje()).toBeTruthy();
+  it('should allow a typed object', () => {
+    const mensaje: Mensaje = {};
+
+    expect(mensaje).toBeDefined();
   });
 });
