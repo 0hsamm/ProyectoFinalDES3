@@ -18,7 +18,7 @@ import {
 export class AmistadService {
 
   private apiUrl =
-    environment.apiUrl + '/amistades';
+    `${environment.apiUrl}/amistades`;
 
   constructor(
     private http: HttpClient
@@ -40,7 +40,7 @@ export class AmistadService {
     };
 
     return this.http.post(
-      this.apiUrl + '/solicitudes',
+      `${this.apiUrl}/solicitudes`,
       body,
       {
         responseType: 'text'
@@ -52,7 +52,7 @@ export class AmistadService {
     Observable<SolicitudAmistad[]> {
 
     return this.http.get<SolicitudAmistad[]>(
-      this.apiUrl + '/solicitudes/recibidas'
+      `${this.apiUrl}/solicitudes/recibidas`
     );
   }
 
@@ -60,7 +60,7 @@ export class AmistadService {
     Observable<SolicitudAmistad[]> {
 
     return this.http.get<SolicitudAmistad[]>(
-      this.apiUrl + '/solicitudes/enviadas'
+      `${this.apiUrl}/solicitudes/enviadas`
     );
   }
 

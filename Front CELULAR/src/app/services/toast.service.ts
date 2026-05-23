@@ -86,7 +86,7 @@ export class ToastService {
 
     this.messagesSubject.next(
       this.messagesSubject.value.filter(
-        (message) => message.id != id
+        (message) => message.id !== id
       )
     );
   }

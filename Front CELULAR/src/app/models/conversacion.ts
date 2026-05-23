@@ -1,3 +1,18 @@
+export interface ParticipanteConversacion {
+
+  id?: number;
+
+  usuario?: string;
+
+  nombrePersona?: string;
+
+  fotoPerfil?: string;
+
+  sobreMi?: string;
+
+  descripcion?: string;
+}
+
 export interface Conversacion {
 
   id?: number;
@@ -14,7 +29,7 @@ export interface Conversacion {
 
   fechaCreacion?: string;
 
-  participantes?: any[];
+  participantes?: ParticipanteConversacion[];
 
   participantesIds?: number[];
 

@@ -19,16 +19,16 @@ import { Usuario } from '../models/usuario';
 export class UsuarioService {
 
   private apiUrl =
-    environment.apiUrl + '/usuarios';
+    `${environment.apiUrl}/usuarios`;
 
   constructor(
     private http: HttpClient
   ) {}
 
   obtenerUsuarios():
-    Observable<any> {
+    Observable<Usuario[]> {
 
-    return this.http.get(
+    return this.http.get<Usuario[]>(
       this.apiUrl
     );
   }

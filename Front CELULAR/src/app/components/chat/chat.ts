@@ -90,10 +90,10 @@ export class Chat
       .obtenerConversaciones()
       .subscribe({
 
-        next: (data: any[]) => {
+        next: (data: unknown[]) => {
 
           this.conversaciones =
-            data;
+            data as Conversacion[];
 
           if(
             this.conversaciones.length > 0
