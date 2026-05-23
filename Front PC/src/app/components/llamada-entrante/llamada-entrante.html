@@ -1,0 +1,18 @@
+<div class="llamada-overlay">
+  <div class="llamada-modal entrante">
+
+    <div class="llamada-tipo">
+      📞 {{ llamada.tipoLlamada === 'VIDEO' ? 'Videollamada entrante' : 'Llamada de voz entrante' }}
+    </div>
+
+    <div class="llamada-acciones">
+      <button class="contestar" (click)="aceptar()">
+        Contestar
+      </button>
+      <button class="colgar" (click)="rechazar()">
+        Rechazar
+      </button>
+    </div>
+
+  </div>
+</div>

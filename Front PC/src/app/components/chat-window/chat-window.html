@@ -286,7 +286,12 @@
     </form>
 
   </ng-container>
-
+  <app-llamada
+    *ngIf="llamadaActiva != null"
+    [llamada]="llamadaActiva!"
+    (colgar)="onColgar()"
+  >
+  </app-llamada>
   <ng-template #sinConversacion>
 
     <div class="empty-window">
@@ -304,5 +309,11 @@
     </div>
 
   </ng-template>
-
+  <app-llamada-entrante
+    *ngIf="llamadaEntrante != null"
+    [llamada]="llamadaEntrante!"
+    [idUsuarioActual]="idUsuarioActual"
+    (aceptada)="onLlamadaAceptada($event)"
+    (rechazada)="onLlamadaRechazada()"
+  />
 </div>

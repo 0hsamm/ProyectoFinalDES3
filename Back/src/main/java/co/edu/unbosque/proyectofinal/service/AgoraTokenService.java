@@ -1,174 +1,107 @@
 package co.edu.unbosque.proyectofinal.service;
 
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.zip.CRC32;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-/**
- * Genera tokens RTC de Agora (versión 006).
- * Documentación oficial: https://docs.agora.io/en/video-calling/get-started/authentication-workflow
- *
- * ¡IMPORTANTE! Debes configurar en application.properties:
- *   agora.app-id=TU_APP_ID
- *   agora.app-certificate=TU_APP_CERTIFICATE
- */
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.TreeMap;
+import java.util.zip.Deflater;
+
 @Service
 public class AgoraTokenService {
 
-	@Value("${agora.app-id}")
-	private String appId;
+    @Value("${agora.app-id}")
+    private String appId;
 
-	@Value("${agora.app-certificate}")
-	private String appCertificate;
+    @Value("${agora.app-certificate}")
+    private String appCertificate;
 
-	private static final int DURACION_TOKEN_SEGUNDOS = 3600;
+    private static final int DURACION_TOKEN_SEGUNDOS = 3600;
+    private static final short VERSION = 7;
+    private static final int PRIVILEGE_JOIN_CHANNEL = 1;
 
-	// Privilegio para unirse a un canal de voz/video
-	private static final int PRIVILEGIO_UNIRSE_CANAL = 1;
+    public String generarToken(String canal, int uid) {
+        return null;
+    }
+    
+    public String getAppId() {
+        return appId;
+    }
 
-	/**
-	 * Genera un token de Agora para que el cliente pueda unirse al canal.
-	 *
-	 * @param canal  Nombre del canal en Agora
-	 * @param uid    UID numérico del usuario (puede ser 0 para generar uno automático)
-	 * @return token firmado válido por 1 hora
-	 */
-	public String generarToken(String canal, int uid) {
+    private byte[] construirContenidoFirma(String appId, String canal, int uid, byte[] mensaje) {
+        String uidStr = uid == 0 ? "" : String.valueOf(uid);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            out.write(appId.getBytes(StandardCharsets.UTF_8));
+            out.write(canal.getBytes(StandardCharsets.UTF_8));
+            out.write(uidStr.getBytes(StandardCharsets.UTF_8));
+            out.write(mensaje);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return out.toByteArray();
+       }
 
-		try {
-			int expiracion = (int) (System.currentTimeMillis() / 1000)
-					+ DURACION_TOKEN_SEGUNDOS;
+    private byte[] empaquetarMensaje(int salt, int ts, TreeMap<Integer, Integer> privilegios)
+            throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        writeInt(out, salt);
+        writeInt(out, ts);
+        writeShort(out, (short) privilegios.size());
+        for (var entry : privilegios.entrySet()) {
+            writeShort(out, entry.getKey().shortValue());
+            writeInt(out, entry.getValue());
+        }
+        return out.toByteArray();
+    }
 
-			byte[] msg = buildMessage(canal, uid, expiracion);
+    private byte[] construirToken(byte[] firma, byte[] mensaje) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        writeShort(out, (short) firma.length);
+        out.write(firma);
+        writeShort(out, (short) mensaje.length);
+        out.write(mensaje);
+        return comprimir(out.toByteArray());
+    }
 
-			byte[] firma = hmacSha256(appCertificate.getBytes(StandardCharsets.UTF_8), msg);
+    private byte[] comprimir(byte[] data) {
+        Deflater deflater = new Deflater();
+        deflater.setInput(data);
+        deflater.finish();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024];
+        while (!deflater.finished()) {
+            int count = deflater.deflate(buf);
+            out.write(buf, 0, count);
+        }
+        deflater.end();
+        return out.toByteArray();
+    }
 
-			return buildToken(firma, canal, uid, expiracion);
+    private void writeInt(ByteArrayOutputStream out, int value) {
+        ByteBuffer buf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(value);
+        out.write(buf.array(), 0, 4);
+    }
 
-		} catch (Exception e) {
-			throw new RuntimeException("Error generando token de Agora: " + e.getMessage(), e);
-		}
-	}
+    private void writeShort(ByteArrayOutputStream out, short value) {
+        ByteBuffer buf = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
+        buf.putShort(value);
+        out.write(buf.array(), 0, 2);
+    }
 
-	public String getAppId() {
-		return appId;
-	}
-
-
-	private byte[] buildMessage(String canal, int uid, int expiracion) {
-
-		String uidStr = uid == 0 ? "" : String.valueOf(uid);
-
-		CRC32 crcCanal = new CRC32();
-		crcCanal.update(canal.getBytes(StandardCharsets.UTF_8));
-
-		CRC32 crcUid = new CRC32();
-		crcUid.update(uidStr.getBytes(StandardCharsets.UTF_8));
-
-		int ts = (int) (System.currentTimeMillis() / 1000);
-		int salt = (int) (Math.random() * Integer.MAX_VALUE);
-
-		ByteBuffer buf = new ByteBuffer();
-		buf.putInt(PRIVILEGIO_UNIRSE_CANAL);
-		buf.putInt(expiracion);
-		buf.putString(appId);
-		buf.putInt(ts);
-		buf.putInt(salt);
-		buf.putInt((int) crcCanal.getValue());
-		buf.putInt((int) crcUid.getValue());
-
-		return buf.toBytes();
-	}
-
-	private String buildToken(byte[] firma, String canal, int uid, int expiracion) {
-
-		String uidStr = uid == 0 ? "" : String.valueOf(uid);
-
-		CRC32 crcCanal = new CRC32();
-		crcCanal.update(canal.getBytes(StandardCharsets.UTF_8));
-
-		CRC32 crcUid = new CRC32();
-		crcUid.update(uidStr.getBytes(StandardCharsets.UTF_8));
-
-		int ts = (int) (System.currentTimeMillis() / 1000);
-		int salt = (int) (Math.random() * Integer.MAX_VALUE);
-
-		ByteBuffer pack = new ByteBuffer();
-		pack.putInt(PRIVILEGIO_UNIRSE_CANAL);
-		pack.putInt(expiracion);
-
-		ByteBuffer token = new ByteBuffer();
-		token.putBytes(firma);
-		token.putInt(ts);
-		token.putInt(salt);
-		token.putBytes(pack.toBytes());
-
-		String tokenBase64 = java.util.Base64.getEncoder()
-				.encodeToString(token.toBytes());
-
-		return "006" + appId + tokenBase64;
-	}
-
-	private byte[] hmacSha256(byte[] clave, byte[] data)
-			throws NoSuchAlgorithmException, InvalidKeyException {
-
-		Mac mac = Mac.getInstance("HmacSHA256");
-		mac.init(new SecretKeySpec(clave, "HmacSHA256"));
-		return mac.doFinal(data);
-	}
-
-
-	private static class ByteBuffer {
-
-		private byte[] buffer = new byte[0];
-
-		void putInt(int valor) {
-			byte[] bytes = new byte[] {
-					(byte) (valor & 0xFF),
-					(byte) ((valor >> 8) & 0xFF),
-					(byte) ((valor >> 16) & 0xFF),
-					(byte) ((valor >> 24) & 0xFF)
-			};
-			buffer = concat(buffer, bytes);
-		}
-
-		void putString(String s) {
-			byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
-			putShort((short) bytes.length);
-			buffer = concat(buffer, bytes);
-		}
-
-		void putShort(short valor) {
-			byte[] bytes = new byte[] {
-					(byte) (valor & 0xFF),
-					(byte) ((valor >> 8) & 0xFF)
-			};
-			buffer = concat(buffer, bytes);
-		}
-
-		void putBytes(byte[] bytes) {
-			putShort((short) bytes.length);
-			buffer = concat(buffer, bytes);
-		}
-
-		byte[] toBytes() {
-			return Arrays.copyOf(buffer, buffer.length);
-		}
-
-		private byte[] concat(byte[] a, byte[] b) {
-			byte[] result = new byte[a.length + b.length];
-			System.arraycopy(a, 0, result, 0, a.length);
-			System.arraycopy(b, 0, result, a.length, b.length);
-			return result;
-		}
-	}
-
+    private byte[] hmacSha256(byte[] clave, byte[] data)
+            throws NoSuchAlgorithmException, InvalidKeyException {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(clave, "HmacSHA256"));
+        return mac.doFinal(data);
+    }
 }

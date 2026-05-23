@@ -63,4 +63,22 @@ export class LlamadaService {
       `${this.apiUrl}/historial/${usuarioId}`
     );
   }
+  aceptarLlamada(
+    llamadaId: number,
+    usuarioReceptorId: number
+  ): Observable<LlamadaRespuesta> {
+    return this.http.put<LlamadaRespuesta>(
+      `${this.apiUrl}/${llamadaId}/aceptar/${usuarioReceptorId}`,
+      null
+    );
+  }
+
+  obtenerLlamadasPendientes(
+    usuarioId: number
+  ): Observable<Llamada[]> {
+    return this.http.get<Llamada[]>(
+      `${this.apiUrl}/historial/${usuarioId}`
+    );
+  }
+
 }

@@ -36,6 +36,7 @@ export class LlamadaComponent implements OnDestroy {
   private audioTrack: ILocalAudioTrack | null = null;
   private videoTrack: ILocalVideoTrack | null = null;
 
+
   async unirse(): Promise<void> {
     try {
       this.cliente = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
@@ -43,24 +44,16 @@ export class LlamadaComponent implements OnDestroy {
       await this.cliente.join(
         this.llamada.appIdAgora,
         this.llamada.canalAgora,
-        this.llamada.tokenAgora,
+        this.llamada.tokenAgora || null,
         this.llamada.uidAgora
       );
 
-      this.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      await this.cliente.publish([this.audioTrack]);
+      this.audioTrack = await AgoraRTC.createMicrophoneAudioTrack()
+        .catch(() => null);
 
-      if (this.llamada.tipoLlamada === 'VIDEO') {
-        this.videoTrack = await AgoraRTC.createCameraVideoTrack();
-        await this.cliente.publish([this.videoTrack]);
-        this.videoTrack.play('video-local');
+      if (this.audioTrack) {
+        await this.cliente.publish([this.audioTrack]);
       }
-
-      this.cliente.on('user-published', async (user, mediaType) => {
-        await this.cliente!.subscribe(user, mediaType);
-        if (mediaType === 'audio') user.audioTrack?.play();
-        if (mediaType === 'video') user.videoTrack?.play('video-remoto');
-      });
 
       this.conectado = true;
 

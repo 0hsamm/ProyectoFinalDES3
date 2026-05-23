@@ -23,6 +23,10 @@ import { LlamadaService } from '../../services/llamada.service';
 
 import { ToastService } from '../../services/toast.service';
 
+import { LlamadaComponent } from '../llamada/llamada';
+import { LlamadaEntranteComponent } from '../llamada-entrante/llamada-entrante';
+import { Llamada, LlamadaRespuesta } from '../../models/llamada';
+
 import {
   interval,
   Subscription
@@ -33,7 +37,9 @@ import {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    LlamadaComponent,
+    LlamadaEntranteComponent
   ],
   templateUrl: './chat-window.html',
   styleUrls: ['./chat-window.css']
@@ -55,6 +61,9 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   enviando: boolean = false;
 
   llamadaActivaId: number | null = null;
+  llamadaActiva: LlamadaRespuesta | null = null;
+  llamadaEntrante: Llamada | null = null;
+  private pollingLlamadaSub?: Subscription;
 
   error: string = '';
 
@@ -103,6 +112,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
       this.cargarMensajes();
       this.reiniciarRefresco();
+      this.iniciarPollingLlamadas();
     }
 
     if (
@@ -121,6 +131,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.destruido = true;
     this.refrescoSub?.unsubscribe();
     this.limpiarAdjuntoSeleccionado();
+    this.pollingLlamadaSub?.unsubscribe();
   }
 
   cargarMensajes(
@@ -332,18 +343,11 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       });
   }
 
-  iniciarLlamada(
-    tipo: 'VOZ' | 'VIDEO'
-  ): void {
+  iniciarLlamada(tipo: 'VOZ' | 'VIDEO'): void {
 
-    const receptorId =
-      this.obtenerReceptorId();
+    const receptorId = this.obtenerReceptorId();
 
-    if (
-      !this.conversacion?.id ||
-      this.idUsuarioActual == 0 ||
-      receptorId == null
-    ) {
+    if (!this.conversacion?.id || this.idUsuarioActual == 0 || receptorId == null) {
       this.toastService.warning(
         'Llamada no disponible',
         'La conversacion no tiene un receptor valido para iniciar llamada'
@@ -359,22 +363,16 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         usuarioReceptorId: receptorId
       })
       .subscribe({
-
         next: (respuesta) => {
-
           this.llamadaActivaId = respuesta.id;
+          this.llamadaActiva = respuesta;
           this.marcarCambio();
-
           this.toastService.success(
-            tipo == 'VOZ'
-              ? 'Llamada iniciada'
-              : 'Videollamada iniciada',
+            tipo == 'VOZ' ? 'Llamada iniciada' : 'Videollamada iniciada',
             `Canal: ${respuesta.canalAgora}`
           );
         },
-
         error: (err) => {
-
           this.toastService.error(
             'No se pudo iniciar la llamada',
             this.obtenerMensajeError(
@@ -388,38 +386,28 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   finalizarLlamada(): void {
 
-    if (this.llamadaActivaId == null) {
-      return;
-    }
+    if (this.llamadaActivaId == null) return;
 
     this.llamadaService
-      .finalizarLlamada(
-        this.llamadaActivaId
-      )
+      .finalizarLlamada(this.llamadaActivaId)
       .subscribe({
-
         next: (respuesta) => {
-
-          this.toastService.info(
-            'Llamada finalizada',
-            respuesta
-          );
-
+          this.toastService.info('Llamada finalizada', respuesta);
           this.llamadaActivaId = null;
+          this.llamadaActiva = null;
           this.marcarCambio();
         },
-
         error: (err) => {
-
           this.toastService.error(
             'No se pudo finalizar',
-            this.obtenerMensajeError(
-              err,
-              'Intenta nuevamente'
-            )
+            this.obtenerMensajeError(err, 'Intenta nuevamente')
           );
         }
       });
+  }
+
+  onColgar(): void {
+    this.finalizarLlamada();
   }
 
   adjuntoSeleccionado(
@@ -1056,5 +1044,43 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         this.changeDetectorRef.detectChanges();
       }
     });
+  }
+  iniciarPollingLlamadas(): void {
+    this.pollingLlamadaSub?.unsubscribe();
+    this.pollingLlamadaSub = interval(4000).subscribe(() => {
+      if (this.idUsuarioActual == 0) return;
+      this.llamadaService
+        .obtenerLlamadasPendientes(this.idUsuarioActual)
+        .subscribe({
+          next: (llamadas) => {
+            const entrante = llamadas.find(
+              (l) =>
+                l.estadoLlamada === 'INICIADA' &&
+                l.usuarioReceptorId === this.idUsuarioActual &&
+                l.id !== this.llamadaActivaId
+            );
+            if (entrante && this.llamadaEntrante?.id !== entrante.id) {
+              this.llamadaEntrante = entrante;
+              this.marcarCambio();
+            } else if (!entrante && this.llamadaEntrante != null) {
+              this.llamadaEntrante = null;
+              this.marcarCambio();
+            }
+          },
+          error: () => {}
+        });
+    });
+  }
+
+  onLlamadaAceptada(respuesta: LlamadaRespuesta): void {
+    this.llamadaEntrante = null;
+    this.llamadaActiva = respuesta;
+    this.llamadaActivaId = respuesta.id;
+    this.marcarCambio();
+  }
+
+  onLlamadaRechazada(): void {
+    this.llamadaEntrante = null;
+    this.marcarCambio();
   }
 }
