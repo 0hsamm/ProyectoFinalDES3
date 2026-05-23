@@ -93,7 +93,10 @@
 
       </div>
 
-      <div class="state" *ngIf="cargando">
+      <div
+        class="state"
+        *ngIf="cargando"
+      >
         <i class="pi pi-spin pi-spinner"></i>
         Cargando mensajes...
       </div>
@@ -174,13 +177,6 @@
       </button>
 
     </form>
-
-    <app-llamada
-      *ngIf="llamadaActiva != null"
-      [llamada]="llamadaActiva!"
-      (colgar)="onColgar()"
-    >
-    </app-llamada>
 
   </ng-container>
 
