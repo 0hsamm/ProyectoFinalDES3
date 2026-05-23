@@ -37,11 +37,11 @@ export class AiPanelComponent
 
   historial: HistorialIa[] = [];
 
-  pregunta: string = '';
+  pregunta = '';
 
-  enviando: boolean = false;
+  enviando = false;
 
-  cargandoHistorial: boolean = false;
+  cargandoHistorial = false;
 
   constructor(
     private iaService: IaService,
@@ -59,7 +59,7 @@ export class AiPanelComponent
     const pregunta =
       this.pregunta.trim();
 
-    if (pregunta == '') {
+    if (pregunta === '') {
 
       return;
     }
@@ -91,7 +91,7 @@ export class AiPanelComponent
           this.enviando = false;
           this.toastService.error(
             'IA no disponible',
-            this.obtenerMensajeError(err)
+            AiPanelComponent.obtenerMensajeError(err)
           );
         }
       });
@@ -135,28 +135,40 @@ export class AiPanelComponent
       });
   }
 
-  private obtenerMensajeError(
-    err: any
-  ): string {
+  private static obtenerMensajeError(err: unknown): string {
 
-    if (typeof err?.error?.error == 'string') {
+    const errorBody =
+      typeof err === 'object' && err !== null && 'error' in err
+        ? (err as { error?: unknown }).error
+        : undefined;
 
-      return err.error.error;
+    if (typeof errorBody === 'string') {
+
+      return errorBody;
     }
 
-    if (typeof err?.error?.mensaje == 'string') {
+    if (
+      typeof errorBody === 'object' &&
+      errorBody !== null
+    ) {
 
-      return err.error.mensaje;
-    }
+      const errorObject =
+        errorBody as Record<string, unknown>;
 
-    if (typeof err?.error?.message == 'string') {
+      if (typeof errorObject['error'] === 'string') {
 
-      return err.error.message;
-    }
+        return errorObject['error'];
+      }
 
-    if (typeof err?.error == 'string') {
+      if (typeof errorObject['mensaje'] === 'string') {
 
-      return err.error;
+        return errorObject['mensaje'];
+      }
+
+      if (typeof errorObject['message'] === 'string') {
+
+        return errorObject['message'];
+      }
     }
 
     return 'Revisa la configuracion de GEMINI_API_KEY en el backend';

@@ -15,6 +15,12 @@ import { ConversacionService }
 
 import { MensajeService }
   from '../../services/mensaje.service';
+import { Mensaje } from '../../models/mensaje';
+
+interface Conversacion {
+  id: number;
+  contenido: string;
+}
 
 @Component({
 
@@ -36,19 +42,19 @@ import { MensajeService }
 export class Chat
   implements OnInit {
 
-  conversaciones: any[] = [];
+  conversaciones: Conversacion[] = [];
 
-  mensajes: any[] = [];
+  mensajes: Mensaje[] = [];
 
-  conversacionSeleccionada: number = 0;
+  conversacionSeleccionada = 0;
 
-  nuevoMensaje: string = '';
+  nuevoMensaje = '';
 
-  usuarioActual: string = '';
+  usuarioActual = '';
 
-  idUsuarioActual: number = 0;
+  idUsuarioActual = 0;
 
-  error: string = '';
+  error = '';
 
   constructor(
 
@@ -101,8 +107,9 @@ export class Chat
           }
         },
 
-        error: (err) => {
-
+        error: () => {
+          this.error =
+            'No se pudieron cargar las conversaciones';
         }
 
       });
@@ -128,14 +135,16 @@ export class Chat
       )
       .subscribe({
 
-        next: (data: any[]) => {
+        next: (data: unknown[]) => {
 
           this.mensajes =
-            data;
+            data as Mensaje[];
         },
 
-        error: (err) => {
+        error: () => {
 
+          this.error =
+            'No se pudieron cargar los mensajes';
         }
 
       });
@@ -143,8 +152,8 @@ export class Chat
 
   enviarMensaje(): void {
 
-    if(
-      this.nuevoMensaje.trim() == ''
+    if (
+      this.nuevoMensaje.trim() === ''
     ) {
 
       return;
@@ -169,8 +178,12 @@ export class Chat
           this.cargarMensajes();
         },
 
-        error: (err) => {
+        error: (err: unknown) => {
 
+          console.error(
+            'Error al enviar el mensaje',
+            err
+          );
 
           this.error =
             'No se pudo enviar el mensaje';

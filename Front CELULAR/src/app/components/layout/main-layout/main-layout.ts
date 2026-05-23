@@ -40,7 +40,7 @@ export class MainLayoutComponent {
 
   conversacionSeleccionada: Conversacion | null = null;
 
-  panelActivo: string = 'chats';
+  panelActivo = 'chats';
 
   vistaChatMobile: 'lista' | 'chat' | 'detalle' =
     'lista';
@@ -62,7 +62,7 @@ export class MainLayoutComponent {
 
     this.panelActivo = panel;
 
-    if (panel != 'chats') {
+    if (panel !== 'chats') {
 
       this.conversacionSeleccionada = null;
     }

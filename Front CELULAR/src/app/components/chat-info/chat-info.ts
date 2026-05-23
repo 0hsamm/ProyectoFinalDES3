@@ -7,6 +7,11 @@ import { CommonModule } from '@angular/common';
 
 import { Conversacion } from '../../models/conversacion';
 
+interface ParticipanteDescripcion {
+  sobreMi?: string | null;
+  descripcion?: string | null;
+}
+
 @Component({
   selector: 'app-chat-info',
   standalone: true,
@@ -17,6 +22,9 @@ import { Conversacion } from '../../models/conversacion';
   styleUrls: ['./chat-info.css']
 })
 export class ChatInfoComponent {
+
+  private readonly descripcionParticipantePorDefecto =
+    'Sin descripcion';
 
   @Input()
   conversacion: Conversacion | null = null;
@@ -42,7 +50,7 @@ export class ChatInfoComponent {
 
     if (
       this.conversacion?.fotoGrupo &&
-      this.conversacion.fotoGrupo.trim() != ''
+      this.conversacion.fotoGrupo.trim() !== ''
     ) {
       return this.conversacion.fotoGrupo.trim();
     }
@@ -76,17 +84,17 @@ export class ChatInfoComponent {
       participanteVisible?.descripcion ||
       '';
 
-    if (descripcion.trim() != '') {
+    if (descripcion.trim() !== '') {
       return descripcion.trim();
     }
 
-    return this.conversacion?.tipoConversacion == 'GRUPAL'
+    return this.conversacion?.tipoConversacion === 'GRUPAL'
       ? 'Conversacion grupal'
       : 'Sin descripcion disponible';
   }
 
   obtenerDescripcionParticipante(
-    participante: any
+    participante: ParticipanteDescripcion | null | undefined
   ): string {
 
     const descripcion =
@@ -94,8 +102,8 @@ export class ChatInfoComponent {
       participante?.descripcion ||
       '';
 
-    return descripcion.trim() != ''
+    return descripcion.trim() !== ''
       ? descripcion.trim()
-      : 'Sin descripcion';
+      : this.descripcionParticipantePorDefecto;
   }
 }

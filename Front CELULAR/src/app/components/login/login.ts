@@ -38,25 +38,25 @@ import {
 export class Login
   implements OnInit {
 
-  modoRegistro: boolean = false;
+  modoRegistro = false;
 
-  modoClaro: boolean = false;
+  modoClaro = false;
 
-  usuario: string = '';
+  usuario = '';
 
-  correo: string = '';
+  correo = '';
 
-  nombrePersona: string = '';
+  nombrePersona = '';
 
-  fechaNacimiento: string = '';
+  fechaNacimiento = '';
 
-  contrasena: string = '';
+  contrasena = '';
 
-  error: string = '';
+  error = '';
 
-  mensaje: string = '';
+  mensaje = '';
 
-  cargando: boolean = false;
+  cargando = false;
 
   constructor(
 
@@ -104,8 +104,8 @@ export class Login
     this.mensaje = '';
 
     if (
-      this.usuario.trim() == '' ||
-      this.contrasena.trim() == ''
+      this.usuario.trim() === '' ||
+      this.contrasena.trim() === ''
     ) {
 
       this.error =
@@ -185,11 +185,11 @@ export class Login
     this.mensaje = '';
 
     if (
-      this.usuario.trim() == '' ||
-      this.correo.trim() == '' ||
-      this.nombrePersona.trim() == '' ||
-      this.fechaNacimiento.trim() == '' ||
-      this.contrasena.trim() == ''
+      this.usuario.trim() === '' ||
+      this.correo.trim() === '' ||
+      this.nombrePersona.trim() === '' ||
+      this.fechaNacimiento.trim() === '' ||
+      this.contrasena.trim() === ''
     ) {
 
       this.error =

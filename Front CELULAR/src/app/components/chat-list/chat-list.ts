@@ -47,27 +47,27 @@ export class ChatListComponent implements OnInit, OnDestroy {
   conversacionSeleccionada: Conversacion | null = null;
 
   @Output()
-  conversacionSeleccionadaChange =
+  readonly conversacionSeleccionadaChange =
     new EventEmitter<Conversacion | null>();
 
   conversaciones: Conversacion[] = [];
 
-  filtro: string = '';
+  filtro = '';
 
-  cargando: boolean = true;
+  cargando = true;
 
-  error: string = '';
+  error = '';
 
   private refrescoSub?: Subscription;
 
-  private destruido: boolean = false;
+  private destruido = false;
 
   private usuariosPorId =
     new Map<number, Partial<Usuario>>();
 
   eliminandoConversacionId: number | null = null;
 
-  idUsuarioActual: number =
+  idUsuarioActual =
     Number(localStorage.getItem('idUsuario') || 0);
 
   constructor(
@@ -96,7 +96,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
   }
 
   cargarConversaciones(
-    mostrarCarga: boolean = true
+    mostrarCarga = true
   ): void {
 
     if (mostrarCarga) {
@@ -124,7 +124,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
             const actualizada =
               this.conversaciones.find(
                 (item) =>
-                  item.id ==
+                  item.id ===
                   this.conversacionSeleccionada?.id
               );
 
@@ -172,7 +172,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     const texto =
       this.filtro.trim().toLowerCase();
 
-    if (texto == '') {
+    if (texto === '') {
 
       return this.conversaciones;
     }
@@ -211,11 +211,11 @@ export class ChatListComponent implements OnInit, OnDestroy {
     }
 
     const confirmar =
-      window.confirm(
-        'Eliminar esta conversacion de tu lista? Volvera a aparecer si alguien envia un mensaje nuevo.'
+      window.prompt(
+        'Escribe ELIMINAR para confirmar que quieres ocultar esta conversacion.'
       );
 
-    if (!confirmar) {
+    if (confirmar !== 'ELIMINAR') {
       return;
     }
 
@@ -228,11 +228,11 @@ export class ChatListComponent implements OnInit, OnDestroy {
         next: () => {
           this.conversaciones =
             this.conversaciones.filter(
-              (item) => item.id != conversacion.id
+              (item) => item.id !== conversacion.id
             );
 
           if (
-            this.conversacionSeleccionada?.id ==
+            this.conversacionSeleccionada?.id ===
             conversacion.id
           ) {
             this.conversacionSeleccionada = null;
@@ -273,7 +273,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     conversacion: Conversacion
   ): boolean {
 
-    return this.conversacionSeleccionada?.id ==
+    return this.conversacionSeleccionada?.id ===
       conversacion.id;
   }
 
@@ -335,7 +335,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
       if (
         ultimoMensajeGuardado != null &&
-        ultimoMensajeGuardado.trim() != ''
+        ultimoMensajeGuardado.trim() !== ''
       ) {
         return ultimoMensajeGuardado;
       }
@@ -373,7 +373,13 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
                 this.marcarCambio();
               },
-              error: () => {}
+              error: () => {
+
+                this.error =
+                  'No se pudo cargar la informacion de un usuario';
+
+                this.marcarCambio();
+              }
             });
         });
       }
@@ -393,7 +399,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
       );
 
     if (
-      conversacion.tipoConversacion ==
+      conversacion.tipoConversacion ===
       'GRUPAL'
     ) {
       const nombres =
@@ -505,7 +511,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
     const otrosParticipantes =
       participantes.filter(
-        (id) => id != this.idUsuarioActual
+        (id) => id !== this.idUsuarioActual
       );
 
     if (otrosParticipantes.length > 0) {
@@ -520,11 +526,11 @@ export class ChatListComponent implements OnInit, OnDestroy {
     totalParticipantesVisibles: number
   ): string {
 
-    if (nombres.length == 1) {
+    if (nombres.length === 1) {
       return `Grupo con ${nombres[0]}`;
     }
 
-    if (nombres.length == 2) {
+    if (nombres.length === 2) {
       return `${nombres[0]} y ${nombres[1]}`;
     }
 
@@ -550,7 +556,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
         if (
           conversacion.id != null &&
           (!conversacion.ultimoMensaje ||
-            conversacion.ultimoMensaje.trim() == '')
+            conversacion.ultimoMensaje.trim() === '')
         ) {
           sessionStorage.removeItem(
             this.obtenerClaveUltimoMensaje(
