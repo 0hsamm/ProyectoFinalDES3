@@ -66,13 +66,15 @@ export class MensajeService {
 
     conversacionId: number,
 
-    contenido: string,
+    contenido: string | null,
 
     fraseSecreta?: string,
 
-    tipoMensaje: string = 'TEXTO'
+    tipoMensaje: string = 'TEXTO',
 
-  ): Observable<any> {
+    tieneAdjunto: boolean = false
+
+  ): Observable<Mensaje> {
 
     const body: Mensaje = {
 
@@ -84,19 +86,62 @@ export class MensajeService {
 
       contenido,
 
-      fraseSecreta
+      fraseSecreta,
+
+      tieneAdjunto,
+
+      contenidoProtegido: false
     };
 
-    return this.http.post(
+    return this.http.post<Mensaje>(
 
       this.apiUrl,
 
-      body,
+      body
 
-      {
-        responseType: 'text'
-      }
+    );
+  }
 
+  subirAdjunto(
+    mensajeId: number,
+    archivo: File,
+    fraseSecreta?: string
+  ): Observable<Mensaje> {
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      'archivo',
+      archivo
+    );
+
+    let params =
+      new HttpParams();
+
+    if (
+      fraseSecreta != null &&
+      fraseSecreta.trim() != ''
+    ) {
+      params = params.set(
+        'fraseSecreta',
+        fraseSecreta
+      );
+    }
+
+    return this.http.post<Mensaje>(
+      `${this.apiUrl}/${mensajeId}/adjunto`,
+      formData,
+      { params }
+    );
+  }
+
+  eliminarMensaje(
+    mensajeId: number
+  ): Observable<any> {
+
+    return this.http.delete(
+      `${this.apiUrl}/${mensajeId}`
     );
   }
 

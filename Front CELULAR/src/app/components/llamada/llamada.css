@@ -1,0 +1,77 @@
+.llamada-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.llamada-modal {
+  background: #1e1e2e;
+  border-radius: 16px;
+  padding: 2rem;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: white;
+}
+
+.llamada-tipo {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.llamada-estado {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.llamada-error {
+  color: #f87171;
+  font-size: 0.85rem;
+}
+
+.videos {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+}
+
+.video-box {
+  width: 320px;
+  height: 240px;
+  background: #000;
+  border-radius: 8px;
+}
+
+.video-box.small {
+  width: 120px;
+  height: 90px;
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+}
+
+.llamada-acciones {
+  display: flex;
+  gap: 1rem;
+}
+
+button {
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #4ade80;
+  color: #000;
+  font-weight: bold;
+}
+
+button.colgar {
+  background: #f87171;
+  color: white;
+}

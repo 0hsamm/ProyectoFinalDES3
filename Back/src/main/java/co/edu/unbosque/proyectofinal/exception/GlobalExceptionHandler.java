@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -126,6 +127,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UsuarioNoHabilitadoException.class)
     public ResponseEntity<Map<String, Object>> handleUsuarioNoHabilitado(
             UsuarioNoHabilitadoException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("mensaje", ex.getMessage());
+        error.put("estado", 403);
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccesoDenegado(
+            AccessDeniedException ex) {
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now());
         error.put("mensaje", ex.getMessage());

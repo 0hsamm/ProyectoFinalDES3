@@ -431,12 +431,16 @@ public class SolicitudAmistadService {
                 solicitud.getSolicitante().getUsuario());
         dto.setSolicitanteNombre(
                 solicitud.getSolicitante().getNombrePersona());
+        dto.setSolicitanteFotoPerfil(
+                solicitud.getSolicitante().getFotoPerfil());
         dto.setReceptorId(
                 solicitud.getReceptor().getId());
         dto.setReceptorUsuario(
                 solicitud.getReceptor().getUsuario());
         dto.setReceptorNombre(
                 solicitud.getReceptor().getNombrePersona());
+        dto.setReceptorFotoPerfil(
+                solicitud.getReceptor().getFotoPerfil());
         dto.setEstado(solicitud.getEstado());
         dto.setFechaSolicitud(solicitud.getFechaSolicitud());
         dto.setFechaRespuesta(solicitud.getFechaRespuesta());
@@ -466,6 +470,7 @@ public class SolicitudAmistadService {
         dto.setUsuarioId(amigo.getId());
         dto.setUsuario(amigo.getUsuario());
         dto.setNombrePersona(amigo.getNombrePersona());
+        dto.setFotoPerfil(amigo.getFotoPerfil());
         dto.setSobreMi(amigo.getSobreMi());
         dto.setEnLinea(amigo.isEnLinea());
         dto.setFechaAmistad(solicitud.getFechaRespuesta());

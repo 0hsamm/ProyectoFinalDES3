@@ -61,4 +61,22 @@ export class ConversacionService {
     );
   }
 
+  crearConversacionGrupal(
+    participantesIds: number[],
+    fraseSecreta: string
+  ): Observable<string> {
+
+    return this.http.post(
+      this.apiUrl,
+      {
+        tipoConversacion: 'GRUPAL',
+        participantesIds,
+        fraseSecreta
+      },
+      {
+        responseType: 'text'
+      }
+    );
+  }
+
 }

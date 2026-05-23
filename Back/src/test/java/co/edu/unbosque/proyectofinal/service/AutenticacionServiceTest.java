@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import co.edu.unbosque.proyectofinal.dto.LoginDTO;
 import co.edu.unbosque.proyectofinal.dto.RegistroDTO;
+import co.edu.unbosque.proyectofinal.entity.TokenVerificacion;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.exception.CorreoYaExisteException;
 import co.edu.unbosque.proyectofinal.exception.CredencialesInvalidasException;
@@ -198,6 +200,54 @@ class AutenticacionServiceTest {
         assertThrows(
                 CredencialesInvalidasException.class,
                 () -> autenticacionService.login(dto));
+    }
+
+    @Test
+    void verificarCuentaEliminaTokenCuandoSeUsaCorrectamente() {
+        Usuario usuario =
+                new Usuario();
+        usuario.setHabilitado(false);
+
+        TokenVerificacion token =
+                new TokenVerificacion();
+        token.setToken("token-valido");
+        token.setUsuario(usuario);
+        token.setFechaExpiracion(
+                LocalDateTime.now().plusHours(1));
+
+        when(tokenRepo.findByToken("token-valido"))
+                .thenReturn(Optional.of(token));
+
+        boolean resultado =
+                autenticacionService.verificarCuenta("token-valido");
+
+        assertTrue(resultado);
+        assertTrue(usuario.isHabilitado());
+        verify(usuarioRepo).save(usuario);
+        verify(tokenRepo).delete(token);
+    }
+
+    @Test
+    void verificarCuentaEliminaTokenSiYaExpiró() {
+        Usuario usuario =
+                new Usuario();
+
+        TokenVerificacion token =
+                new TokenVerificacion();
+        token.setToken("token-expirado");
+        token.setUsuario(usuario);
+        token.setFechaExpiracion(
+                LocalDateTime.now().minusMinutes(1));
+
+        when(tokenRepo.findByToken("token-expirado"))
+                .thenReturn(Optional.of(token));
+
+        boolean resultado =
+                autenticacionService.verificarCuenta("token-expirado");
+
+        assertFalse(resultado);
+        verify(usuarioRepo, never()).save(any());
+        verify(tokenRepo).delete(token);
     }
 
     private RegistroDTO registroValido() {

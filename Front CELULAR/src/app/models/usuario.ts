@@ -8,6 +8,16 @@ export interface Usuario {
 
   nombrePersona: string;
 
+  sobreMi?: string;
+
+  fotoPerfil?: string;
+
+  enLinea?: boolean;
+
+  ultimaVezEnLinea?: string;
+
+  rol?: string;
+
   contrasena?: string;
 
   fechaNacimiento?: string;
@@ -46,4 +56,6 @@ export interface RespuestaAutenticacionDTO {
   correo: string;
 
   nombrePersona: string;
+
+  fotoPerfil?: string;
 }

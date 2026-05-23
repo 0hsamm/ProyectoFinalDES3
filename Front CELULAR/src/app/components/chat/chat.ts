@@ -46,6 +46,8 @@ export class Chat
 
   usuarioActual: string = '';
 
+  idUsuarioActual: number = 0;
+
   error: string = '';
 
   constructor(
@@ -66,9 +68,12 @@ export class Chat
         'usuario'
       ) || '';
 
-    console.log(
-      this.usuarioActual
-    );
+    this.idUsuarioActual =
+      Number(
+        localStorage.getItem(
+          'idUsuario'
+        ) || 0
+      );
 
     this.cargarConversaciones();
   }
@@ -98,7 +103,6 @@ export class Chat
 
         error: (err) => {
 
-          console.log(err);
         }
 
       });
@@ -132,7 +136,6 @@ export class Chat
 
         error: (err) => {
 
-          console.log(err);
         }
 
       });
@@ -150,7 +153,7 @@ export class Chat
     this.mensajeService
       .enviarMensaje(
 
-        this.usuarioActual,
+        this.idUsuarioActual,
 
         this.conversacionSeleccionada,
 
@@ -168,7 +171,6 @@ export class Chat
 
         error: (err) => {
 
-          console.log(err);
 
           this.error =
             'No se pudo enviar el mensaje';

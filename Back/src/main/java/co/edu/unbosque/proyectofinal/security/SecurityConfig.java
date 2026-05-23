@@ -117,12 +117,16 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
+                                "/uploads/**",
                                 "/error")
 
                         .permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/usuarios")
+                        .hasAuthority("ROLE_ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/usuarios")
-                        .permitAll()
+                        .hasAuthority("ROLE_ADMIN")
                         
                      
                         .requestMatchers("/admin/**")

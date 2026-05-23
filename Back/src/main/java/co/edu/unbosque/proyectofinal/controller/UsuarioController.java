@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import co.edu.unbosque.proyectofinal.dto.UsuarioDTO;
+import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.security.JwtUtil;
 import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.UsuarioService;
@@ -44,6 +45,30 @@ public class UsuarioController {
         return null;
     }
 
+    private Usuario obtenerUsuarioAutenticado(
+            HttpServletRequest request) {
+
+        String correo =
+                extraerCorreo(request);
+
+        if (correo == null) {
+            return null;
+        }
+
+        return usuarioService
+                .buscarEntidadPorCorreo(correo)
+                .orElse(null);
+    }
+
+    private boolean puedeGestionarUsuario(
+            Usuario usuarioAutenticado,
+            Long usuarioObjetivoId) {
+
+        return usuarioAutenticado != null
+                && (usuarioService.esAdmin(usuarioAutenticado)
+                || usuarioAutenticado.getId().equals(usuarioObjetivoId));
+    }
+
 	@PostMapping
 	public ResponseEntity<String> crear(
 	        @RequestBody UsuarioDTO dto,
@@ -51,6 +76,14 @@ public class UsuarioController {
 
 	    String ip = request.getRemoteAddr();
 	    String navegador = request.getHeader("User-Agent");
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (!usuarioService.esAdmin(usuarioAutenticado)) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.FORBIDDEN);
+        }
 
 	    int status = usuarioService.create(dto);
 
@@ -80,10 +113,23 @@ public class UsuarioController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<UsuarioDTO> obtenerPorId(
-			@PathVariable Long id) {
+			@PathVariable Long id,
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    HttpStatus.UNAUTHORIZED);
+        }
 
 		UsuarioDTO usuario =
-				usuarioService.getById(id);
+				puedeGestionarUsuario(
+                        usuarioAutenticado,
+                        id)
+                        ? usuarioService.getPerfilById(id)
+                        : usuarioService.getById(id);
 
 		if (usuario != null) {
 			return new ResponseEntity<>(
@@ -102,6 +148,20 @@ public class UsuarioController {
 
 	    String ip = request.getRemoteAddr();
 	    String navegador = request.getHeader("User-Agent");
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!puedeGestionarUsuario(usuarioAutenticado, id)) {
+            return new ResponseEntity<>(
+                    "No tienes permiso para eliminar este usuario",
+                    HttpStatus.FORBIDDEN);
+        }
 
 	    String mensaje = usuarioService.deleteById(id);
 
@@ -120,7 +180,23 @@ public class UsuarioController {
 	@PutMapping("/{id}")
 	public ResponseEntity<String> actualizar(
 			@PathVariable Long id,
-			@RequestBody UsuarioDTO dto) {
+			@RequestBody UsuarioDTO dto,
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!puedeGestionarUsuario(usuarioAutenticado, id)) {
+            return new ResponseEntity<>(
+                    "No tienes permiso para actualizar este usuario",
+                    HttpStatus.FORBIDDEN);
+        }
 
 		int status =
 				usuarioService.updateById(id, dto);
@@ -138,7 +214,23 @@ public class UsuarioController {
 	@PostMapping("/{id}/foto-perfil")
 	public ResponseEntity<?> actualizarFotoPerfil(
 			@PathVariable Long id,
-			@RequestParam MultipartFile archivo) {
+			@RequestParam MultipartFile archivo,
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!puedeGestionarUsuario(usuarioAutenticado, id)) {
+            return new ResponseEntity<>(
+                    "No tienes permiso para actualizar este usuario",
+                    HttpStatus.FORBIDDEN);
+        }
 
 		try {
 			return new ResponseEntity<>(
@@ -153,7 +245,13 @@ public class UsuarioController {
 
 	@GetMapping("/username/{username}")
 	public ResponseEntity<UsuarioDTO> obtenerPorUsername(
-			@PathVariable String username) {
+			@PathVariable String username,
+            HttpServletRequest request) {
+
+        if (obtenerUsuarioAutenticado(request) == null) {
+            return new ResponseEntity<>(
+                    HttpStatus.UNAUTHORIZED);
+        }
 
 		UsuarioDTO usuario =
 				usuarioService.getByUsername(username);

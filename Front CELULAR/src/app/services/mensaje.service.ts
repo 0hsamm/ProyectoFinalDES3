@@ -13,6 +13,9 @@ import { Observable }
 import { environment }
   from '../../environment/environment';
 
+import { Mensaje }
+  from '../models/mensaje';
+
 @Injectable({
 
   providedIn: 'root'
@@ -30,59 +33,115 @@ export class MensajeService {
   ) {}
 
   obtenerMensajesPorConversacion(
-    id: number
-  ): Observable<any[]> {
+    id: number,
+    fraseSecreta?: string
+  ): Observable<Mensaje[]> {
 
-    return this.http.get<any[]>(
+    let params =
+      new HttpParams();
 
-      `${this.apiUrl}/conversacion/${id}`
+    if (
+      fraseSecreta != null &&
+      fraseSecreta.trim() != ''
+    ) {
+
+      params = params.set(
+        'fraseSecreta',
+        fraseSecreta
+      );
+    }
+
+    return this.http.get<Mensaje[]>(
+
+      `${this.apiUrl}/conversacion/${id}`,
+
+      { params }
 
     );
   }
 
   enviarMensaje(
 
-    usuario: string,
+    remitenteId: number,
 
     conversacionId: number,
 
-    contenido: string
+    contenido: string | null,
 
-  ): Observable<any> {
+    fraseSecreta?: string,
 
-    const body = null;
+    tipoMensaje: string = 'TEXTO',
 
-    const params =
-      new HttpParams()
+    tieneAdjunto: boolean = false
 
-        .set(
-          'usuario',
-          usuario
-        )
+  ): Observable<Mensaje> {
 
-        .set(
-          'conversacionId',
-          conversacionId.toString()
-        )
+    const body: Mensaje = {
 
-        .set(
-          'tipoMensaje',
-          'TEXTO'
-        )
+      remitenteId,
 
-        .set(
-          'contenido',
-          contenido
-        );
+      conversacionId,
 
-    return this.http.post(
+      tipoMensaje,
+
+      contenido,
+
+      fraseSecreta,
+
+      tieneAdjunto,
+
+      contenidoProtegido: false
+    };
+
+    return this.http.post<Mensaje>(
 
       this.apiUrl,
 
-      body,
+      body
 
+    );
+  }
+
+  subirAdjunto(
+    mensajeId: number,
+    archivo: File,
+    fraseSecreta?: string
+  ): Observable<Mensaje> {
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      'archivo',
+      archivo
+    );
+
+    let params =
+      new HttpParams();
+
+    if (
+      fraseSecreta != null &&
+      fraseSecreta.trim() != ''
+    ) {
+      params = params.set(
+        'fraseSecreta',
+        fraseSecreta
+      );
+    }
+
+    return this.http.post<Mensaje>(
+      `${this.apiUrl}/${mensajeId}/adjunto`,
+      formData,
       { params }
+    );
+  }
 
+  eliminarMensaje(
+    mensajeId: number
+  ): Observable<any> {
+
+    return this.http.delete(
+      `${this.apiUrl}/${mensajeId}`
     );
   }
 

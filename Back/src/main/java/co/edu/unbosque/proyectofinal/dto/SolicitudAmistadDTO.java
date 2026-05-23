@@ -11,9 +11,11 @@ public class SolicitudAmistadDTO {
     private Long solicitanteId;
     private String solicitanteUsuario;
     private String solicitanteNombre;
+    private String solicitanteFotoPerfil;
     private Long receptorId;
     private String receptorUsuario;
     private String receptorNombre;
+    private String receptorFotoPerfil;
     private EstadoSolicitudAmistad estado;
     private LocalDateTime fechaSolicitud;
     private LocalDateTime fechaRespuesta;
@@ -26,9 +28,11 @@ public class SolicitudAmistadDTO {
             Long solicitanteId,
             String solicitanteUsuario,
             String solicitanteNombre,
+            String solicitanteFotoPerfil,
             Long receptorId,
             String receptorUsuario,
             String receptorNombre,
+            String receptorFotoPerfil,
             EstadoSolicitudAmistad estado,
             LocalDateTime fechaSolicitud,
             LocalDateTime fechaRespuesta) {
@@ -37,9 +41,11 @@ public class SolicitudAmistadDTO {
         this.solicitanteId = solicitanteId;
         this.solicitanteUsuario = solicitanteUsuario;
         this.solicitanteNombre = solicitanteNombre;
+        this.solicitanteFotoPerfil = solicitanteFotoPerfil;
         this.receptorId = receptorId;
         this.receptorUsuario = receptorUsuario;
         this.receptorNombre = receptorNombre;
+        this.receptorFotoPerfil = receptorFotoPerfil;
         this.estado = estado;
         this.fechaSolicitud = fechaSolicitud;
         this.fechaRespuesta = fechaRespuesta;
@@ -79,6 +85,15 @@ public class SolicitudAmistadDTO {
         this.solicitanteNombre = solicitanteNombre;
     }
 
+    public String getSolicitanteFotoPerfil() {
+        return solicitanteFotoPerfil;
+    }
+
+    public void setSolicitanteFotoPerfil(
+            String solicitanteFotoPerfil) {
+        this.solicitanteFotoPerfil = solicitanteFotoPerfil;
+    }
+
     public Long getReceptorId() {
         return receptorId;
     }
@@ -103,6 +118,15 @@ public class SolicitudAmistadDTO {
     public void setReceptorNombre(
             String receptorNombre) {
         this.receptorNombre = receptorNombre;
+    }
+
+    public String getReceptorFotoPerfil() {
+        return receptorFotoPerfil;
+    }
+
+    public void setReceptorFotoPerfil(
+            String receptorFotoPerfil) {
+        this.receptorFotoPerfil = receptorFotoPerfil;
     }
 
     public EstadoSolicitudAmistad getEstado() {
@@ -140,9 +164,11 @@ public class SolicitudAmistadDTO {
                 fechaSolicitud,
                 id,
                 receptorId,
+                receptorFotoPerfil,
                 receptorNombre,
                 receptorUsuario,
                 solicitanteId,
+                solicitanteFotoPerfil,
                 solicitanteNombre,
                 solicitanteUsuario);
     }
@@ -172,6 +198,9 @@ public class SolicitudAmistadDTO {
                         receptorId,
                         other.receptorId)
                 && Objects.equals(
+                        receptorFotoPerfil,
+                        other.receptorFotoPerfil)
+                && Objects.equals(
                         receptorNombre,
                         other.receptorNombre)
                 && Objects.equals(
@@ -180,6 +209,9 @@ public class SolicitudAmistadDTO {
                 && Objects.equals(
                         solicitanteId,
                         other.solicitanteId)
+                && Objects.equals(
+                        solicitanteFotoPerfil,
+                        other.solicitanteFotoPerfil)
                 && Objects.equals(
                         solicitanteNombre,
                         other.solicitanteNombre)
@@ -198,12 +230,16 @@ public class SolicitudAmistadDTO {
                 + solicitanteUsuario
                 + ", solicitanteNombre="
                 + solicitanteNombre
+                + ", solicitanteFotoPerfil="
+                + solicitanteFotoPerfil
                 + ", receptorId="
                 + receptorId
                 + ", receptorUsuario="
                 + receptorUsuario
                 + ", receptorNombre="
                 + receptorNombre
+                + ", receptorFotoPerfil="
+                + receptorFotoPerfil
                 + ", estado="
                 + estado
                 + ", fechaSolicitud="

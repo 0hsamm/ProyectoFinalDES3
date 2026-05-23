@@ -56,7 +56,7 @@ export class Verificar implements OnInit {
       this.correcto = false;
 
       this.mensaje =
-        'Token inválido';
+        'Token invalido';
 
       this.cargando = false;
 

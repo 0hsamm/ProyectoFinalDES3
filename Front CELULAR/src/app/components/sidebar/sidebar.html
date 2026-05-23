@@ -1,1 +1,74 @@
-<p>sidebar works!</p>
+<div class="sidebar">
+
+  <div class="top-section">
+
+    <div class="logo" [title]="nombreUsuario">
+      <img
+        *ngIf="fotoPerfil"
+        [src]="fotoPerfil"
+        alt="Foto de perfil"
+      >
+      <span *ngIf="!fotoPerfil">
+        {{ obtenerIniciales() }}
+      </span>
+    </div>
+
+    <div class="menu">
+
+      <button class="menu-item" type="button" title="Conversaciones" [class.active]="panelActivo == 'chats'" (click)="cambiarPanel('chats')">
+        <i class="pi pi-comments"></i>
+      </button>
+
+      <button class="menu-item" type="button" title="Amigos" [class.active]="panelActivo == 'amigos'" (click)="cambiarPanel('amigos')">
+        <i class="pi pi-users"></i>
+      </button>
+
+      <button class="menu-item" type="button" title="Estados" [class.active]="panelActivo == 'estados'" (click)="cambiarPanel('estados')">
+        <i class="pi pi-images"></i>
+      </button>
+
+      <button class="menu-item" type="button" title="Notificaciones" [class.active]="panelActivo == 'notificaciones'" (click)="cambiarPanel('notificaciones')">
+        <i class="pi pi-bell"></i>
+      </button>
+
+      <button class="menu-item" type="button" title="Asistente IA" [class.active]="panelActivo == 'ia'" (click)="cambiarPanel('ia')">
+        <i class="pi pi-sparkles"></i>
+      </button>
+
+      <button class="menu-item" type="button" title="Configuracion" [class.active]="panelActivo == 'configuracion'" (click)="cambiarPanel('configuracion')">
+        <i class="pi pi-cog"></i>
+      </button>
+
+      <button class="menu-item" type="button" title="Cerrar sesion" (click)="solicitarCerrarSesion()">
+        <i class="pi pi-sign-out"></i>
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="bottom-section">
+    <div class="profile" [title]="nombreUsuario">
+      <img
+        *ngIf="fotoPerfil"
+        [src]="fotoPerfil"
+        alt="Foto de perfil"
+      >
+      <span *ngIf="!fotoPerfil">
+        {{ obtenerIniciales() }}
+      </span>
+    </div>
+  </div>
+
+</div>
+
+<div class="confirm-backdrop" *ngIf="confirmandoSalida">
+  <div class="confirm-dialog">
+    <h3>Cerrar sesion</h3>
+    <p>Tu sesion actual se cerrara en este dispositivo.</p>
+    <div class="confirm-actions">
+      <button type="button" class="ghost" (click)="cancelarCerrarSesion()">Cancelar</button>
+      <button type="button" (click)="cerrarSesion()">Cerrar sesion</button>
+    </div>
+  </div>
+</div>

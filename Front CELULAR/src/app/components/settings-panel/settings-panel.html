@@ -1,0 +1,237 @@
+<div class="workspace-panel">
+
+  <header class="panel-heading">
+    <div>
+      <p>Cuenta</p>
+      <h2>Configuracion</h2>
+    </div>
+
+    <button
+      type="button"
+      class="tool-btn"
+      (click)="cargarPerfil()"
+      title="Actualizar perfil"
+    >
+      <i class="pi pi-refresh"></i>
+    </button>
+  </header>
+
+  <div class="state-box" *ngIf="cargando">
+    <i class="pi pi-spin pi-spinner"></i>
+    Cargando perfil...
+  </div>
+
+  <section class="settings-shell" *ngIf="!cargando">
+
+    <aside class="profile-pane">
+      <div class="photo-preview">
+        <img
+          *ngIf="vistaPreviaFoto"
+          [src]="vistaPreviaFoto"
+          alt="Foto de perfil"
+        >
+        <span *ngIf="!vistaPreviaFoto">
+          {{ obtenerIniciales() }}
+        </span>
+      </div>
+
+      <div class="profile-copy">
+        <h3>{{ usuario.nombrePersona || usuario.usuario }}</h3>
+        <p>{{ usuario.correo || 'Correo no disponible' }}</p>
+      </div>
+
+      <div class="status-pill" *ngIf="perfilError">
+        <i class="pi pi-info-circle"></i>
+        {{ perfilError }}
+      </div>
+
+      <label class="upload-control">
+        <i class="pi pi-camera"></i>
+        <span>Seleccionar foto</span>
+        <input
+          type="file"
+          accept="image/*"
+          (change)="seleccionarFoto($event)"
+        >
+      </label>
+
+      <button
+        type="button"
+        class="secondary-btn"
+        [disabled]="subiendoFoto || !fotoSeleccionada"
+        (click)="subirFotoPerfil()"
+      >
+        <i class="pi pi-upload"></i>
+        Actualizar foto
+      </button>
+    </aside>
+
+    <main class="settings-main">
+      <nav class="settings-tabs">
+        <button
+          type="button"
+          [class.active]="pestanaActiva == 'perfil'"
+          (click)="cambiarPestana('perfil')"
+        >
+          Perfil
+        </button>
+        <button
+          type="button"
+          [class.active]="pestanaActiva == 'privacidad'"
+          (click)="cambiarPestana('privacidad')"
+        >
+          Privacidad
+        </button>
+        <button
+          type="button"
+          [class.active]="pestanaActiva == 'notificaciones'"
+          (click)="cambiarPestana('notificaciones')"
+        >
+          Notificaciones
+        </button>
+      </nav>
+
+      <form
+        class="fields-pane"
+        *ngIf="pestanaActiva == 'perfil'"
+        (ngSubmit)="guardarPerfil()"
+      >
+        <label>
+          Usuario
+          <input type="text" name="usuario" [(ngModel)]="usuario.usuario">
+        </label>
+
+        <label>
+          Nombre
+          <input type="text" name="nombrePersona" [(ngModel)]="usuario.nombrePersona">
+        </label>
+
+        <label>
+          Correo
+          <input type="email" name="correo" [(ngModel)]="usuario.correo">
+        </label>
+
+        <label>
+          Fecha de nacimiento
+          <input type="date" name="fechaNacimiento" [(ngModel)]="usuario.fechaNacimiento">
+        </label>
+
+        <label class="wide">
+          Sobre mi
+          <textarea rows="5" name="sobreMi" [(ngModel)]="usuario.sobreMi"></textarea>
+        </label>
+
+        <button
+          type="submit"
+          class="primary-btn wide"
+          [disabled]="guardando"
+        >
+          <i class="pi pi-save"></i>
+          Guardar perfil
+        </button>
+      </form>
+
+      <section
+        class="options-pane"
+        *ngIf="pestanaActiva == 'privacidad'"
+      >
+        <label class="option-row">
+          <span>
+            <strong>Mostrar estado en linea</strong>
+            <small>Permite que tus contactos vean si estas conectado.</small>
+          </span>
+          <input
+            type="checkbox"
+            [(ngModel)]="preferencias.mostrarEnLinea"
+            name="mostrarEnLinea"
+          >
+        </label>
+
+        <label class="option-row">
+          <span>
+            <strong>Enviar con Enter</strong>
+            <small>Atajo local para escribir mensajes mas rapido.</small>
+          </span>
+          <input
+            type="checkbox"
+            [(ngModel)]="preferencias.enterParaEnviar"
+            name="enterParaEnviar"
+          >
+        </label>
+
+        <label>
+          Tema visual
+          <select
+            name="tema"
+            [(ngModel)]="preferencias.tema"
+          >
+            <option value="oscuro">Oscuro</option>
+            <option value="claro">Claro</option>
+            <option value="sistema">Sistema</option>
+          </select>
+        </label>
+
+        <button
+          type="button"
+          class="primary-btn"
+          (click)="guardarPreferencias()"
+        >
+          <i class="pi pi-save"></i>
+          Guardar preferencias
+        </button>
+      </section>
+
+      <section
+        class="options-pane"
+        *ngIf="pestanaActiva == 'notificaciones'"
+      >
+        <label class="option-row">
+          <span>
+            <strong>Notificaciones</strong>
+            <small>Activa avisos visuales dentro de la aplicacion.</small>
+          </span>
+          <input
+            type="checkbox"
+            [(ngModel)]="preferencias.notificaciones"
+            name="notificaciones"
+          >
+        </label>
+
+        <label class="option-row">
+          <span>
+            <strong>Sonidos</strong>
+            <small>Reproduce avisos suaves al recibir novedades.</small>
+          </span>
+          <input
+            type="checkbox"
+            [(ngModel)]="preferencias.sonidos"
+            name="sonidos"
+          >
+        </label>
+
+        <label class="option-row">
+          <span>
+            <strong>Refresco automatico</strong>
+            <small>Mantiene chats, estados y solicitudes actualizados.</small>
+          </span>
+          <input
+            type="checkbox"
+            [(ngModel)]="preferencias.refrescoAutomatico"
+            name="refrescoAutomatico"
+          >
+        </label>
+
+        <button
+          type="button"
+          class="primary-btn"
+          (click)="guardarPreferencias()"
+        >
+          <i class="pi pi-save"></i>
+          Guardar preferencias
+        </button>
+      </section>
+    </main>
+
+  </section>
+
+</div>

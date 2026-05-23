@@ -215,6 +215,8 @@ public class AutenticacionService {
 		            .getFechaExpiracion()
 		            .isBefore(LocalDateTime.now())) {
 
+		        tokenRepo.delete(tokenVerificacion);
+
 		        return false;
 		    }
 		
@@ -224,6 +226,7 @@ public class AutenticacionService {
 		usuario.setHabilitado(true);
 
 		usuarioRepo.save(usuario);
+		tokenRepo.delete(tokenVerificacion);
 
 		return true;
 	}

@@ -4,6 +4,9 @@ import { Component }
 import { RouterOutlet }
   from '@angular/router';
 
+import { ToastContainerComponent }
+  from './components/toast-container/toast-container';
+
 @Component({
 
   selector: 'app-root',
@@ -11,7 +14,8 @@ import { RouterOutlet }
   standalone: true,
 
   imports: [
-    RouterOutlet
+    RouterOutlet,
+    ToastContainerComponent
   ],
 
   templateUrl: './app.html',

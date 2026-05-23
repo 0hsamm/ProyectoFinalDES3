@@ -9,6 +9,7 @@ public class AmistadDTO {
     private Long usuarioId;
     private String usuario;
     private String nombrePersona;
+    private String fotoPerfil;
     private String sobreMi;
     private boolean enLinea;
     private LocalDateTime fechaAmistad;
@@ -21,6 +22,7 @@ public class AmistadDTO {
             Long usuarioId,
             String usuario,
             String nombrePersona,
+            String fotoPerfil,
             String sobreMi,
             boolean enLinea,
             LocalDateTime fechaAmistad) {
@@ -29,6 +31,7 @@ public class AmistadDTO {
         this.usuarioId = usuarioId;
         this.usuario = usuario;
         this.nombrePersona = nombrePersona;
+        this.fotoPerfil = fotoPerfil;
         this.sobreMi = sobreMi;
         this.enLinea = enLinea;
         this.fechaAmistad = fechaAmistad;
@@ -66,6 +69,14 @@ public class AmistadDTO {
         this.nombrePersona = nombrePersona;
     }
 
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
+    }
+
     public String getSobreMi() {
         return sobreMi;
     }
@@ -96,6 +107,7 @@ public class AmistadDTO {
         return Objects.hash(
                 enLinea,
                 fechaAmistad,
+                fotoPerfil,
                 nombrePersona,
                 solicitudId,
                 sobreMi,
@@ -120,6 +132,9 @@ public class AmistadDTO {
                 && Objects.equals(
                         fechaAmistad,
                         other.fechaAmistad)
+                && Objects.equals(
+                        fotoPerfil,
+                        other.fotoPerfil)
                 && Objects.equals(
                         nombrePersona,
                         other.nombrePersona)
@@ -147,6 +162,8 @@ public class AmistadDTO {
                 + usuario
                 + ", nombrePersona="
                 + nombrePersona
+                + ", fotoPerfil="
+                + fotoPerfil
                 + ", sobreMi="
                 + sobreMi
                 + ", enLinea="

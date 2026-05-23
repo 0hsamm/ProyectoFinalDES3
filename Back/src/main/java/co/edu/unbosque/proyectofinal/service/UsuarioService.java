@@ -2,8 +2,8 @@ package co.edu.unbosque.proyectofinal.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,9 +19,6 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -42,10 +39,15 @@ public class UsuarioService {
                 return 1;
             }
 
+            if (usuarioRepository.findByUsuario(dto.getUsuario().trim()).isPresent()
+                    || usuarioRepository.findByCorreo(dto.getCorreo().trim()).isPresent()) {
+                return 1;
+            }
+
             Usuario usuario = new Usuario();
-            usuario.setUsuario(dto.getUsuario());
-            usuario.setCorreo(dto.getCorreo());
-            usuario.setNombrePersona(dto.getNombrePersona());
+            usuario.setUsuario(dto.getUsuario().trim());
+            usuario.setCorreo(dto.getCorreo().trim());
+            usuario.setNombrePersona(dto.getNombrePersona().trim());
             usuario.setContrasenaHash(
                     passwordEncoder.encode(dto.getContrasena()));
             usuario.setSobreMi(dto.getSobreMi());
@@ -61,10 +63,7 @@ public class UsuarioService {
             usuario.setEnLinea(false);
             usuario.setUltimaVezEnLinea(null);
             usuario.setHabilitado(true);
-            usuario.setRol(
-                    dto.getRol() != null
-                            ? dto.getRol()
-                            : RolUsuario.ROLE_USER);
+            usuario.setRol(RolUsuario.ROLE_USER);
 
             usuarioRepository.save(usuario);
 
@@ -80,10 +79,7 @@ public class UsuarioService {
         return usuarioRepository.findAll()
                 .stream()
                 .filter(Usuario::isHabilitado)
-                .map(usuario ->
-                        modelMapper.map(
-                                usuario,
-                                UsuarioDTO.class))
+                .map(this::mapearPublico)
                 .toList();
     }
 
@@ -91,10 +87,15 @@ public class UsuarioService {
 
         return usuarioRepository.findById(id)
                 .filter(Usuario::isHabilitado)
-                .map(usuario ->
-                        modelMapper.map(
-                                usuario,
-                                UsuarioDTO.class))
+                .map(this::mapearPublico)
+                .orElse(null);
+    }
+
+    public UsuarioDTO getPerfilById(Long id) {
+
+        return usuarioRepository.findById(id)
+                .filter(Usuario::isHabilitado)
+                .map(this::mapearPrivado)
                 .orElse(null);
     }
 
@@ -148,15 +149,52 @@ public class UsuarioService {
             }
 
             if (dto.getUsuario() != null) {
-                usuario.setUsuario(dto.getUsuario());
+                String nuevoUsuario =
+                        dto.getUsuario().trim();
+
+                if (nuevoUsuario.isBlank()) {
+                    return 1;
+                }
+
+                Optional<Usuario> usuarioDuplicado =
+                        usuarioRepository.findByUsuario(nuevoUsuario);
+
+                if (usuarioDuplicado.isPresent()
+                        && !usuarioDuplicado.get().getId().equals(id)) {
+                    return 1;
+                }
+
+                usuario.setUsuario(nuevoUsuario);
             }
 
             if (dto.getNombrePersona() != null) {
-                usuario.setNombrePersona(dto.getNombrePersona());
+                String nuevoNombre =
+                        dto.getNombrePersona().trim();
+
+                if (nuevoNombre.isBlank()) {
+                    return 1;
+                }
+
+                usuario.setNombrePersona(nuevoNombre);
             }
 
             if (dto.getCorreo() != null) {
-                usuario.setCorreo(dto.getCorreo());
+                String nuevoCorreo =
+                        dto.getCorreo().trim();
+
+                if (nuevoCorreo.isBlank()) {
+                    return 1;
+                }
+
+                Optional<Usuario> correoDuplicado =
+                        usuarioRepository.findByCorreo(nuevoCorreo);
+
+                if (correoDuplicado.isPresent()
+                        && !correoDuplicado.get().getId().equals(id)) {
+                    return 1;
+                }
+
+                usuario.setCorreo(nuevoCorreo);
             }
 
             if (dto.getSobreMi() != null) {
@@ -194,10 +232,7 @@ public class UsuarioService {
         return usuarioRepository
                 .findByUsuario(username)
                 .filter(Usuario::isHabilitado)
-                .map(usuario ->
-                        modelMapper.map(
-                                usuario,
-                                UsuarioDTO.class))
+                .map(this::mapearPublico)
                 .orElse(null);
     }
 
@@ -230,9 +265,62 @@ public class UsuarioService {
 
         usuario.setFotoPerfil(url);
 
-        return modelMapper.map(
-                usuarioRepository.save(usuario),
-                UsuarioDTO.class);
+        return mapearPrivado(
+                usuarioRepository.save(usuario));
+    }
+
+    public Optional<Usuario> buscarEntidadPorCorreo(
+            String correo) {
+
+        return usuarioRepository.findByCorreo(correo);
+    }
+
+    public Optional<Usuario> buscarEntidadPorId(
+            Long id) {
+
+        return usuarioRepository.findById(id);
+    }
+
+    public boolean esAdmin(
+            Usuario usuario) {
+
+        return usuario != null
+                && usuario.getRol() == RolUsuario.ROLE_ADMIN;
+    }
+
+    private UsuarioDTO mapearPrivado(
+            Usuario usuario) {
+
+        UsuarioDTO dto =
+                mapearPublico(usuario);
+
+        dto.setCorreo(usuario.getCorreo());
+        dto.setFechaNacimiento(usuario.getFechaNacimiento());
+        dto.setRol(usuario.getRol());
+        dto.setContrasena(null);
+
+        return dto;
+    }
+
+    private UsuarioDTO mapearPublico(
+            Usuario usuario) {
+
+        UsuarioDTO dto =
+                new UsuarioDTO();
+
+        dto.setId(usuario.getId());
+        dto.setUsuario(usuario.getUsuario());
+        dto.setNombrePersona(usuario.getNombrePersona());
+        dto.setSobreMi(usuario.getSobreMi());
+        dto.setFotoPerfil(usuario.getFotoPerfil());
+        dto.setEnLinea(usuario.isEnLinea());
+        dto.setUltimaVezEnLinea(usuario.getUltimaVezEnLinea());
+        dto.setCorreo(null);
+        dto.setFechaNacimiento(null);
+        dto.setContrasena(null);
+        dto.setRol(null);
+
+        return dto;
     }
 
     private String limpiarValorUnico(

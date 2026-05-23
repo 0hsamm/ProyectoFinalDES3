@@ -1,0 +1,42 @@
+<div
+  class="main-layout"
+  [class.single-panel]="panelActivo != 'chats'"
+>
+
+  <app-sidebar
+    [panelActivo]="panelActivo"
+    (panelActivoChange)="cambiarPanel($event)"
+  ></app-sidebar>
+
+  <ng-container [ngSwitch]="panelActivo">
+
+    <ng-container *ngSwitchCase="'chats'">
+
+      <app-chat-list
+        [conversacionSeleccionada]="conversacionSeleccionada"
+        (conversacionSeleccionadaChange)="seleccionarConversacion($event)"
+      ></app-chat-list>
+
+      <app-chat-window
+        [conversacion]="conversacionSeleccionada"
+      ></app-chat-window>
+
+      <app-chat-info
+        [conversacion]="conversacionSeleccionada"
+      ></app-chat-info>
+
+    </ng-container>
+
+    <app-friends-panel *ngSwitchCase="'amigos'"></app-friends-panel>
+
+    <app-states-panel *ngSwitchCase="'estados'"></app-states-panel>
+
+    <app-notifications-panel *ngSwitchCase="'notificaciones'"></app-notifications-panel>
+
+    <app-ai-panel *ngSwitchCase="'ia'"></app-ai-panel>
+
+    <app-settings-panel *ngSwitchCase="'configuracion'"></app-settings-panel>
+
+  </ng-container>
+
+</div>
