@@ -44,19 +44,21 @@ export class StatesPanelComponent
 
   filtroActivo: 'todos' | 'mios' = 'todos';
 
-  texto: string = '';
+  texto = '';
 
   archivo: File | null = null;
 
-  vistaPreviaArchivo: string = '';
+  vistaPreviaArchivo = '';
 
   tipoArchivo: 'IMAGEN' | 'VIDEO' | null = null;
 
-  cargando: boolean = true;
+  cargando = true;
 
-  publicando: boolean = false;
+  publicando = false;
 
   procesandoEstadoId: number | null = null;
+
+  estadoPorConfirmarEliminacionId: number | null = null;
 
   detalleEstado: Estado | null = null;
 
@@ -64,16 +66,16 @@ export class StatesPanelComponent
 
   likesDetalle: EstadoInteraccion[] = [];
 
-  cargandoDetalle: boolean = false;
+  cargandoDetalle = false;
 
   private refrescoSub?: Subscription;
 
   private vistasRegistradas =
     new Set<number>();
 
-  private destruido: boolean = false;
+  private destruido = false;
 
-  idUsuarioActual: number =
+  idUsuarioActual  =
     Number(localStorage.getItem('idUsuario') || 0);
 
   constructor(
@@ -101,7 +103,7 @@ export class StatesPanelComponent
   }
 
   cargarEstados(
-    mostrarCarga: boolean = true
+    mostrarCarga = true
   ): void {
 
     if (mostrarCarga) {
@@ -113,7 +115,7 @@ export class StatesPanelComponent
     const peticiones = {
       estados: this.estadoService
         .obtenerEstadosActivos(this.idUsuarioActual),
-      misEstados: this.idUsuarioActual == 0
+      misEstados: this.idUsuarioActual === 0
         ? of([])
         : this.estadoService
           .obtenerEstadosUsuario(
@@ -162,7 +164,7 @@ export class StatesPanelComponent
 
   obtenerEstadosVisibles(): Estado[] {
 
-    return this.filtroActivo == 'mios'
+    return this.filtroActivo === 'mios'
       ? this.misEstados
       : this.estados;
   }
@@ -217,8 +219,8 @@ export class StatesPanelComponent
       this.texto.trim();
 
     if (
-      this.idUsuarioActual == 0 ||
-      (texto == '' && this.archivo == null)
+      this.idUsuarioActual === 0 ||
+      (texto === '' && this.archivo == null)
     ) {
 
       this.toastService.warning(
@@ -279,7 +281,7 @@ export class StatesPanelComponent
   ): void {
 
     if (
-      this.idUsuarioActual == 0 ||
+      this.idUsuarioActual === 0 ||
       estado.id == null ||
       estado.propio
     ) {
@@ -298,7 +300,13 @@ export class StatesPanelComponent
           this.vistasRegistradas.add(estado.id);
           this.marcarCambio();
         },
-        error: () => {}
+        error: () => {
+
+          this.toastService.warning(
+            'Vista no registrada',
+            'No se pudo registrar la visualizacion del estado'
+          );
+        }
       });
   }
 
@@ -307,7 +315,7 @@ export class StatesPanelComponent
   ): void {
 
     if (
-      this.idUsuarioActual == 0 ||
+      this.idUsuarioActual === 0 ||
       estado.id == null ||
       this.procesandoEstadoId != null
     ) {
@@ -371,15 +379,22 @@ export class StatesPanelComponent
       return;
     }
 
-    const confirmar =
-      window.confirm(
-        'Quieres eliminar este estado? Esta accion no se puede deshacer.'
+    if (
+      this.estadoPorConfirmarEliminacionId !== estado.id
+    ) {
+      this.estadoPorConfirmarEliminacionId = estado.id;
+
+      this.toastService.warning(
+        'Confirma la eliminacion',
+        'Vuelve a presionar eliminar para borrar este estado'
       );
 
-    if (!confirmar) {
+      this.marcarCambio();
 
       return;
     }
+
+    this.estadoPorConfirmarEliminacionId = null;
 
     this.procesandoEstadoId = estado.id;
     this.marcarCambio();
@@ -395,12 +410,12 @@ export class StatesPanelComponent
           this.procesandoEstadoId = null;
           this.estados =
             this.estados.filter((item) =>
-              item.id != estado.id);
+              item.id !== estado.id);
           this.misEstados =
             this.misEstados.filter((item) =>
-              item.id != estado.id);
+              item.id !== estado.id);
 
-          if (this.detalleEstado?.id == estado.id) {
+          if (this.detalleEstado?.id === estado.id) {
             this.cerrarDetalle();
           }
 
@@ -539,7 +554,7 @@ export class StatesPanelComponent
 
     const reemplazar =
       (estado: Estado) =>
-        estado.id == estadoActualizado.id
+        estado.id === estadoActualizado.id
           ? {
             ...estado,
             ...estadoActualizado
@@ -552,7 +567,7 @@ export class StatesPanelComponent
     this.misEstados =
       this.misEstados.map(reemplazar);
 
-    if (this.detalleEstado?.id == estadoActualizado.id) {
+    if (this.detalleEstado?.id === estadoActualizado.id) {
 
       this.detalleEstado = {
         ...this.detalleEstado,
@@ -572,7 +587,7 @@ export class StatesPanelComponent
 
     const actualizado =
       this.misEstados.find((estado) =>
-        estado.id == this.detalleEstado?.id);
+        estado.id === this.detalleEstado?.id);
 
     if (actualizado) {
 
@@ -581,28 +596,42 @@ export class StatesPanelComponent
   }
 
   private obtenerMensajeError(
-    err: any,
+    err: unknown,
     mensajeDefecto: string
   ): string {
 
-    if (typeof err?.error == 'string') {
+    const errorBody =
+      typeof err === 'object' && err !== null && 'error' in err
+        ? (err as { error?: unknown }).error
+        : undefined;
 
-      return err.error;
+    if (typeof errorBody === 'string') {
+
+      return errorBody;
     }
 
-    if (typeof err?.error?.mensaje == 'string') {
+    if (
+      typeof errorBody === 'object' &&
+      errorBody !== null
+    ) {
 
-      return err.error.mensaje;
-    }
+      const errorObject =
+        errorBody as Record<string, unknown>;
 
-    if (typeof err?.error?.error == 'string') {
+      if (typeof errorObject['mensaje'] === 'string') {
 
-      return err.error.error;
-    }
+        return errorObject['mensaje'];
+      }
 
-    if (typeof err?.error?.message == 'string') {
+      if (typeof errorObject['error'] === 'string') {
 
-      return err.error.message;
+        return errorObject['error'];
+      }
+
+      if (typeof errorObject['message'] === 'string') {
+
+        return errorObject['message'];
+      }
     }
 
     return mensajeDefecto;
@@ -613,7 +642,7 @@ export class StatesPanelComponent
     this.estados
       .filter((estado) =>
         estado.id != null &&
-        estado.usuarioId != this.idUsuarioActual &&
+        estado.usuarioId !== this.idUsuarioActual &&
         !this.vistasRegistradas.has(estado.id) &&
         !estado.visto)
       .forEach((estado) => {

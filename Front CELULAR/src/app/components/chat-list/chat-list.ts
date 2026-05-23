@@ -66,6 +66,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     new Map<number, Partial<Usuario>>();
 
   eliminandoConversacionId: number | null = null;
+  conversacionPorConfirmarEliminacionId: number | null = null;
 
   idUsuarioActual =
     Number(localStorage.getItem('idUsuario') || 0);
@@ -210,14 +211,24 @@ export class ChatListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const confirmar =
-      window.prompt(
-        'Escribe ELIMINAR para confirmar que quieres ocultar esta conversacion.'
+    if (
+      this.conversacionPorConfirmarEliminacionId !==
+      conversacion.id
+    ) {
+      this.conversacionPorConfirmarEliminacionId =
+        conversacion.id;
+
+      this.toastService.warning(
+        'Confirma la eliminacion',
+        'Vuelve a presionar eliminar para ocultar esta conversacion'
       );
 
-    if (confirmar !== 'ELIMINAR') {
+      this.marcarCambio();
+
       return;
     }
+
+    this.conversacionPorConfirmarEliminacionId = null;
 
     this.eliminandoConversacionId =
       conversacion.id;

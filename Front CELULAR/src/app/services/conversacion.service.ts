@@ -22,8 +22,7 @@ import { Conversacion }
 export class ConversacionService {
 
   private apiUrl =
-    environment.apiUrl +
-    '/conversaciones';
+    `${environment.apiUrl}/conversaciones`;
 
   constructor(
     private http: HttpClient
@@ -34,7 +33,7 @@ export class ConversacionService {
 
     return this.http.get<Conversacion[]>(
 
-      this.apiUrl + '/mis'
+      `${this.apiUrl}/mis`
 
     );
   }
