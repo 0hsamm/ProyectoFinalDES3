@@ -41,6 +41,15 @@
   color: #bbf7d0;
 }
 
+.llamada-persona {
+  width: 100%;
+  color: white;
+  font-size: 22px;
+  font-weight: 850;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
 .llamada-acciones {
   display: flex;
   gap: 12px;

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.unbosque.proyectofinal.dto.ConversacionDTO;
 import co.edu.unbosque.proyectofinal.dto.ParticipanteConversacionDTO;
+import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 import co.edu.unbosque.proyectofinal.security.JwtUtil;
 import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.ConversacionService;
@@ -33,12 +35,38 @@ public class ConversacionController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     private String extraerCorreo(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return jwtUtil.extractUsername(authHeader.substring(7));
         }
         return null;
+    }
+
+    private Usuario obtenerUsuarioAutenticado(
+            HttpServletRequest request) {
+
+        String correo = extraerCorreo(request);
+
+        if (correo == null) {
+            return null;
+        }
+
+        return usuarioRepository
+                .findByCorreo(correo)
+                .orElse(null);
+    }
+
+    private boolean esAdmin(
+            Usuario usuario) {
+
+        return usuario != null
+                && usuario.getRol() != null
+                && "ROLE_ADMIN".equals(
+                        usuario.getRol().name());
     }
     
 	@PostMapping
@@ -73,7 +101,23 @@ public class ConversacionController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<ConversacionDTO>> getAll() {
+	public ResponseEntity<?> getAll(
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!esAdmin(usuarioAutenticado)) {
+            return new ResponseEntity<>(
+                    "No tienes permiso para consultar todas las conversaciones",
+                    HttpStatus.FORBIDDEN);
+        }
 
 		return new ResponseEntity<>(
 				conversacionService.getAll(),
@@ -81,8 +125,27 @@ public class ConversacionController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ConversacionDTO> getById(
-			@PathVariable Long id) {
+	public ResponseEntity<?> getById(
+			@PathVariable Long id,
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!esAdmin(usuarioAutenticado)
+                && !conversacionService.usuarioPertenece(
+                        id,
+                        usuarioAutenticado.getId())) {
+            return new ResponseEntity<>(
+                    "No tienes acceso a esta conversacion",
+                    HttpStatus.FORBIDDEN);
+        }
 
 		ConversacionDTO dto =
 				conversacionService.getById(id);
@@ -104,6 +167,20 @@ public class ConversacionController {
 
 	    String ip = request.getRemoteAddr();
 	    String navegador = request.getHeader("User-Agent");
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!esAdmin(usuarioAutenticado)) {
+            return new ResponseEntity<>(
+                    "Solo un administrador puede eliminar la conversacion globalmente",
+                    HttpStatus.FORBIDDEN);
+        }
 
 	    int status = conversacionService.deleteById(id);
 
@@ -120,6 +197,41 @@ public class ConversacionController {
                 "No se encontro la conversacion",
                 HttpStatus.NOT_FOUND);
     }
+
+	@DeleteMapping("/{id}/ocultar")
+	public ResponseEntity<String> ocultarParaMi(
+			@PathVariable Long id,
+			HttpServletRequest request) {
+
+		Usuario usuarioAutenticado =
+				obtenerUsuarioAutenticado(request);
+
+		if (usuarioAutenticado == null) {
+			return new ResponseEntity<>(
+					"No autorizado",
+					HttpStatus.UNAUTHORIZED);
+		}
+
+		int status =
+				conversacionService.ocultarParaUsuario(
+						id,
+						usuarioAutenticado.getId());
+
+		if (status == 0) {
+			return ResponseEntity.ok(
+					"Conversacion eliminada de tu lista");
+		}
+
+		if (status == 2) {
+			return new ResponseEntity<>(
+					"No tienes acceso a esta conversacion",
+					HttpStatus.FORBIDDEN);
+		}
+
+		return new ResponseEntity<>(
+				"No se encontro la conversacion",
+				HttpStatus.NOT_FOUND);
+	}
 
 	@PostMapping("/agregarParticipante")
 	public ResponseEntity<String> agregarParticipante(
@@ -154,8 +266,27 @@ public class ConversacionController {
 	}
 
 	@GetMapping("/{id}/participantes")
-	public ResponseEntity<List<ParticipanteConversacionDTO>> getParticipantes(
-			@PathVariable Long id) {
+	public ResponseEntity<?> getParticipantes(
+			@PathVariable Long id,
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!esAdmin(usuarioAutenticado)
+                && !conversacionService.usuarioPertenece(
+                        id,
+                        usuarioAutenticado.getId())) {
+            return new ResponseEntity<>(
+                    "No tienes acceso a esta conversacion",
+                    HttpStatus.FORBIDDEN);
+        }
 
 		return ResponseEntity.ok(
 				conversacionService.getParticipantes(id));

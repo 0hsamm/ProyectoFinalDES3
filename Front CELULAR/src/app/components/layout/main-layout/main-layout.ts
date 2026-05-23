@@ -42,11 +42,18 @@ export class MainLayoutComponent {
 
   panelActivo: string = 'chats';
 
+  vistaChatMobile: 'lista' | 'chat' | 'detalle' =
+    'lista';
+
   seleccionarConversacion(
     conversacion: Conversacion | null
   ): void {
 
     this.conversacionSeleccionada = conversacion;
+
+    if (conversacion != null) {
+      this.vistaChatMobile = 'chat';
+    }
   }
 
   cambiarPanel(
@@ -58,6 +65,20 @@ export class MainLayoutComponent {
     if (panel != 'chats') {
 
       this.conversacionSeleccionada = null;
+    }
+
+    this.vistaChatMobile = 'lista';
+  }
+
+  volverALista(): void {
+
+    this.vistaChatMobile = 'lista';
+  }
+
+  mostrarDetalle(): void {
+
+    if (this.conversacionSeleccionada != null) {
+      this.vistaChatMobile = 'detalle';
     }
   }
 }

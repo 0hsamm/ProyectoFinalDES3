@@ -20,6 +20,8 @@ import { ConversacionService } from '../../services/conversacion.service';
 
 import { UsuarioService } from '../../services/usuario.service';
 
+import { ToastService } from '../../services/toast.service';
+
 import {
   interval,
   Subscription
@@ -63,12 +65,15 @@ export class ChatListComponent implements OnInit, OnDestroy {
   private usuariosPorId =
     new Map<number, Partial<Usuario>>();
 
+  eliminandoConversacionId: number | null = null;
+
   idUsuarioActual: number =
     Number(localStorage.getItem('idUsuario') || 0);
 
   constructor(
     private conversacionService: ConversacionService,
     private usuarioService: UsuarioService,
+    private toastService: ToastService,
     private changeDetectorRef: ChangeDetectorRef
   ) {}
 
@@ -108,7 +113,10 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
         next: (conversaciones) => {
 
-          this.conversaciones = conversaciones || [];
+          this.conversaciones =
+            this.ordenarConversaciones(
+              conversaciones || []
+            );
 
           if (
             this.conversacionSeleccionada?.id != null
@@ -188,6 +196,75 @@ export class ChatListComponent implements OnInit, OnDestroy {
     this.conversacionSeleccionadaChange.emit(
       conversacion
     );
+  }
+
+  eliminarConversacion(
+    conversacion: Conversacion,
+    event: Event
+  ): void {
+
+    event.stopPropagation();
+
+    if (conversacion.id == null) {
+      return;
+    }
+
+    const confirmar =
+      window.confirm(
+        'Eliminar esta conversacion de tu lista? Volvera a aparecer si alguien envia un mensaje nuevo.'
+      );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.eliminandoConversacionId =
+      conversacion.id;
+
+    this.conversacionService
+      .ocultarConversacion(conversacion.id)
+      .subscribe({
+        next: () => {
+          this.conversaciones =
+            this.conversaciones.filter(
+              (item) => item.id != conversacion.id
+            );
+
+          if (
+            this.conversacionSeleccionada?.id ==
+            conversacion.id
+          ) {
+            this.conversacionSeleccionada = null;
+            this.conversacionSeleccionadaChange.emit(null);
+          }
+
+          this.eliminandoConversacionId = null;
+          this.toastService.success(
+            'Conversacion eliminada',
+            'Se oculto de tu lista'
+          );
+          this.marcarCambio();
+
+          if (
+            this.conversaciones.length > 0 &&
+            this.conversacionSeleccionada == null
+          ) {
+            this.seleccionarConversacion(
+              this.conversaciones[0]
+            );
+          }
+        },
+        error: (err) => {
+          this.eliminandoConversacionId = null;
+          this.toastService.error(
+            'No se pudo eliminar',
+            typeof err.error == 'string'
+              ? err.error
+              : 'Intentalo nuevamente'
+          );
+          this.marcarCambio();
+        }
+      });
   }
 
   estaSeleccionada(
@@ -342,8 +419,11 @@ export class ChatListComponent implements OnInit, OnDestroy {
             `usuario_${id}`,
           nombrePersona:
             this.obtenerNombreUsuario(id),
-          fotoPerfil:
-            this.usuariosPorId.get(id)?.fotoPerfil ||
+            fotoPerfil:
+              this.usuariosPorId.get(id)?.fotoPerfil ||
+            '',
+          sobreMi:
+            this.usuariosPorId.get(id)?.sobreMi ||
             ''
         }));
 
@@ -383,9 +463,35 @@ export class ChatListComponent implements OnInit, OnDestroy {
               this.usuariosPorId.get(idVisible)?.usuario ||
               `usuario_${idVisible}`,
             nombrePersona: nombreVisible,
-            fotoPerfil: fotoVisible
+            fotoPerfil: fotoVisible,
+            sobreMi:
+              this.usuariosPorId.get(idVisible)?.sobreMi ||
+              ''
           }]
         : [];
+  }
+
+  private ordenarConversaciones(
+    conversaciones: Conversacion[]
+  ): Conversacion[] {
+
+    return [...conversaciones].sort((a, b) => {
+      const fechaA =
+        new Date(
+          a.fechaUltimoMensaje ||
+          a.fechaCreacion ||
+          ''
+        ).getTime() || 0;
+
+      const fechaB =
+        new Date(
+          b.fechaUltimoMensaje ||
+          b.fechaCreacion ||
+          ''
+        ).getTime() || 0;
+
+      return fechaB - fechaA;
+    });
   }
 
   private obtenerParticipantesVisibles(

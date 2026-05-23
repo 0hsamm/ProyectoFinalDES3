@@ -161,6 +161,7 @@ public class MensajeService {
 
 	        Conversacion conversacionActual = conversacion.get();
 	        conversacionActual.setFechaUltimoMensaje(mensaje.getHoraEnvio());
+	        restaurarConversacionParaParticipantes(conversacionActual);
 	        conversacionRepo.save(conversacionActual);
 
 	        return ResultadoCreacionMensaje.exitosa(
@@ -172,6 +173,16 @@ public class MensajeService {
 	        LOGGER.error("Error creando mensaje", e);
 	        return ResultadoCreacionMensaje.conCodigo(3);
 	    }
+	}
+
+	private void restaurarConversacionParaParticipantes(
+			Conversacion conversacion) {
+
+		conversacion.getParticipante()
+				.forEach(participante -> {
+					participante.setOculta(false);
+					participante.setFechaOcultada(null);
+				});
 	}
 
 	public List<MensajeDTO> getAll() {

@@ -38,9 +38,8 @@
     *ngIf="!cargando && error == ''"
   >
 
-    <button
+    <div
       class="chat-item"
-      type="button"
       *ngFor="let conversacion of obtenerConversacionesFiltradas()"
       [class.active]="estaSeleccionada(conversacion)"
       (click)="seleccionarConversacion(conversacion)"
@@ -69,7 +68,23 @@
 
       </div>
 
-    </button>
+      <button
+        class="delete-chat"
+        type="button"
+        title="Eliminar conversacion"
+        aria-label="Eliminar conversacion"
+        [disabled]="eliminandoConversacionId == conversacion.id"
+        (click)="eliminarConversacion(conversacion, $event)"
+      >
+        <i
+          class="pi"
+          [class.pi-trash]="eliminandoConversacionId != conversacion.id"
+          [class.pi-spinner]="eliminandoConversacionId == conversacion.id"
+          [class.pi-spin]="eliminandoConversacionId == conversacion.id"
+        ></i>
+      </button>
+
+    </div>
 
     <div
       class="state"

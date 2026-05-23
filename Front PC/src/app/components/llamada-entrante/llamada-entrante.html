@@ -6,6 +6,10 @@
       {{ llamada.tipoLlamada === 'VIDEO' ? 'Videollamada entrante' : 'Llamada de voz entrante' }}
     </div>
 
+    <div class="llamada-persona">
+      {{ obtenerNombreLlamante() }}
+    </div>
+
     <div class="llamada-acciones">
       <button class="contestar" type="button" (click)="aceptar()">
         Contestar

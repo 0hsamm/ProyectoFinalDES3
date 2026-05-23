@@ -3,6 +3,7 @@ import {
   Input,
   Output,
   EventEmitter,
+  OnInit,
   OnDestroy
 } from '@angular/core';
 
@@ -23,19 +24,32 @@ import { LlamadaRespuesta } from '../../models/llamada';
   templateUrl: './llamada.html',
   styleUrl: './llamada.css'
 })
-export class LlamadaComponent implements OnDestroy {
+export class LlamadaComponent implements OnInit, OnDestroy {
 
   @Input() llamada!: LlamadaRespuesta;
+  @Input() idUsuarioActual?: number;
 
   @Output() colgar = new EventEmitter<void>();
 
   conectado: boolean = false;
   error: string = '';
+  duracionSegundos: number = 0;
 
   private cliente: IAgoraRTCClient | null = null;
   private audioTrack: ILocalAudioTrack | null = null;
   private videoTrack: ILocalVideoTrack | null = null;
+  private contadorDuracion?: ReturnType<typeof setInterval>;
+  private cerrando: boolean = false;
 
+  ngOnInit(): void {
+
+    this.actualizarDuracion();
+
+    this.contadorDuracion =
+      setInterval(() => {
+        this.actualizarDuracion();
+      }, 1000);
+  }
 
   async unirse(): Promise<void> {
     try {
@@ -97,7 +111,16 @@ export class LlamadaComponent implements OnDestroy {
     }
   }
 
-  async salir(): Promise<void> {
+  async salir(
+    emitirEvento: boolean = true
+  ): Promise<void> {
+
+    if (this.cerrando) {
+      return;
+    }
+
+    this.cerrando = true;
+    this.limpiarContador();
     this.audioTrack?.stop();
     this.audioTrack?.close();
     this.videoTrack?.stop();
@@ -105,10 +128,73 @@ export class LlamadaComponent implements OnDestroy {
     await this.cliente?.leave();
     this.cliente = null;
     this.conectado = false;
-    this.colgar.emit();
+
+    if (emitirEvento) {
+      this.colgar.emit();
+    }
   }
 
   ngOnDestroy(): void {
-    this.salir();
+    this.salir(false);
+  }
+
+  obtenerNombreContraparte(): string {
+
+    if (
+      this.idUsuarioActual != null &&
+      this.llamada.usuarioLlamanteId ==
+      this.idUsuarioActual
+    ) {
+      return this.llamada.usuarioReceptorNombre ||
+        'Usuario en llamada';
+    }
+
+    return this.llamada.usuarioLlamanteNombre ||
+      'Usuario en llamada';
+  }
+
+  obtenerDuracion(): string {
+
+    const horas =
+      Math.floor(this.duracionSegundos / 3600);
+
+    const minutos =
+      Math.floor(
+        (this.duracionSegundos % 3600) / 60
+      );
+
+    const segundos =
+      this.duracionSegundos % 60;
+
+    const partes =
+      horas > 0
+        ? [horas, minutos, segundos]
+        : [minutos, segundos];
+
+    return partes
+      .map((parte) => String(parte).padStart(2, '0'))
+      .join(':');
+  }
+
+  private actualizarDuracion(): void {
+
+    const inicio =
+      this.llamada?.fechaInicio
+        ? new Date(this.llamada.fechaInicio).getTime()
+        : Date.now();
+
+    this.duracionSegundos =
+      Math.max(
+        0,
+        Math.floor((Date.now() - inicio) / 1000)
+      );
+  }
+
+  private limpiarContador(): void {
+
+    if (this.contadorDuracion) {
+      clearInterval(this.contadorDuracion);
+      this.contadorDuracion = undefined;
+    }
   }
 }

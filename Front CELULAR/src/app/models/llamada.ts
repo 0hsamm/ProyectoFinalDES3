@@ -46,4 +46,10 @@ export interface LlamadaRespuesta {
   usuarioLlamanteId: number;
 
   usuarioReceptorId: number;
+
+  usuarioLlamanteNombre?: string;
+
+  usuarioReceptorNombre?: string;
+
+  fechaInicio?: string;
 }

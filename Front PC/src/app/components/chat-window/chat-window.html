@@ -291,6 +291,7 @@
   <app-llamada
     *ngIf="llamadaActiva != null"
     [llamada]="llamadaActiva!"
+    [idUsuarioActual]="idUsuarioActual"
     (colgar)="onColgar()"
   >
   </app-llamada>

@@ -23,20 +23,16 @@
         {{ obtenerTipo() }}
       </div>
 
+      <p class="profile-description">
+        {{ obtenerDescripcionPrincipal() }}
+      </p>
+
     </div>
 
     <div class="info-section">
 
       <div class="section-title">
         Detalles
-      </div>
-
-      <div class="detail-item">
-
-        <span>Identificador</span>
-
-        <strong>{{ conversacion.id }}</strong>
-
       </div>
 
       <div class="detail-item">
@@ -73,9 +69,14 @@
           </span>
         </div>
 
-        <span>
-          {{ participante.nombrePersona || participante.usuario || participante.correo }}
-        </span>
+        <div class="participant-copy">
+          <strong>
+            {{ participante.nombrePersona || participante.usuario || participante.correo }}
+          </strong>
+          <span>
+            {{ obtenerDescripcionParticipante(participante) }}
+          </span>
+        </div>
       </div>
 
     </div>

@@ -130,3 +130,27 @@ app-root {
     transform: rotate(360deg);
   }
 }
+
+@media (max-width: 760px) {
+  html,
+  body {
+    overflow: hidden;
+  }
+
+  .friends-panel,
+  .workspace-panel {
+    height: calc(100vh - 74px) !important;
+    padding: 18px !important;
+  }
+
+  .panel-header,
+  .panel-heading {
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .panel-heading h2,
+  .panel-header h2 {
+    font-size: 26px !important;
+  }
+}

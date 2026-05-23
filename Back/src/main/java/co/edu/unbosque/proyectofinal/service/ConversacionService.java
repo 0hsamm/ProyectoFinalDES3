@@ -21,6 +21,7 @@ import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
 import co.edu.unbosque.proyectofinal.enums.TipoMensaje;
 import co.edu.unbosque.proyectofinal.repository.ConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.MensajeRepository;
+import co.edu.unbosque.proyectofinal.repository.ParticipanteConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 
 @Service
@@ -35,6 +36,9 @@ public class ConversacionService {
 
 	@Autowired
 	private MensajeRepository mensajeRepo;
+
+	@Autowired
+	private ParticipanteConversacionRepository participanteRepo;
 
 	@Autowired
 	private CifradoService cifradoService;
@@ -124,6 +128,8 @@ public class ConversacionService {
 					calcularRolInicial(
 							dto.getTipoConversacion(),
 							i));
+			participante.setOculta(false);
+			participante.setFechaOcultada(null);
 
 			participantes.add(participante);
 		}
@@ -209,7 +215,7 @@ public class ConversacionService {
 
 		List<Conversacion> lista =
 				conversacionRepo
-						.findByParticipante_Usuario_Id(
+						.findVisiblesByUsuarioIdOrderByActividadDesc(
 								usuarioId);
 
 		List<ConversacionDTO> dtoList =
@@ -333,6 +339,8 @@ public class ConversacionService {
 				dto.getRol() == null
 						? RolParticipante.MIEMBRO
 						: dto.getRol());
+		nuevo.setOculta(false);
+		nuevo.setFechaOcultada(null);
 
 		conversacion.getParticipante()
 				.add(nuevo);
@@ -364,6 +372,44 @@ public class ConversacionService {
 		}
 
 		return dtoList;
+	}
+
+	public int ocultarParaUsuario(
+			Long conversacionId,
+			Long usuarioId) {
+
+		if (!conversacionRepo.existsById(conversacionId)) {
+			return 1;
+		}
+
+		Optional<ParticipanteConversacion> participante =
+				participanteRepo.findByConversacion_IdAndUsuario_Id(
+						conversacionId,
+						usuarioId);
+
+		if (!participante.isPresent()) {
+			return 2;
+		}
+
+		ParticipanteConversacion registro =
+				participante.get();
+
+		registro.setOculta(true);
+		registro.setFechaOcultada(
+				LocalDateTime.now());
+
+		participanteRepo.save(registro);
+
+		return 0;
+	}
+
+	public boolean usuarioPertenece(
+			Long conversacionId,
+			Long usuarioId) {
+
+		return participanteRepo.existsByConversacion_IdAndUsuario_Id(
+				conversacionId,
+				usuarioId);
 	}
 
 	private List<Long> normalizarParticipantes(
@@ -452,6 +498,10 @@ public class ConversacionService {
 				participante.getFechaIngresoChat());
 		dto.setFechaUltimoLeido(
 				participante.getFechaUltimoLeido());
+		dto.setOculta(
+				participante.isOculta());
+		dto.setFechaOcultada(
+				participante.getFechaOcultada());
 
 		return dto;
 	}

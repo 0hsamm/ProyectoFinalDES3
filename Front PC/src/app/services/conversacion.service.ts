@@ -79,4 +79,16 @@ export class ConversacionService {
     );
   }
 
+  ocultarConversacion(
+    conversacionId: number
+  ): Observable<string> {
+
+    return this.http.delete(
+      `${this.apiUrl}/${conversacionId}/ocultar`,
+      {
+        responseType: 'text'
+      }
+    );
+  }
+
 }

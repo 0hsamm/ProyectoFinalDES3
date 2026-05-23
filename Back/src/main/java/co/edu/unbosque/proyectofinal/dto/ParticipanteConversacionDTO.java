@@ -13,6 +13,8 @@ public class ParticipanteConversacionDTO {
     private RolParticipante rol;
     private LocalDateTime fechaIngresoChat;
     private LocalDateTime fechaUltimoLeido;
+    private boolean oculta;
+    private LocalDateTime fechaOcultada;
 	
     
     public ParticipanteConversacionDTO() {
@@ -101,6 +103,22 @@ public class ParticipanteConversacionDTO {
 
 	public void setRol(RolParticipante rol) {
 		this.rol = rol;
+	}
+
+	public boolean isOculta() {
+		return oculta;
+	}
+
+	public void setOculta(boolean oculta) {
+		this.oculta = oculta;
+	}
+
+	public LocalDateTime getFechaOcultada() {
+		return fechaOcultada;
+	}
+
+	public void setFechaOcultada(LocalDateTime fechaOcultada) {
+		this.fechaOcultada = fechaOcultada;
 	}
 
 

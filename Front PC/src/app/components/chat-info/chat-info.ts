@@ -65,4 +65,37 @@ export class ChatInfoComponent {
       this.conversacion?.participantes?.length ||
       0;
   }
+
+  obtenerDescripcionPrincipal(): string {
+
+    const participanteVisible =
+      this.conversacion?.participantes?.[0];
+
+    const descripcion =
+      participanteVisible?.sobreMi ||
+      participanteVisible?.descripcion ||
+      '';
+
+    if (descripcion.trim() != '') {
+      return descripcion.trim();
+    }
+
+    return this.conversacion?.tipoConversacion == 'GRUPAL'
+      ? 'Conversacion grupal'
+      : 'Sin descripcion disponible';
+  }
+
+  obtenerDescripcionParticipante(
+    participante: any
+  ): string {
+
+    const descripcion =
+      participante?.sobreMi ||
+      participante?.descripcion ||
+      '';
+
+    return descripcion.trim() != ''
+      ? descripcion.trim()
+      : 'Sin descripcion';
+  }
 }

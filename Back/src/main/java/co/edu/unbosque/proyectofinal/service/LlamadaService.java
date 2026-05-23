@@ -134,6 +134,12 @@ public class LlamadaService {
 		respuesta.setConversacionId(dto.getConversacionId());
 		respuesta.setUsuarioLlamanteId(dto.getUsuarioLlamanteId());
 		respuesta.setUsuarioReceptorId(dto.getUsuarioReceptorId());
+		respuesta.setUsuarioLlamanteNombre(
+				obtenerNombreVisible(llamante));
+		respuesta.setUsuarioReceptorNombre(
+				obtenerNombreVisible(receptor));
+		respuesta.setFechaInicio(
+				llamada.getFechaInicio());
 
 		return respuesta;
 	}
@@ -181,6 +187,12 @@ public class LlamadaService {
 		respuesta.setConversacionId(llamada.getConversacion().getId());
 		respuesta.setUsuarioLlamanteId(llamada.getUsuarioLlamante().getId());
 		respuesta.setUsuarioReceptorId(llamada.getUsuarioReceptor().getId());
+		respuesta.setUsuarioLlamanteNombre(
+				obtenerNombreVisible(llamada.getUsuarioLlamante()));
+		respuesta.setUsuarioReceptorNombre(
+				obtenerNombreVisible(llamada.getUsuarioReceptor()));
+		respuesta.setFechaInicio(
+				llamada.getFechaInicio());
 
 		return respuesta;
 	}

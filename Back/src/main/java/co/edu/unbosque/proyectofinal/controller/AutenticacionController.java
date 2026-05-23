@@ -23,6 +23,7 @@ import co.edu.unbosque.proyectofinal.exception.UsuarioYaExisteException;
 import co.edu.unbosque.proyectofinal.security.JwtUtil;
 import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.AutenticacionService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -32,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("/auth")
+@SecurityRequirements
 public class AutenticacionController {
 
     private final AutenticacionService authService;

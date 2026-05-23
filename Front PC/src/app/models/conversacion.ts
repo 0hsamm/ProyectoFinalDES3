@@ -12,9 +12,13 @@ export interface Conversacion {
 
   fechaUltimoMensaje?: string;
 
+  fechaCreacion?: string;
+
   participantes?: any[];
 
   participantesIds?: number[];
 
   fraseSecretaConfigurada?: boolean;
+
+  oculta?: boolean;
 }

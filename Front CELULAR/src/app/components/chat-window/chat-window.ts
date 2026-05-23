@@ -378,7 +378,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
           this.marcarCambio();
           this.toastService.success(
             tipo == 'VOZ' ? 'Llamada iniciada' : 'Videollamada iniciada',
-            `Canal: ${respuesta.canalAgora}`
+            `Conectando con ${this.obtenerNombreConversacion()}`
           );
         },
         error: (err) => {

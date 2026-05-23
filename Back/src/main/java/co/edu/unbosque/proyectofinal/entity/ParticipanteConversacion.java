@@ -42,6 +42,11 @@ public class ParticipanteConversacion {
 
 	@Column(nullable = false)
 	private LocalDateTime fechaUltimoLeido; //la fecha en la que se leyó el último mensaje
+
+	@Column(nullable = false)
+	private boolean oculta = false;
+
+	private LocalDateTime fechaOcultada;
 	
 
 	public ParticipanteConversacion() {
@@ -60,6 +65,7 @@ public class ParticipanteConversacion {
 		this.rol = rol;
 		this.fechaIngresoChat = fechaIngresoChat;
 		this.fechaUltimoLeido = fechaUltimoLeido;
+		this.oculta = false;
 	}
 
 
@@ -131,13 +137,29 @@ public class ParticipanteConversacion {
 		this.rol = rol;
 	}
 
+	public boolean isOculta() {
+		return oculta;
+	}
+
+	public void setOculta(boolean oculta) {
+		this.oculta = oculta;
+	}
+
+	public LocalDateTime getFechaOcultada() {
+		return fechaOcultada;
+	}
+
+	public void setFechaOcultada(LocalDateTime fechaOcultada) {
+		this.fechaOcultada = fechaOcultada;
+	}
+
 
 
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(conversacion, fechaIngresoChat, fechaUltimoLeido, id, rol, usuario);
+		return Objects.hash(conversacion, fechaIngresoChat, fechaOcultada, fechaUltimoLeido, id, oculta, rol, usuario);
 	}
 
 
@@ -155,7 +177,8 @@ public class ParticipanteConversacion {
 		ParticipanteConversacion other = (ParticipanteConversacion) obj;
 		return Objects.equals(conversacion, other.conversacion)
 				&& Objects.equals(fechaIngresoChat, other.fechaIngresoChat)
-				&& Objects.equals(fechaUltimoLeido, other.fechaUltimoLeido) && id == other.id && rol == other.rol
+				&& Objects.equals(fechaOcultada, other.fechaOcultada)
+				&& Objects.equals(fechaUltimoLeido, other.fechaUltimoLeido) && id == other.id && oculta == other.oculta && rol == other.rol
 				&& Objects.equals(usuario, other.usuario);
 	}
 
@@ -167,7 +190,7 @@ public class ParticipanteConversacion {
 	public String toString() {
 		return "ParticipanteConversacion [id=" + id + ", conversacion=" + conversacion + ", usuario=" + usuario
 				+ ", rol=" + rol + ", fechaIngresoChat=" + fechaIngresoChat + ", fechaUltimoLeido=" + fechaUltimoLeido
-				+ "]";
+				+ ", oculta=" + oculta + ", fechaOcultada=" + fechaOcultada + "]";
 	}
 	
 	

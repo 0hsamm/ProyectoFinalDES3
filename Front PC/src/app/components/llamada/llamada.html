@@ -5,8 +5,16 @@
       {{ llamada.tipoLlamada === 'VIDEO' ? 'Videollamada' : 'Llamada de voz' }}
     </div>
 
+    <div class="llamada-persona">
+      {{ obtenerNombreContraparte() }}
+    </div>
+
     <div class="llamada-estado">
       {{ conectado ? 'Conectado' : 'Conectando...' }}
+    </div>
+
+    <div class="llamada-duracion">
+      {{ obtenerDuracion() }}
     </div>
 
     <div class="llamada-error" *ngIf="error !== ''">

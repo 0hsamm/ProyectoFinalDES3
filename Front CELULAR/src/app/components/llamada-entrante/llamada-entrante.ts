@@ -26,6 +26,12 @@ export class LlamadaEntranteComponent {
 
   constructor(private llamadaService: LlamadaService) {}
 
+  obtenerNombreLlamante(): string {
+
+    return this.llamada.usuarioLlamanteNombre ||
+      'Usuario en llamada';
+  }
+
   aceptar(): void {
     this.llamadaService
       .aceptarLlamada(this.llamada.id!, this.idUsuarioActual)
