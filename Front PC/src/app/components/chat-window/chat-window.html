@@ -38,6 +38,7 @@
           type="button"
           title="Llamada de voz"
           aria-label="Llamada de voz"
+          *ngIf="puedeHacerLlamadas()"
           (click)="iniciarLlamada('VOZ')"
         >
           <span class="icon icon-phone"></span>
@@ -48,6 +49,7 @@
           type="button"
           title="Videollamada"
           aria-label="Videollamada"
+          *ngIf="puedeHacerLlamadas()"
           (click)="iniciarLlamada('VIDEO')"
         >
           <span class="icon icon-video"></span>
@@ -58,7 +60,7 @@
           type="button"
           title="Finalizar llamada"
           aria-label="Finalizar llamada"
-          *ngIf="llamadaActivaId != null"
+          *ngIf="puedeHacerLlamadas() && llamadaActivaId != null"
           (click)="finalizarLlamada()"
         >
           <span class="icon icon-phone"></span>

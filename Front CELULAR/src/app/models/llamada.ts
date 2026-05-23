@@ -19,6 +19,10 @@ export interface Llamada {
   usuarioLlamanteId: number;
 
   usuarioReceptorId: number;
+
+  usuarioLlamanteNombre?: string;
+
+  usuarioReceptorNombre?: string;
 }
 
 export interface LlamadaRespuesta {

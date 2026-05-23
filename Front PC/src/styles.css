@@ -21,6 +21,21 @@
   --radius: 8px;
 }
 
+:root[data-theme="light"] {
+  --app-bg: #eef4fb;
+  --app-bg-soft: #f7fbff;
+  --surface-1: rgba(255, 255, 255, 0.92);
+  --surface-2: rgba(244, 248, 255, 0.94);
+  --surface-3: rgba(15, 23, 42, 0.08);
+  --line-soft: rgba(15, 23, 42, 0.09);
+  --line-strong: rgba(15, 23, 42, 0.18);
+  --text-1: #0f172a;
+  --text-2: #334155;
+  --text-3: #64748b;
+  --shadow-soft: 0 20px 55px rgba(15, 23, 42, 0.12);
+  --shadow-blue: 0 18px 38px rgba(56, 189, 248, 0.12);
+}
+
 html,
 body {
   margin: 0;
@@ -39,6 +54,7 @@ body {
   border: none !important;
   outline: none !important;
   color: var(--text-1);
+  background: var(--app-bg);
   font-family:
     Inter,
     ui-sans-serif,
@@ -75,12 +91,20 @@ app-root {
 ::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.38);
+  background: color-mix(
+    in srgb,
+    var(--text-3) 38%,
+    transparent
+  );
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.55);
+  background: color-mix(
+    in srgb,
+    var(--text-3) 55%,
+    transparent
+  );
   background-clip: padding-box;
 }
 

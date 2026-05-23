@@ -14,6 +14,7 @@ import { Usuario } from '../../models/usuario';
 import { ToastService } from '../../services/toast.service';
 
 import { UsuarioService } from '../../services/usuario.service';
+import { ThemeService } from '../../services/theme.service';
 
 import {
   interval,
@@ -72,7 +73,8 @@ export class SettingsPanelComponent
   constructor(
     private usuarioService: UsuarioService,
     private toastService: ToastService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -349,6 +351,10 @@ export class SettingsPanelComponent
     localStorage.setItem(
       'preferenciasUsuario',
       JSON.stringify(this.preferencias)
+    );
+
+    this.themeService.aplicarTema(
+      this.preferencias.tema
     );
 
     window.dispatchEvent(

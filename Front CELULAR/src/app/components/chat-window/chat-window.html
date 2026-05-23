@@ -38,6 +38,7 @@
           type="button"
           title="Llamada de voz"
           aria-label="Llamada de voz"
+          *ngIf="puedeHacerLlamadas()"
           (click)="iniciarLlamada('VOZ')"
         >
           <span class="icon icon-phone"></span>
@@ -48,6 +49,7 @@
           type="button"
           title="Videollamada"
           aria-label="Videollamada"
+          *ngIf="puedeHacerLlamadas()"
           (click)="iniciarLlamada('VIDEO')"
         >
           <span class="icon icon-video"></span>
@@ -58,7 +60,7 @@
           type="button"
           title="Finalizar llamada"
           aria-label="Finalizar llamada"
-          *ngIf="llamadaActivaId != null"
+          *ngIf="puedeHacerLlamadas() && llamadaActivaId != null"
           (click)="finalizarLlamada()"
         >
           <span class="icon icon-phone"></span>
@@ -163,7 +165,7 @@
                 <span>
                   {{ obtenerDescripcionAdjunto(mensaje) }}
                   <ng-container *ngIf="obtenerTamanoHumano(mensaje.adjuntoTamano) != ''">
-                    · {{ obtenerTamanoHumano(mensaje.adjuntoTamano) }}
+                    - {{ obtenerTamanoHumano(mensaje.adjuntoTamano) }}
                   </ng-container>
                 </span>
               </div>
@@ -232,7 +234,7 @@
         <div class="attachment-preview-meta">
           {{ archivoPreviewEsImagen ? 'Imagen lista para enviar' : 'Archivo listo para enviar' }}
           <ng-container *ngIf="obtenerTamanoHumano(archivoAdjunto.size) != ''">
-            · {{ obtenerTamanoHumano(archivoAdjunto.size) }}
+            - {{ obtenerTamanoHumano(archivoAdjunto.size) }}
           </ng-container>
         </div>
       </div>
@@ -286,7 +288,12 @@
     </form>
 
   </ng-container>
-
+  <app-llamada
+    *ngIf="llamadaActiva != null"
+    [llamada]="llamadaActiva!"
+    (colgar)="onColgar()"
+  >
+  </app-llamada>
   <ng-template #sinConversacion>
 
     <div class="empty-window">
@@ -304,5 +311,11 @@
     </div>
 
   </ng-template>
-
+  <app-llamada-entrante
+    *ngIf="llamadaEntrante != null"
+    [llamada]="llamadaEntrante!"
+    [idUsuarioActual]="idUsuarioActual"
+    (aceptada)="onLlamadaAceptada($event)"
+    (rechazada)="onLlamadaRechazada()"
+  />
 </div>

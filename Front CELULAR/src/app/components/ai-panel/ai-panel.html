@@ -43,12 +43,30 @@
   </main>
 
   <aside class="ai-history">
-    <h3>Historial</h3>
+    <div class="history-heading">
+      <h3>Historial</h3>
+      <button
+        type="button"
+        class="history-refresh"
+        title="Actualizar historial"
+        aria-label="Actualizar historial"
+        [disabled]="cargandoHistorial"
+        (click)="refrescarHistorial()"
+      >
+        <i
+          class="pi pi-refresh"
+          [class.pi-spin]="cargandoHistorial"
+        ></i>
+      </button>
+    </div>
     <article *ngFor="let item of historial">
       <strong>{{ item.tipoAccion }}</strong>
       <span>{{ item.vistaPreviaSolicitud }}</span>
     </article>
-    <div class="empty-state" *ngIf="historial.length == 0">
+    <div class="empty-state" *ngIf="cargandoHistorial">
+      Actualizando historial...
+    </div>
+    <div class="empty-state" *ngIf="!cargandoHistorial && historial.length == 0">
       Aun no hay historial de IA
     </div>
   </aside>

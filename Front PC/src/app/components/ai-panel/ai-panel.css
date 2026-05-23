@@ -6,7 +6,7 @@
   background:
     linear-gradient(135deg, rgba(56, 189, 248, 0.1), transparent 36%),
     linear-gradient(225deg, rgba(139, 92, 246, 0.08), transparent 44%),
-    rgba(7, 9, 15, 0.92);
+    var(--app-bg-soft);
 }
 
 .ai-chat {
@@ -18,6 +18,14 @@
 
 .panel-heading {
   margin-bottom: 18px;
+}
+
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .panel-heading p {
@@ -65,7 +73,7 @@
 .ai-message p {
   margin: 8px 0 0;
   line-height: 1.6;
-  color: #e5e7eb;
+  color: var(--text-2);
 }
 
 .prompt-box {
@@ -80,8 +88,8 @@
   border: 1px solid var(--line-soft);
   outline: 0;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.06);
-  color: white;
+  background: var(--surface-2);
+  color: var(--text-1);
   padding: 0 14px;
   min-width: 0;
 }
@@ -100,6 +108,21 @@
   cursor: pointer;
 }
 
+.history-refresh {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text-1);
+  cursor: pointer;
+}
+
+.history-refresh:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
 .ai-history {
   padding: 20px;
   overflow-y: auto;
@@ -107,24 +130,24 @@
   border-top: 0;
   border-right: 0;
   border-bottom: 0;
-  background: rgba(10, 14, 22, 0.9);
+  background: var(--surface-1);
 }
 
 .ai-history h3 {
-  margin: 0 0 16px;
+  margin: 0;
 }
 
 .ai-history article {
   padding: 12px;
   border: 1px solid transparent;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--surface-2);
   margin-bottom: 10px;
 }
 
 .ai-history article:hover {
   border-color: var(--line-soft);
-  background: rgba(255, 255, 255, 0.065);
+  background: var(--surface-3);
 }
 
 .ai-history strong,

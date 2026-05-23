@@ -1,6 +1,7 @@
 package co.edu.unbosque.proyectofinal.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -206,6 +207,7 @@ public class AutenticacionController {
             if (usuarioOpt.isPresent()) {
                 Usuario usuario = usuarioOpt.get();
                 usuario.setEnLinea(false);
+                usuario.setUltimaVezEnLinea(LocalDateTime.now());
                 authService.guardar(usuario);
             }
         }

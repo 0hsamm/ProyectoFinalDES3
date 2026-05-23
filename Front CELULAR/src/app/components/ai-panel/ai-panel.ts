@@ -13,6 +13,8 @@ import { IaService } from '../../services/ia.service';
 
 import { ToastService } from '../../services/toast.service';
 
+import { ChangeDetectorRef } from '@angular/core';
+
 interface AiMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -39,9 +41,12 @@ export class AiPanelComponent
 
   enviando: boolean = false;
 
+  cargandoHistorial: boolean = false;
+
   constructor(
     private iaService: IaService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +84,7 @@ export class AiPanelComponent
             role: 'assistant',
             content: respuesta.respuesta
           });
+          this.cdr.detectChanges();
           this.cargarHistorial();
         },
         error: (err) => {
@@ -93,13 +99,39 @@ export class AiPanelComponent
 
   cargarHistorial(): void {
 
+    this.cargarHistorialInterno(false);
+  }
+
+  refrescarHistorial(): void {
+
+    this.cargarHistorialInterno(true);
+  }
+
+  private cargarHistorialInterno(
+    mostrarToastError: boolean
+  ): void {
+
+    this.cargandoHistorial = true;
+
     this.iaService
       .obtenerHistorial()
       .subscribe({
         next: (historial) => {
           this.historial = historial || [];
+          this.cargandoHistorial = false;
+          this.cdr.detectChanges();
         },
-        error: () => {}
+        error: () => {
+          this.cargandoHistorial = false;
+          this.cdr.detectChanges();
+
+          if (mostrarToastError) {
+            this.toastService.warning(
+              'Historial no disponible',
+              'No se pudo actualizar el historial de IA'
+            );
+          }
+        }
       });
   }
 

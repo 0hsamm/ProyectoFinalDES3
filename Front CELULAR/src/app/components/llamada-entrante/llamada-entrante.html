@@ -1,0 +1,19 @@
+<div class="llamada-overlay">
+  <div class="llamada-modal entrante">
+
+    <div class="llamada-tipo">
+      <i class="pi pi-phone"></i>
+      {{ llamada.tipoLlamada === 'VIDEO' ? 'Videollamada entrante' : 'Llamada de voz entrante' }}
+    </div>
+
+    <div class="llamada-acciones">
+      <button class="contestar" type="button" (click)="aceptar()">
+        Contestar
+      </button>
+      <button class="colgar" type="button" (click)="rechazar()">
+        Rechazar
+      </button>
+    </div>
+
+  </div>
+</div>

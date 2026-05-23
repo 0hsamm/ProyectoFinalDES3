@@ -314,8 +314,28 @@ public class LlamadaService {
 		dto.setConversacionId(l.getConversacion().getId());
 		dto.setUsuarioLlamanteId(l.getUsuarioLlamante().getId());
 		dto.setUsuarioReceptorId(l.getUsuarioReceptor().getId());
+		dto.setUsuarioLlamanteNombre(
+				obtenerNombreVisible(l.getUsuarioLlamante()));
+		dto.setUsuarioReceptorNombre(
+				obtenerNombreVisible(l.getUsuarioReceptor()));
 
 		return dto;
+	}
+
+	private String obtenerNombreVisible(Usuario usuario) {
+
+		if (usuario == null) {
+			return "";
+		}
+
+		if (usuario.getNombrePersona() != null
+				&& !usuario.getNombrePersona().isBlank()) {
+			return usuario.getNombrePersona();
+		}
+
+		return usuario.getUsuario() == null
+				? ""
+				: usuario.getUsuario();
 	}
 
 }

@@ -3,6 +3,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
+import {
+  catchError,
+  finalize,
+  of
+} from 'rxjs';
 
 import { environment } from '../../environment/environment';
 
@@ -110,8 +115,36 @@ export class AuthService {
     return this.obtenerToken() != null;
   }
 
-  cerrarSesion(): void {
+  cerrarSesion(): Observable<string> {
 
-    localStorage.clear();
+    return this.http.post(
+      this.apiUrl + '/logout',
+      {},
+      {
+        responseType: 'text'
+      }
+    ).pipe(
+      catchError(() =>
+        of(
+          'Sesion cerrada localmente'
+        )
+      ),
+      finalize(() => {
+        this.limpiarSesionLocal();
+      })
+    );
+  }
+
+  private limpiarSesionLocal(): void {
+
+    localStorage.removeItem('token');
+    localStorage.removeItem('tipoToken');
+    localStorage.removeItem('idUsuario');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('correo');
+    localStorage.removeItem('nombrePersona');
+    localStorage.removeItem('fotoPerfil');
+
+    sessionStorage.clear();
   }
 }

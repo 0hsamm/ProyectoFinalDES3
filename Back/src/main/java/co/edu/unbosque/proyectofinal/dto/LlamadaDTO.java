@@ -18,6 +18,8 @@ public class LlamadaDTO {
 	private Long conversacionId;
 	private Long usuarioLlamanteId;
 	private Long usuarioReceptorId;
+	private String usuarioLlamanteNombre;
+	private String usuarioReceptorNombre;
 
 	public LlamadaDTO() {
 	}
@@ -117,6 +119,22 @@ public class LlamadaDTO {
 
 	public void setUsuarioReceptorId(Long usuarioReceptorId) {
 		this.usuarioReceptorId = usuarioReceptorId;
+	}
+
+	public String getUsuarioLlamanteNombre() {
+		return usuarioLlamanteNombre;
+	}
+
+	public void setUsuarioLlamanteNombre(String usuarioLlamanteNombre) {
+		this.usuarioLlamanteNombre = usuarioLlamanteNombre;
+	}
+
+	public String getUsuarioReceptorNombre() {
+		return usuarioReceptorNombre;
+	}
+
+	public void setUsuarioReceptorNombre(String usuarioReceptorNombre) {
+		this.usuarioReceptorNombre = usuarioReceptorNombre;
 	}
 
 	@Override

@@ -42,7 +42,7 @@
         <strong>{{ llamada.tipoLlamada }}</strong>
         <span>{{ llamada.estadoLlamada || 'Registrada' }}</span>
       </div>
-      <small>Conversacion {{ llamada.conversacionId }}</small>
+      <small>{{ obtenerEtiquetaLlamada(llamada) }}</small>
     </article>
 
     <div class="empty-state" *ngIf="llamadas.length == 0">

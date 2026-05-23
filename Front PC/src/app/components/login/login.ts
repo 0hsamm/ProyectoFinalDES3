@@ -1,4 +1,7 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 
@@ -9,6 +12,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 import { ToastService } from '../../services/toast.service';
+import { ThemeService } from '../../services/theme.service';
 
 import {
   RegistroDTO
@@ -31,7 +35,8 @@ import {
 
   styleUrls: ['./login.css']
 })
-export class Login {
+export class Login
+  implements OnInit {
 
   modoRegistro: boolean = false;
 
@@ -59,12 +64,28 @@ export class Login {
 
     private router: Router,
 
-    private toastService: ToastService
+    private toastService: ToastService,
+    private themeService: ThemeService
   ) {}
+
+  ngOnInit(): void {
+
+    this.themeService.inicializar();
+
+    this.modoClaro =
+      this.themeService
+        .esTemaClaroActivo();
+  }
 
   toggleTheme(): void {
 
     this.modoClaro = !this.modoClaro;
+
+    this.themeService.guardarTema(
+      this.modoClaro
+        ? 'claro'
+        : 'oscuro'
+    );
   }
 
   cambiarModo(): void {

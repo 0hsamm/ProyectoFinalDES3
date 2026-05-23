@@ -346,6 +346,14 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   iniciarLlamada(tipo: 'VOZ' | 'VIDEO'): void {
 
+    if (this.esConversacionGrupal()) {
+      this.toastService.warning(
+        'Llamadas no disponibles',
+        'Las llamadas solo estan habilitadas en chats privados'
+      );
+      return;
+    }
+
     const receptorId = this.obtenerReceptorId();
 
     if (!this.conversacion?.id || this.idUsuarioActual == 0 || receptorId == null) {
@@ -964,6 +972,12 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     return this.conversacion?.tipoConversacion ==
       'GRUPAL';
+  }
+
+  puedeHacerLlamadas(): boolean {
+
+    return !this.esConversacionGrupal() &&
+      this.obtenerReceptorId() != null;
   }
 
   obtenerTipoMensajeAdjunto(

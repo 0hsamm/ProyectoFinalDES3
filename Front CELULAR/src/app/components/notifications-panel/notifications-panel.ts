@@ -195,6 +195,43 @@ export class NotificationsPanelComponent
       });
   }
 
+  obtenerNombreInterlocutor(
+    llamada: Llamada
+  ): string {
+
+    if (
+      llamada.usuarioLlamanteId ==
+      this.idUsuarioActual
+    ) {
+      return llamada
+        .usuarioReceptorNombre ||
+        `Usuario ${llamada.usuarioReceptorId}`;
+    }
+
+    return llamada
+      .usuarioLlamanteNombre ||
+      `Usuario ${llamada.usuarioLlamanteId}`;
+  }
+
+  obtenerEtiquetaLlamada(
+    llamada: Llamada
+  ): string {
+
+    const nombre =
+      this.obtenerNombreInterlocutor(
+        llamada
+      );
+
+    if (
+      llamada.usuarioLlamanteId ==
+      this.idUsuarioActual
+    ) {
+      return `Llamaste a ${nombre}`;
+    }
+
+    return `${nombre} te llamo`;
+  }
+
   private obtenerMensajeError(
     err: any
   ): string {

@@ -98,9 +98,18 @@ export class SidebarComponent {
 
   cerrarSesion(): void {
 
-    this.authService.cerrarSesion();
-
-    this.router.navigate(['/']);
+    this.authService
+      .cerrarSesion()
+      .subscribe({
+        next: () => {
+          this.confirmandoSalida = false;
+          this.router.navigate(['/']);
+        },
+        error: () => {
+          this.confirmandoSalida = false;
+          this.router.navigate(['/']);
+        }
+      });
   }
 
   solicitarCerrarSesion(): void {
