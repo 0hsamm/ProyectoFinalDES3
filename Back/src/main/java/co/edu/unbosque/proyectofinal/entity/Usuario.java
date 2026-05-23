@@ -197,16 +197,16 @@ public class Usuario implements UserDetails {
 		return tokens;
 	}
 
-	public void setTokens(List<TokenVerificacion> tokens) {
-		this.tokens = tokens;
-	}
+    public void setTokens(List<TokenVerificacion> tokens) {
+        this.tokens = tokens == null ? new ArrayList<>() : new ArrayList<>(tokens);
+    }
 
 	public List<RegistroAuditoria> getAuditorias() {
 		return auditorias;
 	}
 
 	public void setAuditorias(List<RegistroAuditoria> auditorias) {
-		this.auditorias = auditorias;
+	    this.auditorias = auditorias == null ? new ArrayList<>() : new ArrayList<>(auditorias);
 	}
 
 	@Override
