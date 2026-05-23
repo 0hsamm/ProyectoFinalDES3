@@ -22,3 +22,9 @@ export interface Conversacion {
 
   oculta?: boolean;
 }
+export interface Participante {
+  fotoPerfil?: string;
+  sobreMi?: string;
+  descripcion?: string;
+  nombre?: string;
+}

@@ -43,11 +43,8 @@
           of conversaciones
         "
 
-        (click)="
-          seleccionarConversacion(
-            conversacion.id
-          )
-        "
+        (click)="seleccionarConversacion(conversacion.id!)"
+        [class.active]="conversacion.id === conversacionSeleccionada"
 
         [class.active]="
           conversacion.id ==
@@ -100,18 +97,9 @@
         ">
 
         <div
-
           class="message"
-
-          [class.sent]="
-            mensaje.remitente ==
-            usuarioActual
-          "
-
-          [class.received]="
-            mensaje.remitente !=
-            usuarioActual
-          ">
+          [class.sent]="mensaje.remitenteUsuario === usuarioActual"
+          [class.received]="mensaje.remitenteUsuario !== usuarioActual">
 
           {{ mensaje.contenido }}
 

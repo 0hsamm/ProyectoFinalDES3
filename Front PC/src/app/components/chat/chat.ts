@@ -16,6 +16,10 @@ import { ConversacionService }
 import { MensajeService }
   from '../../services/mensaje.service';
 
+import { Mensaje } from '../../models/mensaje';
+
+import { Conversacion } from '../../models/conversacion';
+
 @Component({
 
   selector: 'app-chat',
@@ -36,19 +40,19 @@ import { MensajeService }
 export class Chat
   implements OnInit {
 
-  conversaciones: any[] = [];
+  conversaciones: Conversacion[] = [];
 
-  mensajes: any[] = [];
+  mensajes: Mensaje[] = [];
 
-  conversacionSeleccionada: number = 0;
+  conversacionSeleccionada= 0;
 
-  nuevoMensaje: string = '';
+  nuevoMensaje = '';
 
-  usuarioActual: string = '';
+  usuarioActual = '';
 
-  idUsuarioActual: number = 0;
+  idUsuarioActual = 0;
 
-  error: string = '';
+  error = '';
 
   constructor(
 
@@ -84,25 +88,16 @@ export class Chat
       .obtenerConversaciones()
       .subscribe({
 
-        next: (data: any[]) => {
-
-          this.conversaciones =
-            data;
-
-          if(
-            this.conversaciones.length > 0
-          ) {
-
-            this.conversacionSeleccionada =
-
-              this.conversaciones[0].id;
-
+        next: (data: Conversacion[]) => {
+          this.conversaciones = data;
+          if (this.conversaciones.length > 0 && this.conversaciones[0].id != null) {
+            this.conversacionSeleccionada = this.conversaciones[0].id;
             this.cargarMensajes();
           }
         },
 
-        error: (err) => {
-
+        error: () => {
+          this.error = 'No se pudieron cargar las conversaciones';
         }
 
       });
@@ -128,14 +123,14 @@ export class Chat
       )
       .subscribe({
 
-        next: (data: any[]) => {
+        next: (data: Mensaje[]) => {
 
           this.mensajes =
             data;
         },
 
-        error: (err) => {
-
+        error: () => {
+          this.error = 'No se pudieron cargar los mensajes';
         }
 
       });
@@ -144,7 +139,7 @@ export class Chat
   enviarMensaje(): void {
 
     if(
-      this.nuevoMensaje.trim() == ''
+      this.nuevoMensaje.trim() === ''
     ) {
 
       return;
@@ -169,9 +164,7 @@ export class Chat
           this.cargarMensajes();
         },
 
-        error: (err) => {
-
-
+        error: () => {
           this.error =
             'No se pudo enviar el mensaje';
         }

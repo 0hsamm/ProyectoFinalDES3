@@ -5,7 +5,9 @@ import {
 
 import { CommonModule } from '@angular/common';
 
-import { Conversacion } from '../../models/conversacion';
+import { Conversacion, Participante} from '../../models/conversacion';
+
+
 
 @Component({
   selector: 'app-chat-info',
@@ -42,7 +44,7 @@ export class ChatInfoComponent {
 
     if (
       this.conversacion?.fotoGrupo &&
-      this.conversacion.fotoGrupo.trim() != ''
+      this.conversacion.fotoGrupo.trim() !== ''
     ) {
       return this.conversacion.fotoGrupo.trim();
     }
@@ -80,22 +82,15 @@ export class ChatInfoComponent {
       return descripcion.trim();
     }
 
-    return this.conversacion?.tipoConversacion == 'GRUPAL'
+    return this.conversacion?.tipoConversacion === 'GRUPAL'
       ? 'Conversacion grupal'
       : 'Sin descripcion disponible';
   }
 
   obtenerDescripcionParticipante(
-    participante: any
+    participante: Participante
   ): string {
-
-    const descripcion =
-      participante?.sobreMi ||
-      participante?.descripcion ||
-      '';
-
-    return descripcion.trim() != ''
-      ? descripcion.trim()
-      : 'Sin descripcion';
+    const descripcion = participante?.sobreMi || participante?.descripcion || '';
+    return descripcion.trim() !== '' ? descripcion.trim() : 'Sin descripcion';
   }
 }

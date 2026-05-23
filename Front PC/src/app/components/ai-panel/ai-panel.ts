@@ -37,11 +37,11 @@ export class AiPanelComponent
 
   historial: HistorialIa[] = [];
 
-  pregunta: string = '';
+  pregunta = '';
 
-  enviando: boolean = false;
+  enviando = false;
 
-  cargandoHistorial: boolean = false;
+  cargandoHistorial = false;
 
   constructor(
     private iaService: IaService,
@@ -59,7 +59,7 @@ export class AiPanelComponent
     const pregunta =
       this.pregunta.trim();
 
-    if (pregunta == '') {
+    if (pregunta === '') {
 
       return;
     }
@@ -91,7 +91,7 @@ export class AiPanelComponent
           this.enviando = false;
           this.toastService.error(
             'IA no disponible',
-            this.obtenerMensajeError(err)
+            AiPanelComponent.obtenerMensajeError(err)
           );
         }
       });
@@ -135,30 +135,12 @@ export class AiPanelComponent
       });
   }
 
-  private obtenerMensajeError(
-    err: any
-  ): string {
-
-    if (typeof err?.error?.error == 'string') {
-
-      return err.error.error;
-    }
-
-    if (typeof err?.error?.mensaje == 'string') {
-
-      return err.error.mensaje;
-    }
-
-    if (typeof err?.error?.message == 'string') {
-
-      return err.error.message;
-    }
-
-    if (typeof err?.error == 'string') {
-
-      return err.error;
-    }
-
+  private static obtenerMensajeError(err: unknown): string {
+    const e = err as Record<string, unknown>;
+    if (typeof (e?.['error'] as Record<string, unknown>)?.['error'] === 'string') return (e['error'] as Record<string, unknown>)['error'] as string;
+    if (typeof (e?.['error'] as Record<string, unknown>)?.['mensaje'] === 'string') return (e['error'] as Record<string, unknown>)['mensaje'] as string;
+    if (typeof (e?.['error'] as Record<string, unknown>)?.['message'] === 'string') return (e['error'] as Record<string, unknown>)['message'] as string;
+    if (typeof e?.['error'] === 'string') return e['error'] as string;
     return 'Revisa la configuracion de GEMINI_API_KEY en el backend';
   }
 }
