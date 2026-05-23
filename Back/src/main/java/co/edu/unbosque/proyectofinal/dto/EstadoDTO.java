@@ -165,28 +165,18 @@ public class EstadoDTO {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
+        if (this == obj) return true;
+        if (!(obj instanceof EstadoDTO)) return false;
         EstadoDTO other = (EstadoDTO) obj;
         return cantidadLikes == other.cantidadLikes
-                && cantidadVistas == other.cantidadVistas
-                && meGusta == other.meGusta
-                && propio == other.propio
-                && visto == other.visto
-                && Objects.equals(fechaCreacion, other.fechaCreacion)
-                && Objects.equals(fechaExpiracion, other.fechaExpiracion)
-                && Objects.equals(fotoPerfil, other.fotoPerfil)
-                && Objects.equals(id, other.id)
-                && Objects.equals(mediaUrl, other.mediaUrl)
-                && Objects.equals(mimeType, other.mimeType)
-                && Objects.equals(texto, other.texto)
-                && Objects.equals(thumbnailUrl, other.thumbnailUrl)
-                && tipo == other.tipo
-                && Objects.equals(usuarioId, other.usuarioId)
-                && Objects.equals(usuarioNombre, other.usuarioNombre);
+            && cantidadVistas == other.cantidadVistas
+            && meGusta == other.meGusta
+            && propio == other.propio
+            && visto == other.visto
+            && tipo == other.tipo
+            && Objects.equals(id, other.id)
+            && Objects.equals(texto, other.texto)
+            && Objects.equals(mediaUrl, other.mediaUrl)
+            && Objects.equals(usuarioId, other.usuarioId);
     }
 }

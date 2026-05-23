@@ -63,116 +63,89 @@ public class MensajeService {
 
 	public ResultadoCreacionMensaje create(MensajeDTO dto) {
 
-	    if (dto == null
-	            || dto.getRemitenteId() == null
-	            || dto.getConversacionId() == null) {
-	        return ResultadoCreacionMensaje.conCodigo(5);
-	    }
+	    int validacion = validarDtoBasico(dto);
+	    if (validacion != 0) return ResultadoCreacionMensaje.conCodigo(validacion);
 
-	    Optional<Usuario> remitente =
-	            usuarioRepo.findById(dto.getRemitenteId());
+	    Optional<Usuario> remitente = usuarioRepo.findById(dto.getRemitenteId());
+	    if (!remitente.isPresent()) return ResultadoCreacionMensaje.conCodigo(1);
 
-	    if (!remitente.isPresent()) {
-	        return ResultadoCreacionMensaje.conCodigo(1);
-	    }
+	    Optional<Conversacion> conversacion = conversacionRepo.findById(dto.getConversacionId());
+	    if (!conversacion.isPresent()) throw new ConversacionNoEncontradaException();
 
-	    Optional<Conversacion> conversacion =
-	            conversacionRepo.findById(dto.getConversacionId());
+	    int permisoParticipante = validarPermisoParticipante(dto, conversacion.get());
+	    if (permisoParticipante != 0) return ResultadoCreacionMensaje.conCodigo(permisoParticipante);
 
-	    if (!conversacion.isPresent()) {
-	        throw new ConversacionNoEncontradaException();
-	    }
-
-	    boolean esParticipante =
-	            participanteRepo
-	                    .existsByConversacion_IdAndUsuario_Id(
-	                            dto.getConversacionId(),
-	                            dto.getRemitenteId());
-
-	    if (!esParticipante) {
-	        return ResultadoCreacionMensaje.conCodigo(4);
-	    }
-
-	    if (conversacion.get().getTipoConversacion()
-	            == TipoConversacion.CANAL) {
-
-	        boolean esAdmin =
-	                participanteRepo
-	                        .existsByConversacion_IdAndUsuario_IdAndRol(
-	                                dto.getConversacionId(),
-	                                dto.getRemitenteId(),
-	                                RolParticipante.ADMIN);
-
-	        if (!esAdmin) {
-	            return ResultadoCreacionMensaje.conCodigo(4);
-	        }
-	    }
-
-	    boolean tieneContenido =
-	            tieneTexto(dto.getContenido());
-
-	    boolean tieneAdjunto =
-	            dto.isTieneAdjunto();
-
-	    if (dto.getTipoMensaje() == null) {
-	        dto.setTipoMensaje(
-	                tieneAdjunto
-	                        ? TipoMensaje.ARCHIVO
-	                        : TipoMensaje.TEXTO);
-	    }
-
-	    if (!tieneContenido
-	            && !tieneAdjunto) {
-	        return ResultadoCreacionMensaje.conCodigo(5);
-	    }
-
-	    if ((tieneContenido
-	            || tieneAdjunto)
-	            && !cifradoService.validarFrase(
-	                    dto.getFraseSecreta(),
-	                    conversacion.get().getEncripado())) {
-	        throw new FraseSecretaInvalidaException();
-	    }
+	    int validacionContenido = validarContenido(dto, conversacion.get());
+	    if (validacionContenido != 0) return ResultadoCreacionMensaje.conCodigo(validacionContenido);
 
 	    try {
-	        Mensaje mensaje = new Mensaje();
-	        mensaje.setRemitente(remitente.get());
-	        mensaje.setConversacion(conversacion.get());
-	        mensaje.setTipoMensaje(dto.getTipoMensaje());
-	        mensaje.setHoraEnvio(LocalDateTime.now());
-	        mensaje.setHoraLlegada(null);
-	        mensaje.setHoraLeido(null);
-	        mensaje.setEstatusMensaje(EstatusMensaje.ENVIADO);
-
-	        if (tieneContenido) {
-
-	            CifradoService.ResultadoCifrado resultadoCifrado =
-	                    cifradoService.cifrar(
-	                            dto.getContenido(),
-	                            dto.getFraseSecreta(),
-	                            conversacion.get().getEncripado());
-
-	            mensaje.setContenidoCifrado(
-	                    resultadoCifrado.getTextoCifrado());
-	            mensaje.setVi(resultadoCifrado.getIv());
-	        }
-
+	        Mensaje mensaje = construirMensaje(dto, remitente.get(), conversacion.get());
 	        mensajeRepo.save(mensaje);
-
-	        Conversacion conversacionActual = conversacion.get();
-	        conversacionActual.setFechaUltimoMensaje(mensaje.getHoraEnvio());
-	        restaurarConversacionParaParticipantes(conversacionActual);
-	        conversacionRepo.save(conversacionActual);
-
-	        return ResultadoCreacionMensaje.exitosa(
-	                mapear(
-	                        mensaje,
-	                        dto.getFraseSecreta()));
-
+	        actualizarConversacion(conversacion.get(), mensaje);
+	        return ResultadoCreacionMensaje.exitosa(mapear(mensaje, dto.getFraseSecreta()));
 	    } catch (Exception e) {
 	        LOGGER.error("Error creando mensaje", e);
 	        return ResultadoCreacionMensaje.conCodigo(3);
 	    }
+	}
+
+	private int validarDtoBasico(MensajeDTO dto) {
+	    if (dto == null || dto.getRemitenteId() == null || dto.getConversacionId() == null) return 5;
+	    return 0;
+	}
+
+	private int validarPermisoParticipante(MensajeDTO dto, Conversacion conversacion) {
+	    boolean esParticipante = participanteRepo.existsByConversacion_IdAndUsuario_Id(
+	            dto.getConversacionId(), dto.getRemitenteId());
+	    if (!esParticipante) return 4;
+
+	    if (conversacion.getTipoConversacion() == TipoConversacion.CANAL) {
+	        boolean esAdmin = participanteRepo.existsByConversacion_IdAndUsuario_IdAndRol(
+	                dto.getConversacionId(), dto.getRemitenteId(), RolParticipante.ADMIN);
+	        if (!esAdmin) return 4;
+	    }
+	    return 0;
+	}
+
+	private int validarContenido(MensajeDTO dto, Conversacion conversacion) {
+	    boolean tieneContenido = tieneTexto(dto.getContenido());
+	    boolean tieneAdjunto = dto.isTieneAdjunto();
+
+	    if (dto.getTipoMensaje() == null) {
+	        dto.setTipoMensaje(tieneAdjunto ? TipoMensaje.ARCHIVO : TipoMensaje.TEXTO);
+	    }
+
+	    if (!tieneContenido && !tieneAdjunto) return 5;
+
+	    if (!cifradoService.validarFrase(dto.getFraseSecreta(), conversacion.getEncripado())) {
+	        throw new FraseSecretaInvalidaException();
+	    }
+	    return 0;
+	}
+
+	private Mensaje construirMensaje(MensajeDTO dto, Usuario remitente, Conversacion conversacion) {
+	    Mensaje mensaje = new Mensaje();
+	    mensaje.setRemitente(remitente);
+	    mensaje.setConversacion(conversacion);
+	    mensaje.setTipoMensaje(dto.getTipoMensaje());
+	    mensaje.setHoraEnvio(LocalDateTime.now());
+	    mensaje.setHoraLlegada(null);
+	    mensaje.setHoraLeido(null);
+	    mensaje.setEstatusMensaje(EstatusMensaje.ENVIADO);
+
+	    if (tieneTexto(dto.getContenido())) {
+	        CifradoService.ResultadoCifrado resultado = cifradoService.cifrar(
+	                dto.getContenido(), dto.getFraseSecreta(), conversacion.getEncripado());
+	        mensaje.setContenidoCifrado(resultado.getTextoCifrado());
+	        mensaje.setVi(resultado.getIv());
+	    }
+	    return mensaje;
+	}
+
+	private void actualizarConversacion(Conversacion conversacion, Mensaje mensaje) {
+	    conversacion.setFechaUltimoMensaje(mensaje.getHoraEnvio());
+	    restaurarConversacionParaParticipantes(conversacion);
+	    conversacionRepo.save(conversacion);
 	}
 
 	private void restaurarConversacionParaParticipantes(

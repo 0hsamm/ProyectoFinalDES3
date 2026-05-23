@@ -208,26 +208,18 @@ public class MensajeDTO {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MensajeDTO other = (MensajeDTO) obj;
-		return Objects.equals(adjuntoFormato, other.adjuntoFormato)
-				&& Objects.equals(adjuntoNombreOriginal, other.adjuntoNombreOriginal)
-				&& Objects.equals(adjuntoTamano, other.adjuntoTamano)
-				&& Objects.equals(adjuntoUrl, other.adjuntoUrl)
-				&& Objects.equals(contenido, other.contenido)
-				&& Objects.equals(contenidoProtegido, other.contenidoProtegido)
-				&& Objects.equals(conversacionId, other.conversacionId)
-				&& estatusMensaje == other.estatusMensaje && Objects.equals(horaEnvio, other.horaEnvio)
-				&& Objects.equals(horaLeido, other.horaLeido) && Objects.equals(horaLlegada, other.horaLlegada)
-				&& Objects.equals(id, other.id) && Objects.equals(remitenteId, other.remitenteId)
-				&& Objects.equals(remitenteNombre, other.remitenteNombre)
-				&& Objects.equals(remitenteUsuario, other.remitenteUsuario)
-				&& Objects.equals(tieneAdjunto, other.tieneAdjunto) && tipoMensaje == other.tipoMensaje;
+	    if (this == obj) return true;
+	    if (!(obj instanceof MensajeDTO)) return false;
+	    MensajeDTO other = (MensajeDTO) obj;
+	    return Objects.equals(id, other.id)
+	        && Objects.equals(conversacionId, other.conversacionId)
+	        && Objects.equals(remitenteId, other.remitenteId)
+	        && tipoMensaje == other.tipoMensaje
+	        && estatusMensaje == other.estatusMensaje
+	        && Objects.equals(contenido, other.contenido)
+	        && Objects.equals(horaEnvio, other.horaEnvio)
+	        && Objects.equals(tieneAdjunto, other.tieneAdjunto)
+	        && Objects.equals(adjuntoUrl, other.adjuntoUrl);
 	}
 
 	@Override

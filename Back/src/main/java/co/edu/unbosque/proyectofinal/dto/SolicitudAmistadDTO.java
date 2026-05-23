@@ -175,49 +175,16 @@ public class SolicitudAmistadDTO {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        SolicitudAmistadDTO other =
-                (SolicitudAmistadDTO) obj;
+        if (this == obj) return true;
+        if (!(obj instanceof SolicitudAmistadDTO)) return false;
+        SolicitudAmistadDTO other = (SolicitudAmistadDTO) obj;
         return estado == other.estado
-                && Objects.equals(
-                        fechaRespuesta,
-                        other.fechaRespuesta)
-                && Objects.equals(
-                        fechaSolicitud,
-                        other.fechaSolicitud)
-                && Objects.equals(id, other.id)
-                && Objects.equals(
-                        receptorId,
-                        other.receptorId)
-                && Objects.equals(
-                        receptorFotoPerfil,
-                        other.receptorFotoPerfil)
-                && Objects.equals(
-                        receptorNombre,
-                        other.receptorNombre)
-                && Objects.equals(
-                        receptorUsuario,
-                        other.receptorUsuario)
-                && Objects.equals(
-                        solicitanteId,
-                        other.solicitanteId)
-                && Objects.equals(
-                        solicitanteFotoPerfil,
-                        other.solicitanteFotoPerfil)
-                && Objects.equals(
-                        solicitanteNombre,
-                        other.solicitanteNombre)
-                && Objects.equals(
-                        solicitanteUsuario,
-                        other.solicitanteUsuario);
+            && Objects.equals(id, other.id)
+            && Objects.equals(solicitanteId, other.solicitanteId)
+            && Objects.equals(receptorId, other.receptorId)
+            && Objects.equals(fechaSolicitud, other.fechaSolicitud)
+            && Objects.equals(solicitanteUsuario, other.solicitanteUsuario)
+            && Objects.equals(receptorUsuario, other.receptorUsuario);
     }
 
     @Override

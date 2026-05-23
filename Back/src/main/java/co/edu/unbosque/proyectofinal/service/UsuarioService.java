@@ -134,95 +134,63 @@ public class UsuarioService {
         }
     }
 
-    public int updateById(
-            Long id,
-            UsuarioDTO dto) {
-
+    public int updateById(Long id, UsuarioDTO dto) {
         try {
-            Usuario usuario =
-                    usuarioRepository
-                            .findById(id)
-                            .orElse(null);
+            Usuario usuario = usuarioRepository.findById(id).orElse(null);
+            if (usuario == null || !usuario.isHabilitado()) return 1;
 
-            if (usuario == null || !usuario.isHabilitado()) {
-                return 1;
-            }
+            if (actualizarUsuario(usuario, id, dto) != 0) return 1;
+            if (actualizarNombre(usuario, dto) != 0) return 1;
+            if (actualizarCorreo(usuario, id, dto) != 0) return 1;
 
-            if (dto.getUsuario() != null) {
-                String nuevoUsuario =
-                        dto.getUsuario().trim();
-
-                if (nuevoUsuario.isBlank()) {
-                    return 1;
-                }
-
-                Optional<Usuario> usuarioDuplicado =
-                        usuarioRepository.findByUsuario(nuevoUsuario);
-
-                if (usuarioDuplicado.isPresent()
-                        && !usuarioDuplicado.get().getId().equals(id)) {
-                    return 1;
-                }
-
-                usuario.setUsuario(nuevoUsuario);
-            }
-
-            if (dto.getNombrePersona() != null) {
-                String nuevoNombre =
-                        dto.getNombrePersona().trim();
-
-                if (nuevoNombre.isBlank()) {
-                    return 1;
-                }
-
-                usuario.setNombrePersona(nuevoNombre);
-            }
-
-            if (dto.getCorreo() != null) {
-                String nuevoCorreo =
-                        dto.getCorreo().trim();
-
-                if (nuevoCorreo.isBlank()) {
-                    return 1;
-                }
-
-                Optional<Usuario> correoDuplicado =
-                        usuarioRepository.findByCorreo(nuevoCorreo);
-
-                if (correoDuplicado.isPresent()
-                        && !correoDuplicado.get().getId().equals(id)) {
-                    return 1;
-                }
-
-                usuario.setCorreo(nuevoCorreo);
-            }
-
-            if (dto.getSobreMi() != null) {
-                usuario.setSobreMi(dto.getSobreMi());
-            }
-
-            if (dto.getFotoPerfil() != null) {
-                usuario.setFotoPerfil(dto.getFotoPerfil());
-            }
-
-            if (dto.getFechaNacimiento() != null) {
-                usuario.setFechaNacimiento(dto.getFechaNacimiento());
-            }
-
-            if (dto.getContrasena() != null
-                    && !dto.getContrasena().isBlank()) {
-
-                usuario.setContrasenaHash(
-                        passwordEncoder.encode(
-                                dto.getContrasena()));
-            }
+            actualizarCamposOpcionales(usuario, dto);
 
             usuarioRepository.save(usuario);
-
             return 0;
 
         } catch (Exception e) {
             return 1;
+        }
+    }
+
+    private int actualizarUsuario(Usuario usuario, Long id, UsuarioDTO dto) {
+        if (dto.getUsuario() == null) return 0;
+        String nuevoUsuario = dto.getUsuario().trim();
+        if (nuevoUsuario.isBlank()) return 1;
+
+        Optional<Usuario> duplicado = usuarioRepository.findByUsuario(nuevoUsuario);
+        if (duplicado.isPresent() && !duplicado.get().getId().equals(id)) return 1;
+
+        usuario.setUsuario(nuevoUsuario);
+        return 0;
+    }
+
+    private int actualizarNombre(Usuario usuario, UsuarioDTO dto) {
+        if (dto.getNombrePersona() == null) return 0;
+        String nuevoNombre = dto.getNombrePersona().trim();
+        if (nuevoNombre.isBlank()) return 1;
+        usuario.setNombrePersona(nuevoNombre);
+        return 0;
+    }
+
+    private int actualizarCorreo(Usuario usuario, Long id, UsuarioDTO dto) {
+        if (dto.getCorreo() == null) return 0;
+        String nuevoCorreo = dto.getCorreo().trim();
+        if (nuevoCorreo.isBlank()) return 1;
+
+        Optional<Usuario> duplicado = usuarioRepository.findByCorreo(nuevoCorreo);
+        if (duplicado.isPresent() && !duplicado.get().getId().equals(id)) return 1;
+
+        usuario.setCorreo(nuevoCorreo);
+        return 0;
+    }
+
+    private void actualizarCamposOpcionales(Usuario usuario, UsuarioDTO dto) {
+        if (dto.getSobreMi() != null) usuario.setSobreMi(dto.getSobreMi());
+        if (dto.getFotoPerfil() != null) usuario.setFotoPerfil(dto.getFotoPerfil());
+        if (dto.getFechaNacimiento() != null) usuario.setFechaNacimiento(dto.getFechaNacimiento());
+        if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
+            usuario.setContrasenaHash(passwordEncoder.encode(dto.getContrasena()));
         }
     }
 
