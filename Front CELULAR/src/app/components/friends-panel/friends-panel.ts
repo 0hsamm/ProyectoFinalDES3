@@ -42,7 +42,7 @@ import {
 export class FriendsPanelComponent
   implements OnInit, OnDestroy {
 
-  usernameDestino: string = '';
+  usernameDestino = '';
 
   usuarioEncontrado: Usuario | null = null;
 
@@ -52,26 +52,26 @@ export class FriendsPanelComponent
 
   solicitudesEnviadas: SolicitudAmistad[] = [];
 
-  cargando: boolean = true;
+  cargando = true;
 
-  buscando: boolean = false;
+  buscando = false;
 
-  procesando: boolean = false;
+  procesando = false;
 
-  mensaje: string = '';
+  mensaje = '';
 
-  error: string = '';
+  error = '';
 
-  fraseSecretaChat: string = '';
+  fraseSecretaChat = '';
 
   amigosSeleccionadosIds: number[] = [];
 
-  idUsuarioActual: number =
+  idUsuarioActual =
     Number(localStorage.getItem('idUsuario') || 0);
 
   private refrescoSub?: Subscription;
 
-  private destruido: boolean = false;
+  private destruido = false;
 
   constructor(
     private amistadService: AmistadService,
@@ -100,7 +100,7 @@ export class FriendsPanelComponent
   }
 
   cargarDatos(
-    mostrarCarga: boolean = true
+    mostrarCarga = true
   ): void {
 
     if (mostrarCarga) {
@@ -117,7 +117,7 @@ export class FriendsPanelComponent
 
       pendientes--;
 
-      if (pendientes == 0) {
+      if (pendientes === 0) {
 
         this.cargando = false;
       }
@@ -135,7 +135,7 @@ export class FriendsPanelComponent
             (id) =>
               this.amigos.some(
                 (amigo) =>
-                  amigo.usuarioId == id
+                  amigo.usuarioId === id
               )
           );
 
@@ -235,7 +235,7 @@ export class FriendsPanelComponent
 
     this.usuarioEncontrado = null;
 
-    if (username == '') {
+    if (username === '') {
 
       this.error =
         'Ingresa un nombre de usuario';
@@ -293,7 +293,7 @@ export class FriendsPanelComponent
 
     this.error = '';
 
-    if (username == '') {
+    if (username === '') {
 
       this.error =
         'Ingresa un nombre de usuario';
@@ -474,7 +474,7 @@ export class FriendsPanelComponent
     const frase =
       this.fraseSecretaChat.trim();
 
-    if (this.idUsuarioActual == 0) {
+    if (this.idUsuarioActual === 0) {
 
       this.toastService.error(
         'Sesion incompleta',
@@ -544,7 +544,7 @@ export class FriendsPanelComponent
       this.amigosSeleccionadosIds =
         this.amigosSeleccionadosIds.filter(
           (id) =>
-            id != amigo.usuarioId
+            id !== amigo.usuarioId
         );
 
       return;
@@ -569,7 +569,7 @@ export class FriendsPanelComponent
     const frase =
       this.fraseSecretaChat.trim();
 
-    if (this.idUsuarioActual == 0) {
+    if (this.idUsuarioActual === 0) {
 
       this.toastService.error(
         'Sesion incompleta',
@@ -712,40 +712,59 @@ export class FriendsPanelComponent
   }
 
   private obtenerMensajeError(
-    err: any,
+    err: unknown,
     mensajeDefecto: string
   ): string {
 
-    if (typeof err?.error == 'string') {
+    const errorBody =
+      typeof err === 'object' && err !== null && 'error' in err
+        ? (err as { error?: unknown }).error
+        : undefined;
+
+    const status =
+      typeof err === 'object' && err !== null && 'status' in err
+        ? (err as { status?: unknown }).status
+        : undefined;
+
+    if (typeof errorBody === 'string') {
 
       if (
-        err.error.includes('NoResourceFoundException') ||
-        err.error.includes('No static resource') ||
-        err.error.includes('trace')
+        errorBody.includes('NoResourceFoundException') ||
+        errorBody.includes('No static resource') ||
+        errorBody.includes('trace')
       ) {
 
         return 'El backend activo todavia no tiene este endpoint. Revisa que el back este actualizado y reinicia Spring Boot.';
       }
 
-      return err.error;
+      return errorBody;
     }
 
-    if (typeof err?.error?.mensaje == 'string') {
+    if (
+      typeof errorBody === 'object' &&
+      errorBody !== null
+    ) {
 
-      return err.error.mensaje;
+      const errorObject =
+        errorBody as Record<string, unknown>;
+
+      if (typeof errorObject['mensaje'] === 'string') {
+
+        return errorObject['mensaje'];
+      }
+
+      if (typeof errorObject['error'] === 'string') {
+
+        return errorObject['error'];
+      }
+
+      if (typeof errorObject['message'] === 'string') {
+
+        return errorObject['message'];
+      }
     }
 
-    if (typeof err?.error?.error == 'string') {
-
-      return err.error.error;
-    }
-
-    if (typeof err?.error?.message == 'string') {
-
-      return err.error.message;
-    }
-
-    if (err?.status == 404) {
+    if (status === 404) {
 
       return 'El backend no encontro esta ruta o recurso. Revisa que el back este actualizado y reinicia Spring Boot.';
     }
