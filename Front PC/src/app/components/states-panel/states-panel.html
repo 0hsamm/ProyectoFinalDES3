@@ -260,7 +260,7 @@
               <span>{{ formatearFecha(vista.fecha) }}</span>
             </div>
           </div>
-          <p class="muted" *ngIf="!tieneVistas()">Aun nadie lo ha visto</p>
+          <p class="muted" [hidden]="tieneVistas()">Aun nadie lo ha visto</p>
         </section>
 
         <section>
@@ -277,7 +277,7 @@
               <span>{{ formatearFecha(like.fecha) }}</span>
             </div>
           </div>
-          <p class="muted" *ngIf="!tieneLikes()">Aun no tiene likes</p>
+          <p class="muted" [hidden]="tieneLikes()">Aun no tiene likes</p>
         </section>
       </div>
     </aside>
