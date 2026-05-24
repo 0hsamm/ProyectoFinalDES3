@@ -79,7 +79,7 @@ class AutenticacionServiceTest {
         assertEquals("usuario1", guardado.getUsuario());
         assertEquals("usuario@correo.com", guardado.getCorreo());
         assertEquals("hash-seguro", guardado.getContrasenaHash());
-        assertEquals("Hola! Estoy usando WZ", guardado.getSobreMi());
+        assertEquals("Reload, lo mejor!", guardado.getSobreMi());
         assertNotNull(guardado.getFechaCreacionCuenta());
         assertEquals(resultado.usuario(), guardado);
         assertTrue(resultado.correoEnviado());

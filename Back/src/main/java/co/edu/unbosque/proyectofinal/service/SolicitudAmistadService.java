@@ -54,8 +54,8 @@ public class SolicitudAmistadService {
 
         if (solicitante.getId().equals(receptor.getId())) return 4;
 
-        int resultadoDirecta = verificarRelacionDirecta(solicitante.getId(), receptor.getId());
-        if (resultadoDirecta != 0) return resultadoDirecta;
+        Optional<Integer> resultadoDirecta = verificarRelacionDirecta(solicitante.getId(), receptor.getId());
+        if (resultadoDirecta.isPresent()) return resultadoDirecta.get();
 
         int resultadoInversa = verificarRelacionInversa(receptor.getId(), solicitante.getId());
         if (resultadoInversa != 0) return resultadoInversa;
@@ -64,13 +64,13 @@ public class SolicitudAmistadService {
         return 0;
     }
 
-    private int verificarRelacionDirecta(Long solicitanteId, Long receptorId) {
+    private Optional<Integer> verificarRelacionDirecta(Long solicitanteId, Long receptorId) {
         Optional<SolicitudAmistad> directa = solicitudAmistadRepository
                 .findBySolicitante_IdAndReceptor_Id(solicitanteId, receptorId);
         if (directa.isPresent()) {
-            return manejarRelacionDirectaExistente(directa.get());
+            return Optional.of(manejarRelacionDirectaExistente(directa.get()));
         }
-        return 0;
+        return Optional.empty();
     }
 
     private int verificarRelacionInversa(Long receptorId, Long solicitanteId) {
