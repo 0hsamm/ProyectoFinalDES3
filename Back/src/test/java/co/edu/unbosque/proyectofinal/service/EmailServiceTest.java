@@ -15,6 +15,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 @ExtendWith(MockitoExtension.class)
 class EmailServiceTest {
 
+    private static final String ALLOWED_ORIGINS =
+            "http://localhost:4200,http://localhost:4201";
+
     @Mock
     private JavaMailSender mailSender;
 
@@ -28,7 +31,8 @@ class EmailServiceTest {
                         "notificaciones@wzchat.com",
                         "app-password",
                         "http://localhost:4200",
-                        "notificaciones@wzchat.com");
+                        "notificaciones@wzchat.com",
+                        ALLOWED_ORIGINS);
 
         emailService.enviarCorreoVerificacion(
                 "destino@correo.com",
@@ -69,7 +73,8 @@ class EmailServiceTest {
                         "",
                         "app-password",
                         "http://localhost:4200",
-                        "");
+                        "",
+                        ALLOWED_ORIGINS);
 
         assertThrows(
                 IllegalStateException.class,
@@ -88,7 +93,8 @@ class EmailServiceTest {
                         "notificaciones@wzchat.com",
                         "app-password",
                         "http://localhost:4200",
-                        "notificaciones@wzchat.com");
+                        "notificaciones@wzchat.com",
+                        ALLOWED_ORIGINS);
 
         emailService.enviarCorreoVerificacion(
                 "destino@correo.com",

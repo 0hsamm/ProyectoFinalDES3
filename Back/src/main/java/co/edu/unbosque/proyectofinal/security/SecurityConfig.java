@@ -1,7 +1,10 @@
 package co.edu.unbosque.proyectofinal.security;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -68,12 +71,21 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
 
+    private final List<String> allowedOrigins;
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthFilter,
-            UserDetailsService userDetailsService) {
+            UserDetailsService userDetailsService,
+            @Value("${app.frontend.allowed-origins}")
+            String allowedOriginsRaw) {
 
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
+        this.allowedOrigins = Arrays.stream(
+                        allowedOriginsRaw.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isBlank())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -215,10 +227,7 @@ public class SecurityConfig {
                 new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-
-                List.of(
-                        "http://localhost:4200",
-                        "http://localhost:4201"));
+                allowedOrigins);
 
         configuration.setAllowedMethods(
 

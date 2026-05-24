@@ -1,6 +1,8 @@
 package co.edu.unbosque.proyectofinal.service;
 
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -9,11 +11,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
-
-    private static final Set<String> ORIGENES_FRONT_PERMITIDOS =
-            Set.of(
-                    "http://localhost:4200",
-                    "http://localhost:4201");
 
     private final JavaMailSender mailSender;
 
@@ -29,6 +26,8 @@ public class EmailService {
 
     private final String mailFrom;
 
+    private final Set<String> origenesFrontPermitidos;
+
     public EmailService(
             JavaMailSender mailSender,
             @Value("${spring.mail.host:}")
@@ -42,7 +41,9 @@ public class EmailService {
             @Value("${app.frontend.url}")
             String frontendUrl,
             @Value("${app.mail.from:}")
-            String mailFrom) {
+            String mailFrom,
+            @Value("${app.frontend.allowed-origins}")
+            String allowedOriginsRaw) {
 
         this.mailSender = mailSender;
         this.mailHost = mailHost;
@@ -51,6 +52,12 @@ public class EmailService {
         this.mailPassword = mailPassword;
         this.frontendUrl = frontendUrl;
         this.mailFrom = mailFrom;
+        this.origenesFrontPermitidos =
+                Arrays.stream(
+                                allowedOriginsRaw.split(","))
+                        .map(String::trim)
+                        .filter(origin -> !origin.isBlank())
+                        .collect(Collectors.toSet());
     }
 
     public void enviarCorreoVerificacion(
@@ -160,7 +167,7 @@ public class EmailService {
             String origenNormalizado =
                     normalizarUrl(frontendUrlOverride);
 
-            if (ORIGENES_FRONT_PERMITIDOS.contains(
+            if (origenesFrontPermitidos.contains(
                     origenNormalizado)) {
                 return origenNormalizado;
             }
