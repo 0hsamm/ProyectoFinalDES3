@@ -713,7 +713,7 @@ export class FriendsPanelComponent
       }
     });
   }
-
+// skipcq: JS-0105
   private obtenerMensajeError(
     err: unknown,
     mensajeDefecto: string

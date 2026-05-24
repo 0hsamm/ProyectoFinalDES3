@@ -703,7 +703,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       mensaje.fechaEnvio
     );
   }
-
+  // skipcq: JS-0105
   obtenerSiglaAdjunto(
     tipoMensaje?: string
   ): string {
@@ -1022,7 +1022,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     return !this.esConversacionGrupal() &&
       this.obtenerReceptorId() != null;
   }
-
+  // skipcq: JS-0105
   obtenerTipoMensajeAdjunto(
     archivo: File | null
   ): string {

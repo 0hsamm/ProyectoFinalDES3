@@ -465,7 +465,7 @@ export class SettingsPanelComponent
 
     return this.obtenerPreferenciasDefecto();
   }
-
+// skipcq: JS-0105
   private obtenerPreferenciasDefecto(): PreferenciasUsuario {
 
     return {
