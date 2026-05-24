@@ -6,14 +6,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (
     token != null &&
-    token != ''
+    token !== ''
   ) {
 
     const nuevaPeticion = req.clone({
 
       setHeaders: {
 
-        Authorization: 'Bearer ' + token
+        Authorization: `Bearer ${token}`
       }
     });
 

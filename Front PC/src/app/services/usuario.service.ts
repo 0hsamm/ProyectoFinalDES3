@@ -18,15 +18,14 @@ import { Usuario } from '../models/usuario';
 
 export class UsuarioService {
 
-  private apiUrl =
-    environment.apiUrl + '/usuarios';
+  private apiUrl = `${environment.apiUrl}/usuarios`;
 
   constructor(
     private http: HttpClient
   ) {}
 
   obtenerUsuarios():
-    Observable<any> {
+    Observable<unknown> {
 
     return this.http.get(
       this.apiUrl

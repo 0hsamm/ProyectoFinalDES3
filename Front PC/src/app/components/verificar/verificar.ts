@@ -65,9 +65,9 @@ export class Verificar implements OnInit {
 
     this.http.get(
 
-      environment.apiUrl +
-      '/auth/verificar?token=' +
-      token,
+      `${environment.apiUrl}/auth/verificar?token=${token}`,
+
+
 
       {
         responseType: 'text'

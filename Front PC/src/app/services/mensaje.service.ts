@@ -24,9 +24,7 @@ import { Mensaje }
 
 export class MensajeService {
 
-  private apiUrl =
-    environment.apiUrl +
-    '/mensajes';
+  private apiUrl = `${environment.apiUrl}/mensajes`;
 
   constructor(
     private http: HttpClient
@@ -42,7 +40,7 @@ export class MensajeService {
 
     if (
       fraseSecreta != null &&
-      fraseSecreta.trim() != ''
+      fraseSecreta.trim() !== ''
     ) {
 
       params = params.set(
@@ -70,9 +68,9 @@ export class MensajeService {
 
     fraseSecreta?: string,
 
-    tipoMensaje: string = 'TEXTO',
+    tipoMensaje = 'TEXTO',
 
-    tieneAdjunto: boolean = false
+    tieneAdjunto = false
 
   ): Observable<Mensaje> {
 
@@ -121,7 +119,7 @@ export class MensajeService {
 
     if (
       fraseSecreta != null &&
-      fraseSecreta.trim() != ''
+      fraseSecreta.trim() !== ''
     ) {
       params = params.set(
         'fraseSecreta',
@@ -138,7 +136,7 @@ export class MensajeService {
 
   eliminarMensaje(
     mensajeId: number
-  ): Observable<any> {
+  ): Observable<unknown> {
 
     return this.http.delete(
       `${this.apiUrl}/${mensajeId}`

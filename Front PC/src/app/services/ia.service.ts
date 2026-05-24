@@ -17,8 +17,7 @@ import {
 })
 export class IaService {
 
-  private apiUrl =
-    environment.apiUrl + '/api/ia';
+  private apiUrl = `${environment.apiUrl}/api/ia`;
 
   constructor(
     private http: HttpClient
@@ -29,7 +28,7 @@ export class IaService {
   ): Observable<RespuestaIa> {
 
     return this.http.post<RespuestaIa>(
-      this.apiUrl + '/chat',
+      `${this.apiUrl}/chat`,
       solicitud
     );
   }
@@ -37,7 +36,7 @@ export class IaService {
   obtenerHistorial(): Observable<HistorialIa[]> {
 
     return this.http.get<HistorialIa[]>(
-      this.apiUrl + '/historial'
+      `${this.apiUrl}/historial`
     );
   }
 }

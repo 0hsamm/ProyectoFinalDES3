@@ -12,7 +12,7 @@ export const authGuard: CanActivateFn = () => {
 
   if (
     token != null &&
-    token != ''
+    token !== ''
   ) {
 
     return true;

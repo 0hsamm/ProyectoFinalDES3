@@ -22,7 +22,7 @@ import {
 })
 export class AuthService {
 
-  private apiUrl = environment.apiUrl + '/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
 
   constructor(
     private http: HttpClient
@@ -34,14 +34,12 @@ export class AuthService {
   ): Observable<RespuestaAutenticacionDTO> {
 
     const datos: LoginDTO = {
-
-      usuario: usuario,
-
-      contrasena: contrasena
+      usuario,
+      contrasena
     };
 
     return this.http.post<RespuestaAutenticacionDTO>(
-      this.apiUrl + '/login',
+      `${this.apiUrl}/login`,
       datos
     );
   }
@@ -51,7 +49,7 @@ export class AuthService {
   ): Observable<string> {
 
     return this.http.post(
-      this.apiUrl + '/registro',
+      `${this.apiUrl}/registro`,
       datos,
       {
         responseType: 'text'
@@ -118,7 +116,7 @@ export class AuthService {
   cerrarSesion(): Observable<string> {
 
     return this.http.post(
-      this.apiUrl + '/logout',
+      `${this.apiUrl}/logout`,
       {},
       {
         responseType: 'text'
