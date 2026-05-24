@@ -287,47 +287,12 @@
 
     </div>
 
-    <div
-      class="attachment-preview"
-      *ngIf="archivoAdjunto"
-    >
-
-      <img
-        *ngIf="archivoPreviewEsImagen && archivoPreviewUrl"
-        class="attachment-preview-image"
-        [src]="archivoPreviewUrl"
-        [alt]="archivoAdjunto.name"
-      >
-
-      <div
-        class="attachment-preview-icon"
-        *ngIf="!archivoPreviewEsImagen"
-      >
-        {{ obtenerSiglaAdjunto(obtenerTipoMensajeAdjunto(archivoAdjunto)) }}
-      </div>
-
-      <div class="attachment-preview-info">
-        <div class="attachment-preview-name">
-          {{ archivoAdjunto.name }}
-        </div>
-
-        <div class="attachment-preview-meta">
-          {{ archivoPreviewEsImagen ? 'Imagen lista para enviar' : 'Archivo listo para enviar' }}
-          <ng-container *ngIf="obtenerTamanoHumano(archivoAdjunto.size) != ''">
-            - {{ obtenerTamanoHumano(archivoAdjunto.size) }}
-          </ng-container>
-        </div>
-      </div>
-
-      <button
-        class="attachment-preview-remove"
-        type="button"
-        (click)="quitarAdjunto()"
-      >
-        Quitar
-      </button>
-
-    </div>
+    <app-chat-attachment-preview
+      [archivoAdjunto]="archivoAdjunto"
+      [archivoPreviewUrl]="archivoPreviewUrl"
+      [archivoPreviewEsImagen]="archivoPreviewEsImagen"
+      (quitar)="quitarAdjunto()"
+    />
 
     <form
       class="message-input-container"
@@ -368,13 +333,14 @@
     </form>
 
   </ng-container>
-  <app-llamada
-    *ngIf="llamadaActiva != null"
-    [llamada]="llamadaActiva!"
+  <app-chat-call-overlays
+    [llamadaActiva]="llamadaActiva"
+    [llamadaEntrante]="llamadaEntrante"
     [idUsuarioActual]="idUsuarioActual"
     (colgar)="onColgar()"
-  >
-  </app-llamada>
+    (aceptada)="onLlamadaAceptada($event)"
+    (rechazada)="onLlamadaRechazada()"
+  />
   <ng-template #sinConversacion>
 
     <div class="empty-window">
@@ -392,12 +358,38 @@
     </div>
 
   </ng-template>
-  <app-llamada-entrante
-    *ngIf="llamadaEntrante != null"
-    [llamada]="llamadaEntrante!"
-    [idUsuarioActual]="idUsuarioActual"
-    (aceptada)="onLlamadaAceptada($event)"
-    (rechazada)="onLlamadaRechazada()"
-  />
+  <div
+    class="confirm-overlay"
+    [class.is-open]="mensajePendienteEliminar != null"
+    [attr.aria-hidden]="mensajePendienteEliminar == null"
+  >
+    <div
+      class="confirm-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-delete-title"
+    >
+      <h3 id="confirm-delete-title">Eliminar mensaje</h3>
+      <p>¿Quieres eliminar este mensaje?</p>
+
+      <div class="confirm-actions">
+        <button
+          type="button"
+          class="confirm-btn secondary"
+          (click)="cancelarEliminacionMensaje()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="confirm-btn danger"
+          (click)="confirmarEliminacionMensaje()"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 

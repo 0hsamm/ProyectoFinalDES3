@@ -29,6 +29,10 @@ import {
   Subscription
 } from 'rxjs';
 
+type ErrorConRespuesta = {
+  error?: unknown;
+};
+
 @Component({
   selector: 'app-friends-panel',
   standalone: true,
@@ -712,41 +716,51 @@ export class FriendsPanelComponent
   }
 // skipcq: JS-0105
   private obtenerMensajeError(
-    // skipcq: JS-0323
-    err: any,
+    err: unknown,
     mensajeDefecto: string
   ): string {
 
-    if (typeof err?.error == 'string') {
+    const error =
+      err as ErrorConRespuesta | null | undefined;
+
+    if (typeof error?.error == 'string') {
 
       if (
-        err.error.includes('NoResourceFoundException') ||
-        err.error.includes('No static resource') ||
-        err.error.includes('trace')
+        error.error.includes('NoResourceFoundException') ||
+        error.error.includes('No static resource') ||
+        error.error.includes('trace')
       ) {
 
         return 'No se pudo completar la accion.';
       }
 
-      return err.error;
+      return error.error;
     }
 
-    if (typeof err?.error?.mensaje == 'string') {
+    if (
+      typeof error?.error === 'object' &&
+      error.error != null
+    ) {
+      const detalle =
+        error.error as Record<string, unknown>;
 
-      return err.error.mensaje;
+      if (typeof detalle['mensaje'] === 'string') {
+
+        return detalle['mensaje'];
+      }
+
+      if (typeof detalle['error'] === 'string') {
+
+        return detalle['error'];
+      }
+
+      if (typeof detalle['message'] === 'string') {
+
+        return detalle['message'];
+      }
     }
 
-    if (typeof err?.error?.error == 'string') {
-
-      return err.error.error;
-    }
-
-    if (typeof err?.error?.message == 'string') {
-
-      return err.error.message;
-    }
-
-    if (err?.status === 404) {
+    if ((err as { status?: number } | undefined)?.status === 404) {
 
       return 'No se encontro el recurso solicitado.';
     }

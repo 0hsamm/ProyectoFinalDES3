@@ -1,4 +1,4 @@
-import {
+﻿import {
   ChangeDetectorRef,
   Component,
   OnDestroy,
@@ -20,6 +20,76 @@ import { ThemeService } from '../../services/theme.service';
 
 interface PreferenciasUsuario {
   tema: 'oscuro' | 'claro' | 'sistema';
+}
+
+type ErrorConRespuesta = {
+  error?: unknown;
+  message?: unknown;
+  status?: number;
+  name?: unknown;
+};
+
+function obtenerPreferenciasDefecto(): PreferenciasUsuario {
+
+  return {
+    tema: 'oscuro'
+  };
+}
+
+function obtenerMensajeError(
+  err: unknown,
+  mensajeDefecto: string
+): string {
+
+  const error =
+    err as ErrorConRespuesta | null | undefined;
+
+  if (typeof error?.error === 'string') {
+
+    return error.error;
+  }
+
+  if (
+    typeof error?.error === 'object' &&
+    error.error != null
+  ) {
+    const detalle =
+      error.error as Record<string, unknown>;
+
+    if (typeof detalle['mensaje'] === 'string') {
+      return detalle['mensaje'];
+    }
+
+    if (typeof detalle['error'] === 'string') {
+      return detalle['error'];
+    }
+
+    if (typeof detalle['message'] === 'string') {
+      return detalle['message'];
+    }
+  }
+
+  if (typeof error?.message === 'string') {
+
+    return error.message;
+  }
+
+  if (error?.name === 'TimeoutError') {
+
+    return 'La solicitud tardÃ³ demasiado en responder';
+  }
+
+  if (error?.status === 413) {
+
+    return 'El archivo es demasiado grande. Usa una imagen de mÃ¡ximo 25 MB.';
+  }
+
+  if (error?.status === 0) {
+
+    return 'No se pudo conectar con el servidor o la subida fue rechazada.';
+  }
+
+  return mensajeDefecto;
 }
 
 @Component({
@@ -86,7 +156,7 @@ export class SettingsPanelComponent
         this.obtenerPerfilLocal();
       this.cargando = false;
       this.perfilError =
-        'No se encontró una sesión activa';
+        'No se encontrÃ³ una sesiÃ³n activa';
       this.marcarCambio();
 
       return;
@@ -122,7 +192,7 @@ export class SettingsPanelComponent
             this.usuario.fotoPerfil || '';
           this.cargando = false;
           this.perfilError =
-            this.obtenerMensajeError(
+            obtenerMensajeError(
               err,
               'No se pudo cargar el perfil'
             );
@@ -191,9 +261,9 @@ export class SettingsPanelComponent
 
           this.toastService.error(
             'No se pudo guardar el perfil',
-            this.obtenerMensajeError(
+            obtenerMensajeError(
               err,
-              'Se guardó una copia en este dispositivo'
+              'Se guardÃ³ una copia en este dispositivo'
             )
           );
         }
@@ -218,7 +288,7 @@ export class SettingsPanelComponent
     if (!archivo.type.startsWith('image/')) {
 
       this.toastService.warning(
-        'Archivo no válido',
+        'Archivo no vÃ¡lido',
         'Selecciona una imagen para tu foto de perfil'
       );
 
@@ -288,7 +358,7 @@ export class SettingsPanelComponent
 
             this.toastService.success(
               'Foto actualizada',
-              'La imagen se actualizó correctamente'
+              'La imagen se actualizÃ³ correctamente'
             );
           }
 
@@ -307,7 +377,7 @@ export class SettingsPanelComponent
 
           this.toastService.error(
             'No se pudo subir la foto',
-            this.obtenerMensajeError(
+            obtenerMensajeError(
               err,
               'No se pudo guardar la imagen en el servidor'
             )
@@ -421,6 +491,7 @@ export class SettingsPanelComponent
     };
   }
 
+  // skipcq: JS-0105
   private obtenerPreferenciasGuardadas(): PreferenciasUsuario {
 
     const guardadas =
@@ -440,61 +511,11 @@ export class SettingsPanelComponent
               : 'oscuro'
         };
       } catch {
-        return this.obtenerPreferenciasDefecto();
+        return obtenerPreferenciasDefecto();
       }
     }
 
-    return this.obtenerPreferenciasDefecto();
-  }
-
-  private obtenerPreferenciasDefecto(): PreferenciasUsuario {
-
-    return {
-      tema: 'oscuro'
-    };
-  }
-
-  private obtenerMensajeError(
-    err: any,
-    mensajeDefecto: string
-  ): string {
-
-    if (typeof err?.error == 'string') {
-
-      return err.error;
-    }
-
-    if (typeof err?.error?.mensaje == 'string') {
-
-      return err.error.mensaje;
-    }
-
-    if (typeof err?.error?.error == 'string') {
-
-      return err.error.error;
-    }
-
-    if (typeof err?.error?.message == 'string') {
-
-      return err.error.message;
-    }
-
-    if (err?.name === 'TimeoutError') {
-
-      return 'La solicitud tardó demasiado en responder';
-    }
-
-    if (err?.status === 413) {
-
-      return 'El archivo es demasiado grande. Usa una imagen de máximo 25 MB.';
-    }
-
-    if (err?.status === 0) {
-
-      return 'No se pudo conectar con el servidor o la subida fue rechazada.';
-    }
-
-    return mensajeDefecto;
+    return obtenerPreferenciasDefecto();
   }
 
   private notificarPerfilActualizado(
@@ -528,3 +549,4 @@ export class SettingsPanelComponent
     });
   }
 }
+

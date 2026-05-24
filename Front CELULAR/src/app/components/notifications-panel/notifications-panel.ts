@@ -22,6 +22,10 @@ import {
   Subscription
 } from 'rxjs';
 
+type ErrorConRespuesta = {
+  error?: unknown;
+};
+
 @Component({
   selector: 'app-notifications-panel',
   standalone: true,
@@ -233,28 +237,38 @@ export class NotificationsPanelComponent
   }
   // skipcq: JS-0105
   private obtenerMensajeError(
-    // skipcq: JS-0323
-    err: any
+    err: unknown
   ): string {
 
-    if (typeof err?.error == 'string') {
+    const error =
+      err as ErrorConRespuesta | null | undefined;
 
-      return err.error;
+    if (typeof error?.error == 'string') {
+
+      return error.error;
     }
 
-    if (typeof err?.error?.mensaje == 'string') {
+    if (
+      typeof error?.error === 'object' &&
+      error.error != null
+    ) {
+      const detalle =
+        error.error as Record<string, unknown>;
 
-      return err.error.mensaje;
-    }
+      if (typeof detalle['mensaje'] === 'string') {
 
-    if (typeof err?.error?.error == 'string') {
+        return detalle['mensaje'];
+      }
 
-      return err.error.error;
-    }
+      if (typeof detalle['error'] === 'string') {
 
-    if (typeof err?.error?.message == 'string') {
+        return detalle['error'];
+      }
 
-      return err.error.message;
+      if (typeof detalle['message'] === 'string') {
+
+        return detalle['message'];
+      }
     }
 
     return 'Intenta nuevamente';

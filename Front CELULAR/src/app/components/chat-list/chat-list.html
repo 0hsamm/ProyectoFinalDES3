@@ -95,4 +95,14 @@
 
   </div>
 
+  <app-confirm-dialog
+    [visible]="conversacionPendienteEliminar != null"
+    title="Eliminar conversación"
+    message="¿Eliminar esta conversación de tu lista? Volverá a aparecer si alguien envía un mensaje nuevo."
+    confirmLabel="Eliminar"
+    cancelLabel="Cancelar"
+    (confirmed)="confirmarEliminacionConversacion()"
+    (cancelled)="cancelarEliminacionConversacion()"
+  />
+
 </div>

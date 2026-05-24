@@ -21,6 +21,7 @@ import { ConversacionService } from '../../services/conversacion.service';
 import { UsuarioService } from '../../services/usuario.service';
 
 import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-chat-list',
@@ -29,7 +30,8 @@ import { ToastService } from '../../services/toast.service';
 
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    ConfirmDialogComponent
   ],
 
   templateUrl: './chat-list.html',
@@ -58,6 +60,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
     new Map<number, Partial<Usuario>>();
 
   eliminandoConversacionId: number | null = null;
+
+  conversacionPendienteEliminar: Conversacion | null = null;
 
   idUsuarioActual = Number(localStorage.getItem('idUsuario') || 0);
   constructor(
@@ -196,16 +200,27 @@ export class ChatListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const confirmar =
-      // skipcq: JS-0052
-      window.confirm(
-        '¿Eliminar esta conversación de tu lista? Volverá a aparecer si alguien envía un mensaje nuevo.'
-      );
+    this.conversacionPendienteEliminar =
+      conversacion;
+    this.marcarCambio();
+  }
 
-    if (!confirmar) {
+  cancelarEliminacionConversacion(): void {
+
+    this.conversacionPendienteEliminar = null;
+    this.marcarCambio();
+  }
+
+  confirmarEliminacionConversacion(): void {
+
+    const conversacion =
+      this.conversacionPendienteEliminar;
+
+    if (conversacion?.id == null) {
       return;
     }
 
+    this.conversacionPendienteEliminar = null;
     this.eliminandoConversacionId =
       conversacion.id;
 
