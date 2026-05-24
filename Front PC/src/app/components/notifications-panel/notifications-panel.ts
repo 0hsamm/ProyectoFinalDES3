@@ -38,14 +38,14 @@ export class NotificationsPanelComponent
 
   llamadas: Llamada[] = [];
 
-  cargando: boolean = true;
+  cargando = true;
 
-  idUsuarioActual: number =
+  idUsuarioActual =
     Number(localStorage.getItem('idUsuario') || 0);
 
   private refrescoSub?: Subscription;
 
-  private destruido: boolean = false;
+  private destruido = false;
 
   constructor(
     private amistadService: AmistadService,
@@ -73,7 +73,7 @@ export class NotificationsPanelComponent
   }
 
   cargar(
-    mostrarCarga: boolean = true
+    mostrarCarga = true
   ): void {
 
     if (mostrarCarga) {
@@ -88,7 +88,7 @@ export class NotificationsPanelComponent
 
       pendientes--;
 
-      if (pendientes == 0) {
+      if (pendientes === 0) {
 
         this.cargando = false;
       }
@@ -116,7 +116,7 @@ export class NotificationsPanelComponent
         }
       });
 
-    if (this.idUsuarioActual == 0) {
+    if (this.idUsuarioActual === 0) {
 
       finalizar();
       this.marcarCambio();
@@ -200,7 +200,7 @@ export class NotificationsPanelComponent
   ): string {
 
     if (
-      llamada.usuarioLlamanteId ==
+      llamada.usuarioLlamanteId ===
       this.idUsuarioActual
     ) {
       return llamada
@@ -223,7 +223,7 @@ export class NotificationsPanelComponent
       );
 
     if (
-      llamada.usuarioLlamanteId ==
+      llamada.usuarioLlamanteId ===
       this.idUsuarioActual
     ) {
       return `Llamaste a ${nombre}`;

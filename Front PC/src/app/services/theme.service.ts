@@ -5,7 +5,7 @@ export type PreferenciaTema =
 
 interface PreferenciasGuardadas {
   tema?: PreferenciaTema;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 @Injectable({
@@ -23,7 +23,7 @@ export class ThemeService {
         )
       : null;
 
-  private inicializado: boolean = false;
+  private inicializado = false;
 
   inicializar(): void {
 
@@ -98,19 +98,19 @@ export class ThemeService {
 
     document.documentElement.setAttribute(
       'data-theme',
-      temaResuelto == 'claro'
+      temaResuelto === 'claro'
         ? 'light'
         : 'dark'
     );
 
     document.body.classList.toggle(
       'theme-light',
-      temaResuelto == 'claro'
+      temaResuelto === 'claro'
     );
 
     document.body.classList.toggle(
       'theme-dark',
-      temaResuelto != 'claro'
+      temaResuelto !== 'claro'
     );
   }
 
@@ -139,9 +139,9 @@ export class ThemeService {
         ?.['tema'];
 
     if (
-      tema == 'claro' ||
-      tema == 'oscuro' ||
-      tema == 'sistema'
+      tema === 'claro' ||
+      tema === 'oscuro' ||
+      tema === 'sistema'
     ) {
       return tema;
     }
@@ -153,14 +153,14 @@ export class ThemeService {
 
     return this.resolverTema(
       this.obtenerTemaGuardado()
-    ) == 'claro';
+    ) === 'claro';
   }
 
   private resolverTema(
     tema: PreferenciaTema
   ): 'oscuro' | 'claro' {
 
-    if (tema == 'sistema') {
+    if (tema === 'sistema') {
       return this.mediaQuery?.matches
         ? 'claro'
         : 'oscuro';
@@ -205,9 +205,9 @@ export class ThemeService {
         detalle['tema'];
 
       if (
-        tema == 'claro' ||
-        tema == 'oscuro' ||
-        tema == 'sistema'
+        tema === 'claro' ||
+        tema === 'oscuro' ||
+        tema === 'sistema'
       ) {
         this.aplicarTema(tema);
 
@@ -221,7 +221,7 @@ export class ThemeService {
     (): void => {
 
       if (
-        this.obtenerTemaGuardado() ==
+        this.obtenerTemaGuardado() ===
         'sistema'
       ) {
         this.aplicarTema('sistema');

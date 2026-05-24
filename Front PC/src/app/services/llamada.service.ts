@@ -16,8 +16,7 @@ import {
 })
 export class LlamadaService {
 
-  private apiUrl =
-    environment.apiUrl + '/api/llamadas';
+  private apiUrl = `${environment.apiUrl}/api/llamadas`;
 
   constructor(
     private http: HttpClient
@@ -28,7 +27,7 @@ export class LlamadaService {
   ): Observable<LlamadaRespuesta> {
 
     return this.http.post<LlamadaRespuesta>(
-      this.apiUrl + '/iniciar',
+      `${this.apiUrl}/iniciar`,
       llamada
     );
   }

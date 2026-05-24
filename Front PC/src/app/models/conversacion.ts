@@ -14,7 +14,7 @@ export interface Conversacion {
 
   fechaCreacion?: string;
 
-  participantes?: any[];
+  participantes?: Participante[];
 
   participantesIds?: number[];
 

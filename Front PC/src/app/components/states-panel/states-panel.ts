@@ -44,17 +44,17 @@ export class StatesPanelComponent
 
   filtroActivo: 'todos' | 'mios' = 'todos';
 
-  texto: string = '';
+  texto = '';
 
   archivo: File | null = null;
 
-  vistaPreviaArchivo: string = '';
+  vistaPreviaArchivo = '';
 
   tipoArchivo: 'IMAGEN' | 'VIDEO' | null = null;
 
-  cargando: boolean = true;
+  cargando = true;
 
-  publicando: boolean = false;
+  publicando = false;
 
   procesandoEstadoId: number | null = null;
 
@@ -64,16 +64,16 @@ export class StatesPanelComponent
 
   likesDetalle: EstadoInteraccion[] = [];
 
-  cargandoDetalle: boolean = false;
+  cargandoDetalle = false;
 
   private refrescoSub?: Subscription;
 
   private vistasRegistradas =
     new Set<number>();
 
-  private destruido: boolean = false;
+  private destruido = false;
 
-  idUsuarioActual: number =
+  idUsuarioActual =
     Number(localStorage.getItem('idUsuario') || 0);
 
   constructor(
@@ -101,7 +101,7 @@ export class StatesPanelComponent
   }
 
   cargarEstados(
-    mostrarCarga: boolean = true
+    mostrarCarga = true
   ): void {
 
     if (mostrarCarga) {
@@ -113,7 +113,7 @@ export class StatesPanelComponent
     const peticiones = {
       estados: this.estadoService
         .obtenerEstadosActivos(this.idUsuarioActual),
-      misEstados: this.idUsuarioActual == 0
+      misEstados: this.idUsuarioActual === 0
         ? of([])
         : this.estadoService
           .obtenerEstadosUsuario(
@@ -162,7 +162,7 @@ export class StatesPanelComponent
 
   obtenerEstadosVisibles(): Estado[] {
 
-    return this.filtroActivo == 'mios'
+    return this.filtroActivo === 'mios'
       ? this.misEstados
       : this.estados;
   }
@@ -217,8 +217,8 @@ export class StatesPanelComponent
       this.texto.trim();
 
     if (
-      this.idUsuarioActual == 0 ||
-      (texto == '' && this.archivo == null)
+      this.idUsuarioActual === 0 ||
+      (texto === '' && this.archivo === null)
     ) {
 
       this.toastService.warning(
@@ -279,7 +279,7 @@ export class StatesPanelComponent
   ): void {
 
     if (
-      this.idUsuarioActual == 0 ||
+      this.idUsuarioActual === 0 ||
       estado.id == null ||
       estado.propio
     ) {
@@ -307,7 +307,7 @@ export class StatesPanelComponent
   ): void {
 
     if (
-      this.idUsuarioActual == 0 ||
+      this.idUsuarioActual === 0 ||
       estado.id == null ||
       this.procesandoEstadoId != null
     ) {
@@ -395,12 +395,12 @@ export class StatesPanelComponent
           this.procesandoEstadoId = null;
           this.estados =
             this.estados.filter((item) =>
-              item.id != estado.id);
+              item.id !== estado.id);
           this.misEstados =
             this.misEstados.filter((item) =>
-              item.id != estado.id);
+              item.id !== estado.id);
 
-          if (this.detalleEstado?.id == estado.id) {
+          if (this.detalleEstado?.id === estado.id) {
             this.cerrarDetalle();
           }
 
@@ -539,7 +539,7 @@ export class StatesPanelComponent
 
     const reemplazar =
       (estado: Estado) =>
-        estado.id == estadoActualizado.id
+        estado.id === estadoActualizado.id
           ? {
             ...estado,
             ...estadoActualizado
@@ -552,7 +552,7 @@ export class StatesPanelComponent
     this.misEstados =
       this.misEstados.map(reemplazar);
 
-    if (this.detalleEstado?.id == estadoActualizado.id) {
+    if (this.detalleEstado?.id === estadoActualizado.id) {
 
       this.detalleEstado = {
         ...this.detalleEstado,
@@ -572,7 +572,7 @@ export class StatesPanelComponent
 
     const actualizado =
       this.misEstados.find((estado) =>
-        estado.id == this.detalleEstado?.id);
+        estado.id === this.detalleEstado?.id);
 
     if (actualizado) {
 
@@ -613,7 +613,7 @@ export class StatesPanelComponent
     this.estados
       .filter((estado) =>
         estado.id != null &&
-        estado.usuarioId != this.idUsuarioActual &&
+        estado.usuarioId !== this.idUsuarioActual &&
         !this.vistasRegistradas.has(estado.id) &&
         !estado.visto)
       .forEach((estado) => {

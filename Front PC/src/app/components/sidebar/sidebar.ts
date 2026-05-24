@@ -28,13 +28,13 @@ import { AuthService } from '../../services/auth.service';
 export class SidebarComponent {
 
   @Input()
-  panelActivo: string = 'chats';
+  panelActivo = 'chats';
 
   @Output()
-  panelActivoChange =
+  readonly panelActivoChange =
     new EventEmitter<string>();
 
-  confirmandoSalida: boolean = false;
+  confirmandoSalida = false;
 
   nombreUsuario: string =
     localStorage.getItem('nombrePersona') ||

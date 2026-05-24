@@ -18,8 +18,7 @@ import {
 })
 export class EstadoService {
 
-  private apiUrl =
-    environment.apiUrl + '/estados';
+  private apiUrl = `${environment.apiUrl}/estados`;
 
   constructor(
     private http: HttpClient
