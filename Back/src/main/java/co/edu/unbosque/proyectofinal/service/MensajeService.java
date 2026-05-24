@@ -1,6 +1,11 @@
 package co.edu.unbosque.proyectofinal.service;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import co.edu.unbosque.proyectofinal.dto.MensajeDTO;
+import co.edu.unbosque.proyectofinal.configuration.UploadPathConfig;
 import co.edu.unbosque.proyectofinal.entity.ArchivoAdjunto;
 import co.edu.unbosque.proyectofinal.entity.Conversacion;
 import co.edu.unbosque.proyectofinal.entity.Mensaje;
@@ -474,6 +480,30 @@ public class MensajeService {
 				fraseSecreta);
 	}
 
+	public ArchivoAdjuntoDescargable obtenerAdjunto(
+			Long mensajeId) {
+
+		Mensaje mensaje =
+				mensajeRepo.findById(mensajeId)
+						.orElseThrow(
+								MensajeNoEncontradoException::new);
+
+		ArchivoAdjunto adjunto =
+				mensaje.getAdjunto();
+
+		if (adjunto == null) {
+			throw new IllegalStateException(
+					"El mensaje no tiene un archivo adjunto");
+		}
+
+		return new ArchivoAdjuntoDescargable(
+				adjunto.getNombreOriginalArchivo(),
+				tieneTexto(adjunto.getFormatoArchivo())
+						? adjunto.getFormatoArchivo()
+						: "application/octet-stream",
+				leerContenidoAdjunto(adjunto));
+	}
+
 	private MensajeDTO mapear(Mensaje mensaje) {
 
 		return mapear(mensaje, null);
@@ -635,6 +665,129 @@ public class MensajeService {
 		}
 
 		return TipoMensaje.ARCHIVO;
+	}
+
+	private byte[] leerContenidoAdjunto(
+			ArchivoAdjunto adjunto) {
+
+		Path archivoLocal =
+				resolverArchivoLocal(adjunto);
+
+		if (archivoLocal != null
+				&& Files.exists(archivoLocal)) {
+			try {
+				return Files.readAllBytes(
+						archivoLocal);
+			} catch (IOException e) {
+				throw new RuntimeException(
+						"No se pudo leer el archivo adjunto guardado localmente",
+						e);
+			}
+		}
+
+		String url =
+				tieneTexto(adjunto.getUrl())
+						? adjunto.getUrl()
+						: adjunto.getRutaAlmacenamiento();
+
+		if (!tieneTexto(url)) {
+			throw new RuntimeException(
+					"El archivo adjunto no tiene una ruta válida");
+		}
+
+		try (InputStream flujo =
+				new URL(url).openStream()) {
+			return flujo.readAllBytes();
+		} catch (IOException e) {
+			throw new RuntimeException(
+					"No se pudo recuperar el archivo adjunto",
+					e);
+		}
+	}
+
+	private Path resolverArchivoLocal(
+			ArchivoAdjunto adjunto) {
+
+		String ruta =
+				tieneTexto(adjunto.getRutaAlmacenamiento())
+						? adjunto.getRutaAlmacenamiento()
+						: adjunto.getUrl();
+
+		if (!tieneTexto(ruta)) {
+			return null;
+		}
+
+		String nombreArchivo =
+				extraerNombreArchivo(ruta);
+
+		if (!tieneTexto(nombreArchivo)) {
+			return null;
+		}
+
+		return UploadPathConfig
+				.obtenerCarpetaUploads()
+				.resolve(nombreArchivo)
+				.normalize();
+	}
+
+	private String extraerNombreArchivo(
+			String ruta) {
+
+		try {
+			URI uri =
+					URI.create(ruta);
+			String path =
+					uri.getPath();
+			if (tieneTexto(path)) {
+				return Path.of(path)
+						.getFileName()
+						.toString();
+			}
+		} catch (IllegalArgumentException e) {
+			// Ignora rutas que no son URI.
+		}
+
+		try {
+			return Path.of(ruta)
+					.getFileName()
+					.toString();
+		} catch (RuntimeException e) {
+			return null;
+		}
+	}
+
+	public static class ArchivoAdjuntoDescargable {
+
+		private final String nombreArchivo;
+
+		private final String contentType;
+
+		private final byte[] contenido;
+
+		public ArchivoAdjuntoDescargable(
+				String nombreArchivo,
+				String contentType,
+				byte[] contenido) {
+
+			this.nombreArchivo =
+					nombreArchivo;
+			this.contentType =
+					contentType;
+			this.contenido =
+					contenido;
+		}
+
+		public String getNombreArchivo() {
+			return nombreArchivo;
+		}
+
+		public String getContentType() {
+			return contentType;
+		}
+
+		public byte[] getContenido() {
+			return contenido;
+		}
 	}
 
 	public static class ResultadoCreacionMensaje {

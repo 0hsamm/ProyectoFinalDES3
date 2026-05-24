@@ -9,6 +9,8 @@ import { CommonModule } from '@angular/common';
 
 import { FormsModule } from '@angular/forms';
 
+import { timeout } from 'rxjs';
+
 import { Usuario } from '../../models/usuario';
 
 import { ToastService } from '../../services/toast.service';
@@ -16,18 +18,7 @@ import { ToastService } from '../../services/toast.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { ThemeService } from '../../services/theme.service';
 
-import {
-  interval,
-  Subscription,
-  timeout
-} from 'rxjs';
-
 interface PreferenciasUsuario {
-  refrescoAutomatico: boolean;
-  notificaciones: boolean;
-  sonidos: boolean;
-  mostrarEnLinea: boolean;
-  enterParaEnviar: boolean;
   tema: 'oscuro' | 'claro' | 'sistema';
 }
 
@@ -57,16 +48,14 @@ export class SettingsPanelComponent
 
   guardando = false;
 
+  guardandoPreferencias = false;
+
   subiendoFoto = false;
 
   perfilError = '';
 
-  pestanaActiva: 'perfil' | 'privacidad' | 'notificaciones' = 'perfil';
-
   idUsuarioActual =
     Number(localStorage.getItem('idUsuario') || 0);
-
-  private refrescoSub?: Subscription;
 
   private destruido = false;
 
@@ -80,18 +69,11 @@ export class SettingsPanelComponent
   ngOnInit(): void {
 
     this.cargarPerfil();
-
-    this.refrescoSub =
-      interval(30000)
-        .subscribe(() => {
-          this.cargarPerfil(false);
-        });
   }
 
   ngOnDestroy(): void {
 
     this.destruido = true;
-    this.refrescoSub?.unsubscribe();
   }
 
   cargarPerfil(
@@ -142,26 +124,19 @@ export class SettingsPanelComponent
           this.perfilError =
             this.obtenerMensajeError(
               err,
-              'No se pudo cargar el perfil desde el backend'
+              'No se pudo cargar el perfil'
             );
           this.marcarCambio();
 
           if (mostrarCarga) {
 
             this.toastService.warning(
-              'Perfil en modo local',
+              'Perfil no disponible',
               this.perfilError
             );
           }
         }
       });
-  }
-
-  cambiarPestana(
-    pestana: 'perfil' | 'privacidad' | 'notificaciones'
-  ): void {
-
-    this.pestanaActiva = pestana;
   }
 
   guardarPerfil(): void {
@@ -198,11 +173,6 @@ export class SettingsPanelComponent
               true
             );
 
-            this.toastService.info(
-              'Guardando foto',
-              'El perfil se actualizó, falta terminar la imagen'
-            );
-
             return;
           }
 
@@ -220,10 +190,10 @@ export class SettingsPanelComponent
           this.marcarCambio();
 
           this.toastService.error(
-            'No se pudo guardar en backend',
+            'No se pudo guardar el perfil',
             this.obtenerMensajeError(
               err,
-              'Los cambios quedaron guardados localmente'
+              'Se guardó una copia en este dispositivo'
             )
           );
         }
@@ -318,7 +288,7 @@ export class SettingsPanelComponent
 
             this.toastService.success(
               'Foto actualizada',
-              'Tu perfil ya muestra la nueva imagen'
+              'La imagen se actualizó correctamente'
             );
           }
 
@@ -348,6 +318,8 @@ export class SettingsPanelComponent
 
   guardarPreferencias(): void {
 
+    this.guardandoPreferencias = true;
+
     localStorage.setItem(
       'preferenciasUsuario',
       JSON.stringify(this.preferencias)
@@ -365,6 +337,9 @@ export class SettingsPanelComponent
         }
       )
     );
+
+    this.guardandoPreferencias = false;
+    this.marcarCambio();
 
     this.toastService.success(
       'Preferencias guardadas'
@@ -393,8 +368,8 @@ export class SettingsPanelComponent
     this.notificarPerfilActualizado();
 
     this.toastService.info(
-      'Perfil guardado localmente',
-      'Se sincronizará visualmente en esta sesión'
+      'Perfil guardado',
+      'Los cambios se guardaron en este dispositivo'
     );
   }
 
@@ -454,9 +429,15 @@ export class SettingsPanelComponent
     if (guardadas) {
 
       try {
+        const valores =
+          JSON.parse(guardadas) as Record<string, unknown>;
+
         return {
-          ...this.obtenerPreferenciasDefecto(),
-          ...JSON.parse(guardadas)
+          tema:
+            valores['tema'] === 'claro' ||
+            valores['tema'] === 'sistema'
+              ? valores['tema']
+              : 'oscuro'
         };
       } catch {
         return this.obtenerPreferenciasDefecto();
@@ -465,21 +446,15 @@ export class SettingsPanelComponent
 
     return this.obtenerPreferenciasDefecto();
   }
-  // skipcq: JS-0105
+
   private obtenerPreferenciasDefecto(): PreferenciasUsuario {
 
     return {
-      refrescoAutomatico: true,
-      notificaciones: true,
-      sonidos: false,
-      mostrarEnLinea: true,
-      enterParaEnviar: true,
       tema: 'oscuro'
     };
   }
-  // skipcq: JS-0105
+
   private obtenerMensajeError(
-    // skipcq: JS-0323
     err: any,
     mensajeDefecto: string
   ): string {
@@ -506,17 +481,17 @@ export class SettingsPanelComponent
 
     if (err?.name === 'TimeoutError') {
 
-      return 'El backend tardó demasiado en responder';
+      return 'La solicitud tardó demasiado en responder';
     }
 
     if (err?.status === 413) {
 
-      return 'El archivo es demasiado grande. Usa una imagen de máximo 25MB.';
+      return 'El archivo es demasiado grande. Usa una imagen de máximo 25 MB.';
     }
 
     if (err?.status === 0) {
 
-      return 'No hay conexión con el backend o el servidor rechazó la subida.';
+      return 'No se pudo conectar con el servidor o la subida fue rechazada.';
     }
 
     return mensajeDefecto;

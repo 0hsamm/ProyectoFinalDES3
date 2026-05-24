@@ -1,7 +1,14 @@
 package co.edu.unbosque.proyectofinal.controller;
 
+import java.nio.charset.StandardCharsets;
+
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.exception.MensajeNoEncontradoException;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 import co.edu.unbosque.proyectofinal.security.JwtUtil;
 import co.edu.unbosque.proyectofinal.service.MensajeService;
@@ -97,6 +105,53 @@ public class ArchivoAdjuntoController {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{mensajeId}/adjunto")
+    public ResponseEntity<?> obtenerAdjunto(
+            @PathVariable Long mensajeId) {
+
+        try {
+            MensajeService.ArchivoAdjuntoDescargable adjunto =
+                    mensajeService.obtenerAdjunto(
+                            mensajeId);
+
+            return ResponseEntity.ok()
+                    .contentType(
+                            resolverMediaType(
+                                    adjunto.getContentType()))
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            ContentDisposition.inline()
+                                    .filename(
+                                            adjunto.getNombreArchivo(),
+                                            StandardCharsets.UTF_8)
+                                    .build()
+                                    .toString())
+                    .body(new ByteArrayResource(
+                            adjunto.getContenido()));
+
+        } catch (MensajeNoEncontradoException e) {
+            return ResponseEntity.status(
+                    HttpStatus.NOT_FOUND)
+                    .body("No se encontró el mensaje");
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(
+                    HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
+
+    private MediaType resolverMediaType(
+            String valor) {
+
+        try {
+            return MediaType.parseMediaType(
+                    valor);
+        } catch (IllegalArgumentException e) {
+            return MediaType.APPLICATION_OCTET_STREAM;
         }
     }
 }

@@ -1,5 +1,6 @@
 .ai-layout {
-  height: 100vh;
+  height: 100%;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
   color: var(--text-1);
@@ -11,6 +12,7 @@
 
 .ai-chat {
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   padding: 30px;
@@ -126,6 +128,7 @@
 .ai-history {
   padding: 20px;
   overflow-y: auto;
+  min-height: 0;
   border-radius: 0;
   border-top: 0;
   border-right: 0;
@@ -183,7 +186,20 @@
 }
 
 @media (max-width: 640px) {
+  .ai-layout {
+    min-height: 100%;
+  }
+
   .ai-chat {
-    padding: 22px;
+    padding: 18px 14px 16px;
+  }
+
+  .prompt-box {
+    gap: 10px;
+    padding-top: 12px;
+  }
+
+  .prompt-box input {
+    min-width: 0;
   }
 }

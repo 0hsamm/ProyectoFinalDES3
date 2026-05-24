@@ -525,7 +525,7 @@ export class FriendsPanelComponent
             'No se pudo crear el chat',
             this.obtenerMensajeError(
               err,
-              'Revisa que ambos usuarios existan y no haya datos incompletos'
+              'Verifica que ambos usuarios existan y que la frase sea valida'
             )
           );
         }
@@ -633,7 +633,7 @@ export class FriendsPanelComponent
             'No se pudo crear el grupo',
             this.obtenerMensajeError(
               err,
-              'Revisa la frase secreta y los participantes seleccionados'
+              'Verifica la frase secreta y los participantes seleccionados'
             )
           );
         }
@@ -725,7 +725,7 @@ export class FriendsPanelComponent
         err.error.includes('trace')
       ) {
 
-        return 'El backend activo todavía no tiene este endpoint. Revisa que el back esté actualizado y reinicia Spring Boot.';
+        return 'No se pudo completar la accion.';
       }
 
       return err.error;
@@ -748,7 +748,7 @@ export class FriendsPanelComponent
 
     if (err?.status === 404) {
 
-      return 'El backend no encontró esta ruta o recurso. Revisa que el back esté actualizado y reinicia Spring Boot.';
+      return 'No se encontro el recurso solicitado.';
     }
 
     return mensajeDefecto;

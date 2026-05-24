@@ -101,6 +101,11 @@
 
         <input
           type="password"
+          name="fraseSecretaProtegida"
+          autocomplete="new-password"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
           placeholder="Frase secreta de la conversación"
           [(ngModel)]="fraseSecreta"
         >
@@ -213,13 +218,13 @@
             <a
               class="message-image-link"
               *ngIf="tieneImagenAdjunta(mensaje)"
-              [href]="mensaje.adjuntoUrl"
+              [href]="obtenerUrlAdjunto(mensaje)"
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
                 class="message-image"
-                [src]="mensaje.adjuntoUrl"
+                [src]="obtenerUrlAdjunto(mensaje)"
                 [alt]="obtenerNombreAdjunto(mensaje)"
               >
             </a>
@@ -227,7 +232,7 @@
             <a
               class="message-file"
               *ngIf="tieneAdjuntoNoImagen(mensaje)"
-              [href]="mensaje.adjuntoUrl"
+              [href]="obtenerUrlAdjunto(mensaje)"
               target="_blank"
               rel="noopener noreferrer"
             >

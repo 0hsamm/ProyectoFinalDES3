@@ -14,6 +14,8 @@ export interface Usuario {
 
   enLinea?: boolean;
 
+  mostrarEnLinea?: boolean;
+
   ultimaVezEnLinea?: string;
 
   rol?: string;

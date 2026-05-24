@@ -267,7 +267,7 @@ export class StatesPanelComponent
         'No se publicó el estado',
           this.obtenerMensajeError(
             err,
-            'Revisa la conexión con el backend'
+            'Intenta nuevamente en unos segundos'
           )
         );
       }

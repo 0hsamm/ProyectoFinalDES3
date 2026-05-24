@@ -34,6 +34,8 @@ public class Usuario implements UserDetails {
 
     private boolean enLinea;
 
+    private boolean mostrarEnLinea = true;
+
     private boolean habilitado;
 
     private LocalDate fechaNacimiento;
@@ -138,6 +140,14 @@ public class Usuario implements UserDetails {
 
     public void setEnLinea(boolean enLinea) {
         this.enLinea = enLinea;
+    }
+
+    public boolean isMostrarEnLinea() {
+        return mostrarEnLinea;
+    }
+
+    public void setMostrarEnLinea(boolean mostrarEnLinea) {
+        this.mostrarEnLinea = mostrarEnLinea;
     }
 
     public boolean isHabilitado() {

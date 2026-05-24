@@ -5,16 +5,15 @@
   padding: 30px;
   color: var(--text-1);
   background:
-    linear-gradient(135deg, rgba(45, 212, 191, 0.1), transparent 36%),
-    linear-gradient(225deg, rgba(139, 92, 246, 0.08), transparent 44%),
-    rgba(7, 9, 15, 0.92);
+    linear-gradient(135deg, rgba(45, 212, 191, 0.08), transparent 36%),
+    linear-gradient(225deg, rgba(139, 92, 246, 0.07), transparent 44%),
+    var(--app-bg-soft);
 }
 
 .panel-heading,
 .state-box,
 .tool-btn,
 .status-pill,
-.settings-tabs,
 .option-row,
 .primary-btn,
 .secondary-btn,
@@ -44,17 +43,17 @@
 .tool-btn {
   width: 42px;
   height: 42px;
-  border: 1px solid transparent;
+  border: 1px solid var(--line-soft);
   border-radius: var(--radius);
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
+  background: var(--surface-1);
+  color: var(--text-1);
   cursor: pointer;
 }
 
 .tool-btn:hover {
   border-color: rgba(56, 189, 248, 0.24);
-  background: rgba(56, 189, 248, 0.12);
+  background: var(--surface-2);
 }
 
 .settings-shell {
@@ -65,7 +64,7 @@
 }
 
 .profile-pane,
-.settings-main,
+.panel-card,
 .state-box {
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
@@ -128,7 +127,7 @@
   border: 1px solid rgba(56, 189, 248, 0.16);
   border-radius: var(--radius);
   background: rgba(14, 165, 233, 0.1);
-  color: #bae6fd;
+  color: var(--text-2);
   font-size: 13px;
   line-height: 1.4;
 }
@@ -147,8 +146,8 @@
   width: 100%;
   margin-top: auto;
   border: 1px solid var(--line-soft);
-  background: rgba(255, 255, 255, 0.07);
-  color: #e5e7eb;
+  background: var(--surface-2);
+  color: var(--text-1);
   cursor: pointer;
 }
 
@@ -183,42 +182,41 @@ button:disabled {
 
 .settings-main {
   min-width: 0;
+  display: grid;
+  gap: 18px;
 }
 
-.settings-tabs {
-  gap: 8px;
-  padding: 14px 16px 0;
-  overflow-x: auto;
-  scrollbar-width: thin;
+.panel-card {
+  padding: 20px;
 }
 
-.settings-tabs button {
-  height: 36px;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  padding: 0 14px;
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--text-2);
-  font-weight: 800;
-  cursor: pointer;
+.section-heading {
+  grid-column: 1 / -1;
 }
 
-.settings-tabs button.active {
-  background: rgba(14, 165, 233, 0.18);
-  border-color: rgba(56, 189, 248, 0.24);
-  color: white;
+.section-heading h3 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.section-heading p {
+  margin: 0;
+  color: var(--text-3);
+  line-height: 1.5;
 }
 
 .fields-pane,
-.options-pane {
-  padding: 20px;
+.preferences-pane {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   align-content: start;
 }
 
-.options-pane {
+.fields-pane {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.preferences-pane {
   grid-template-columns: 1fr;
 }
 
@@ -226,7 +224,7 @@ label {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: #dbe3ee;
+  color: var(--text-2);
   font-size: 14px;
 }
 
@@ -240,9 +238,9 @@ label {
   justify-content: space-between;
   gap: 18px;
   padding: 14px;
-  border: 1px solid transparent;
+  border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.052);
+  background: var(--surface-2);
 }
 
 .option-row strong,
@@ -269,13 +267,14 @@ select {
   border: 1px solid var(--line-soft);
   outline: 0;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.062);
-  color: white;
+  background: var(--surface-2);
+  color: var(--text-1);
   padding: 12px;
 }
 
 select option {
-  background: #111827;
+  background: #ffffff;
+  color: #0f172a;
 }
 
 input:focus,
@@ -319,16 +318,6 @@ textarea {
 
   .fields-pane {
     grid-template-columns: 1fr;
-  }
-
-  .settings-tabs {
-    flex-wrap: wrap;
-    padding-bottom: 10px;
-  }
-
-  .settings-tabs button {
-    flex: 1 1 auto;
-    min-width: 120px;
   }
 
   .option-row {

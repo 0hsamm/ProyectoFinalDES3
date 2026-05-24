@@ -18,6 +18,7 @@ import { Conversacion } from '../../models/conversacion';
 import { Mensaje } from '../../models/mensaje';
 
 import { MensajeService } from '../../services/mensaje.service';
+import { environment } from '../../../environment/environment';
 
 import { LlamadaService } from '../../services/llamada.service';
 
@@ -88,8 +89,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   idUsuarioActual = Number(localStorage.getItem('idUsuario') || 0);
 
-  private refrescoSub?: Subscription;
-
   private destruido = false;
 
   constructor(
@@ -115,15 +114,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.usuarioBloqueado = false;
       this.actualizandoBloqueo = false;
       this.limpiarAdjuntoSeleccionado();
-
-      this.fraseSecreta =
-        this.obtenerFraseGuardada(
-          this.conversacion.id
-        );
+      this.fraseSecreta = '';
 
       this.cargarEstadoBloqueo();
       this.cargarMensajes();
-      this.reiniciarRefresco();
       this.iniciarPollingLlamadas();
     }
 
@@ -137,7 +131,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.error = '';
       this.usuarioBloqueado = false;
       this.limpiarAdjuntoSeleccionado();
-      this.refrescoSub?.unsubscribe();
       this.pollingLlamadaSub?.unsubscribe();
     }
   }
@@ -145,7 +138,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   ngOnDestroy(): void {
 
     this.destruido = true;
-    this.refrescoSub?.unsubscribe();
     this.limpiarAdjuntoSeleccionado();
     this.pollingLlamadaSub?.unsubscribe();
   }
@@ -225,16 +217,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
             }
           } else {
             this.error = '';
-          }
-
-          if (
-            this.conversacion?.id &&
-            this.conversacion.fraseSecretaConfigurada
-          ) {
-            this.guardarFraseSecreta(
-              this.conversacion.id,
-              this.fraseSecreta
-            );
           }
 
           this.actualizarUltimoMensajeConversacion();
@@ -448,7 +430,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
             'No se pudo iniciar la llamada',
             this.obtenerMensajeError(
               err,
-              'Revisa que ambos usuarios pertenezcan a la conversación'
+              'Verifica que ambos usuarios pertenezcan a la conversación'
             )
           );
         }
@@ -844,16 +826,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.enviando = false;
     this.marcarCambio();
 
-    if (
-      this.conversacion?.id &&
-      this.conversacion.fraseSecretaConfigurada
-    ) {
-      this.guardarFraseSecreta(
-        this.conversacion.id,
-        this.fraseSecreta
-      );
-    }
-
     this.toastService.success(
       titulo
     );
@@ -916,17 +888,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     return mensajeDefecto;
   }
 
-  private reiniciarRefresco(): void {
-
-    this.refrescoSub?.unsubscribe();
-
-    this.refrescoSub =
-      interval(7000)
-        .subscribe(() => {
-          this.cargarMensajes(false);
-        });
-  }
-
   private cargarEstadoBloqueo(): void {
 
     const usuarioId =
@@ -957,30 +918,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
           this.marcarCambio();
         }
       });
-  }
-
-  private obtenerFraseGuardada(
-    conversacionId: number
-  ): string {
-
-    return sessionStorage.getItem(
-      this.obtenerClaveFrase(
-        conversacionId
-      )
-    ) || '';
-  }
-
-  private guardarFraseSecreta(
-    conversacionId: number,
-    frase: string
-  ): void {
-
-    sessionStorage.setItem(
-      this.obtenerClaveFrase(
-        conversacionId
-      ),
-      frase.trim()
-    );
   }
 
   private actualizarUltimoMensajeConversacion(): void {
@@ -1324,13 +1261,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.archivoPreviewUrl = null;
   }
 
-  private obtenerClaveFrase(
-    conversacionId: number
-  ): string {
-
-    return `fraseSecretaConversacion:${this.idUsuarioActual}:${conversacionId}`;
-  }
-
   private obtenerClaveUltimoMensaje(
     conversacionId: number
   ): string {
@@ -1384,6 +1314,50 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   onLlamadaRechazada(): void {
     this.llamadaEntrante = null;
     this.marcarCambio();
+  }
+
+  obtenerUrlAdjunto(
+    mensaje: Mensaje
+  ): string {
+
+    if (mensaje.id != null) {
+      return `${environment.apiUrl}/mensajes/${mensaje.id}/adjunto`;
+    }
+
+    return this.normalizarUrlRecurso(
+      mensaje.adjuntoUrl || ''
+    );
+  }
+
+  private normalizarUrlRecurso(
+    url: string
+  ): string {
+
+    const valor =
+      url.trim();
+
+    if (valor === '') {
+      return '';
+    }
+
+    try {
+      const baseApi =
+        new URL(environment.apiUrl);
+      const urlResuelta =
+        new URL(valor, environment.apiUrl);
+
+      if (
+        urlResuelta.hostname === baseApi.hostname &&
+        urlResuelta.protocol !== baseApi.protocol
+      ) {
+        urlResuelta.protocol =
+          baseApi.protocol;
+      }
+
+      return urlResuelta.toString();
+    } catch {
+      return valor;
+    }
   }
 }
 

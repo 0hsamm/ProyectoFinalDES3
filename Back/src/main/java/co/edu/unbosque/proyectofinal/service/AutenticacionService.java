@@ -109,6 +109,7 @@ public class AutenticacionService {
 	    usuario.setFechaNacimiento(dto.getFechaNacimiento());
 	    usuario.setFechaCreacionCuenta(LocalDateTime.now());
 	    usuario.setEnLinea(false);
+	    usuario.setMostrarEnLinea(true);
 	    usuario.setRol(co.edu.unbosque.proyectofinal.enums.RolUsuario.ROLE_USER);
 	    
 	    usuarioRepo.save(usuario);

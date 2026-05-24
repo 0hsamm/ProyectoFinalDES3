@@ -234,7 +234,7 @@ public class ConversacionService {
 
 		List<Conversacion> lista =
 				conversacionRepo
-						.findByParticipante_Usuario_Id(
+						.findVisiblesByUsuarioIdOrderByActividadDesc(
 								usuarioId);
 
 		List<ConversacionDTO> dtoList =

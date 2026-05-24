@@ -22,6 +22,8 @@ public class UsuarioDTO {
 
 	private boolean enLinea;
 
+	private Boolean mostrarEnLinea;
+
 	private LocalDate fechaNacimiento;
 
 	private LocalDateTime ultimaVezEnLinea;
@@ -114,6 +116,14 @@ public class UsuarioDTO {
 		this.enLinea = enLinea;
 	}
 
+	public Boolean getMostrarEnLinea() {
+		return mostrarEnLinea;
+	}
+
+	public void setMostrarEnLinea(Boolean mostrarEnLinea) {
+		this.mostrarEnLinea = mostrarEnLinea;
+	}
+
 	public LocalDate getFechaNacimiento() {
 		return fechaNacimiento;
 	}
@@ -146,7 +156,7 @@ public class UsuarioDTO {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(contrasena, correo, enLinea, fechaNacimiento, fotoPerfil, id, nombrePersona, rol, sobreMi,
+		return Objects.hash(contrasena, correo, enLinea, fechaNacimiento, fotoPerfil, id, mostrarEnLinea, nombrePersona, rol, sobreMi,
 				ultimaVezEnLinea, usuario);
 	}
 
@@ -162,6 +172,7 @@ public class UsuarioDTO {
 		return Objects.equals(contrasena, other.contrasena) && Objects.equals(correo, other.correo)
 				&& enLinea == other.enLinea && Objects.equals(fechaNacimiento, other.fechaNacimiento)
 				&& Objects.equals(fotoPerfil, other.fotoPerfil) && Objects.equals(id, other.id)
+				&& Objects.equals(mostrarEnLinea, other.mostrarEnLinea)
 				&& Objects.equals(nombrePersona, other.nombrePersona) && rol == other.rol
 				&& Objects.equals(sobreMi, other.sobreMi)
 				&& Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea) && Objects.equals(usuario, other.usuario);
@@ -171,6 +182,7 @@ public class UsuarioDTO {
 	public String toString() {
 		return "UsuarioDTO [id=" + id + ", usuario=" + usuario + ", correo=" + correo + ", nombrePersona="
 				+ nombrePersona + ", sobreMi=" + sobreMi + ", fotoPerfil=" + fotoPerfil + ", enLinea=" + enLinea
+				+ ", mostrarEnLinea=" + mostrarEnLinea
 				+ ", fechaNacimiento=" + fechaNacimiento + ", ultimaVezEnLinea=" + ultimaVezEnLinea
 				+ ", contrasena=" + contrasena + ", rol=" + rol + "]";
 	}

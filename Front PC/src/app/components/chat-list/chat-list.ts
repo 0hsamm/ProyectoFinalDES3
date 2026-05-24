@@ -22,11 +22,6 @@ import { UsuarioService } from '../../services/usuario.service';
 
 import { ToastService } from '../../services/toast.service';
 
-import {
-  interval,
-  Subscription
-} from 'rxjs';
-
 @Component({
   selector: 'app-chat-list',
 
@@ -57,8 +52,6 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
   error = '';
 
-  private refrescoSub?: Subscription;
-
   private destruido = false;
 
   private usuariosPorId =
@@ -77,19 +70,11 @@ export class ChatListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     this.cargarConversaciones();
-
-    this.refrescoSub =
-      interval(15000)
-        .subscribe(() => {
-          this.cargarConversaciones(false);
-        });
   }
 
   ngOnDestroy(): void {
 
     this.destruido = true;
-
-    this.refrescoSub?.unsubscribe();
   }
 
   cargarConversaciones(
@@ -128,6 +113,11 @@ export class ChatListComponent implements OnInit, OnDestroy {
             if (actualizada) {
               this.seleccionarConversacion(
                 actualizada
+              );
+            } else {
+              this.conversacionSeleccionada = null;
+              this.conversacionSeleccionadaChange.emit(
+                null
               );
             }
           }

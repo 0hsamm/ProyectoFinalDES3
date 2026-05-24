@@ -67,35 +67,15 @@
     </aside>
 
     <main class="settings-main">
-      <nav class="settings-tabs">
-        <button
-          type="button"
-          [class.active]="pestanaActiva == 'perfil'"
-          (click)="cambiarPestana('perfil')"
-        >
-          Perfil
-        </button>
-        <button
-          type="button"
-          [class.active]="pestanaActiva == 'privacidad'"
-          (click)="cambiarPestana('privacidad')"
-        >
-          Privacidad
-        </button>
-        <button
-          type="button"
-          [class.active]="pestanaActiva == 'notificaciones'"
-          (click)="cambiarPestana('notificaciones')"
-        >
-          Notificaciones
-        </button>
-      </nav>
-
       <form
-        class="fields-pane"
-        *ngIf="pestanaActiva == 'perfil'"
+        class="panel-card fields-pane"
         (ngSubmit)="guardarPerfil()"
       >
+        <div class="section-heading">
+          <h3>Perfil</h3>
+          <p>Edita los datos básicos de tu cuenta.</p>
+        </div>
+
         <label>
           Usuario
           <input type="text" name="usuario" [(ngModel)]="usuario.usuario">
@@ -131,33 +111,10 @@
         </button>
       </form>
 
-      <section
-        class="options-pane"
-        *ngIf="pestanaActiva == 'privacidad'"
-      >
-        <label class="option-row">
-          <span>
-            <strong>Mostrar estado en línea</strong>
-            <small>Permite que tus contactos vean si estás conectado.</small>
-          </span>
-          <input
-            type="checkbox"
-            [(ngModel)]="preferencias.mostrarEnLinea"
-            name="mostrarEnLinea"
-          >
-        </label>
-
-        <label class="option-row">
-          <span>
-            <strong>Enviar con Enter</strong>
-            <small>Atajo local para escribir mensajes más rápido.</small>
-          </span>
-          <input
-            type="checkbox"
-            [(ngModel)]="preferencias.enterParaEnviar"
-            name="enterParaEnviar"
-          >
-        </label>
+      <section class="panel-card preferences-pane">
+        <div class="section-heading">
+          <h3>Preferencias</h3>
+        </div>
 
         <label>
           Tema visual
@@ -174,56 +131,7 @@
         <button
           type="button"
           class="primary-btn"
-          (click)="guardarPreferencias()"
-        >
-          <i class="pi pi-save"></i>
-          Guardar preferencias
-        </button>
-      </section>
-
-      <section
-        class="options-pane"
-        *ngIf="pestanaActiva == 'notificaciones'"
-      >
-        <label class="option-row">
-          <span>
-            <strong>Notificaciones</strong>
-            <small>Activa avisos visuales dentro de la aplicación.</small>
-          </span>
-          <input
-            type="checkbox"
-            [(ngModel)]="preferencias.notificaciones"
-            name="notificaciones"
-          >
-        </label>
-
-        <label class="option-row">
-          <span>
-            <strong>Sonidos</strong>
-            <small>Reproduce avisos suaves al recibir novedades.</small>
-          </span>
-          <input
-            type="checkbox"
-            [(ngModel)]="preferencias.sonidos"
-            name="sonidos"
-          >
-        </label>
-
-        <label class="option-row">
-          <span>
-            <strong>Refresco automático</strong>
-            <small>Mantiene chats, estados y solicitudes actualizados.</small>
-          </span>
-          <input
-            type="checkbox"
-            [(ngModel)]="preferencias.refrescoAutomatico"
-            name="refrescoAutomatico"
-          >
-        </label>
-
-        <button
-          type="button"
-          class="primary-btn"
+          [disabled]="guardandoPreferencias"
           (click)="guardarPreferencias()"
         >
           <i class="pi pi-save"></i>

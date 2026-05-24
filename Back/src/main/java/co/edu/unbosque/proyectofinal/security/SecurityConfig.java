@@ -123,6 +123,12 @@ public class SecurityConfig {
 
                         .permitAll()
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/mensajes/*/adjunto")
+
+                        .permitAll()
+
                         /**
                          * Swagger.
                          */

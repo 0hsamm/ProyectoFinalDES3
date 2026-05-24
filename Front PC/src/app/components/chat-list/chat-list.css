@@ -6,7 +6,7 @@
   color: var(--text-1);
   background:
     linear-gradient(160deg, rgba(45, 212, 191, 0.09), transparent 34%),
-    linear-gradient(180deg, rgba(13, 18, 28, 0.96), rgba(8, 11, 18, 0.98));
+    var(--app-bg-soft);
   border-right: 1px solid var(--line-soft);
 }
 
@@ -18,7 +18,7 @@
 
 .chat-header h2 {
   margin: 0;
-  color: white;
+  color: var(--text-1);
   font-size: 28px;
 }
 
@@ -57,8 +57,8 @@
   border: 1px solid var(--line-soft);
   outline: none;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.055);
-  color: white;
+  background: var(--surface-2);
+  color: var(--text-1);
 }
 
 .search-box input:focus {
@@ -87,7 +87,7 @@
     transform 0.18s ease,
     background 0.18s ease,
     border-color 0.18s ease;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--surface-2);
   text-align: left;
 }
 
@@ -120,14 +120,14 @@
 
 .chat-item:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.065);
+  background: var(--surface-3);
   border-color: var(--line-soft);
 }
 
 .chat-item.active {
   background:
     linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(139, 92, 246, 0.16)),
-    rgba(255, 255, 255, 0.055);
+    var(--surface-2);
   border-color: rgba(56, 189, 248, 0.24);
   box-shadow: inset 3px 0 0 var(--accent-cyan);
 }
@@ -158,7 +158,7 @@
 }
 
 .name {
-  color: white;
+  color: var(--text-1);
   font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -179,7 +179,7 @@
   padding: 14px;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-2);
   color: var(--text-2);
   line-height: 1.5;
   display: flex;

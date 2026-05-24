@@ -14,12 +14,12 @@
         *ngFor="let mensaje of mensajes"
         [class.user]="mensaje.role == 'user'"
       >
-        <strong>{{ mensaje.role == 'user' ? 'Tu' : 'Asistente IA' }}</strong>
+        <strong>{{ mensaje.role == 'user' ? 'Tú' : 'Asistente IA' }}</strong>
         <p>{{ mensaje.content }}</p>
       </div>
 
       <div class="empty-state" *ngIf="mensajes.length == 0">
-        Haz una pregunta. La llave de Gemini vive solo en el backend, nunca en este front.
+        Haz una pregunta para empezar la conversación.
       </div>
 
       <div class="empty-state loading" *ngIf="enviando">

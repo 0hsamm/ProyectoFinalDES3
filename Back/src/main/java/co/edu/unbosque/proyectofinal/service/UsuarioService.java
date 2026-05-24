@@ -61,6 +61,7 @@ public class UsuarioService {
             usuario.setFechaNacimiento(dto.getFechaNacimiento());
             usuario.setFechaCreacionCuenta(LocalDateTime.now());
             usuario.setEnLinea(false);
+            usuario.setMostrarEnLinea(true);
             usuario.setUltimaVezEnLinea(null);
             usuario.setHabilitado(true);
             usuario.setRol(RolUsuario.ROLE_USER);
@@ -189,6 +190,7 @@ public class UsuarioService {
         if (dto.getSobreMi() != null) usuario.setSobreMi(dto.getSobreMi());
         if (dto.getFotoPerfil() != null) usuario.setFotoPerfil(dto.getFotoPerfil());
         if (dto.getFechaNacimiento() != null) usuario.setFechaNacimiento(dto.getFechaNacimiento());
+        if (dto.getMostrarEnLinea() != null) usuario.setMostrarEnLinea(dto.getMostrarEnLinea());
         if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
             usuario.setContrasenaHash(passwordEncoder.encode(dto.getContrasena()));
         }
@@ -265,6 +267,7 @@ public class UsuarioService {
         dto.setCorreo(usuario.getCorreo());
         dto.setFechaNacimiento(usuario.getFechaNacimiento());
         dto.setRol(usuario.getRol());
+        dto.setMostrarEnLinea(usuario.isMostrarEnLinea());
         dto.setContrasena(null);
 
         return dto;
@@ -281,7 +284,8 @@ public class UsuarioService {
         dto.setNombrePersona(usuario.getNombrePersona());
         dto.setSobreMi(usuario.getSobreMi());
         dto.setFotoPerfil(usuario.getFotoPerfil());
-        dto.setEnLinea(usuario.isEnLinea());
+        dto.setEnLinea(usuario.isMostrarEnLinea() && usuario.isEnLinea());
+        dto.setMostrarEnLinea(usuario.isMostrarEnLinea());
         dto.setUltimaVezEnLinea(usuario.getUltimaVezEnLinea());
         dto.setCorreo(null);
         dto.setFechaNacimiento(null);
