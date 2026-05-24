@@ -1377,6 +1377,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.marcarCambio();
   }
 
+  // skipcq: JS-0105
   obtenerUrlAdjunto(
     mensaje: Mensaje
   ): string {

@@ -491,6 +491,8 @@ export class SettingsPanelComponent
     };
   }
 
+
+  // skipcq: JS-0105
   private obtenerPreferenciasGuardadas(): PreferenciasUsuario {
 
     const guardadas =
