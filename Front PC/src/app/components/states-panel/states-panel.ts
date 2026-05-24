@@ -628,19 +628,19 @@ export class StatesPanelComponent
   tieneLikes(): boolean {
     return this.likesDetalle.length > 0;
   }
-  // skipcq: JS-0105
+
   obtenerFotoVista(vista: EstadoInteraccion): string {
     return vista.fotoPerfil || '';
   }
-  // skipcq: JS-0105
+
   obtenerNombreVista(vista: EstadoInteraccion): string {
     return vista.usuarioNombre || vista.usuario || '';
   }
-  // skipcq: JS-0105
+
   obtenerFotoLike(like: EstadoInteraccion): string {
     return like.fotoPerfil || '';
   }
-  // skipcq: JS-0105
+
   obtenerNombreLike(like: EstadoInteraccion): string {
     return like.usuarioNombre || like.usuario || '';
   }
