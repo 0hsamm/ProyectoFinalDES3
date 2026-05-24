@@ -293,7 +293,7 @@
               <span>{{ formatearFecha(like.fecha) }}</span>
             </div>
           </div>
-          <p class="muted" *ngIf="likesDetalle.length === 0">
+          <p class="muted" [hidden]="likesDetalle.length > 0">
             Aun no tiene likes
           </p>
         </section>

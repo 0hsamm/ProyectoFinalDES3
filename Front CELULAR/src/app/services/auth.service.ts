@@ -59,7 +59,7 @@ export class AuthService {
     );
   }
 
-  guardarSesion(
+  static guardarSesion(
     respuesta: RespuestaAutenticacionDTO
   ): void {
 
@@ -105,14 +105,14 @@ export class AuthService {
     }
   }
 
-  obtenerToken(): string | null {
+  static obtenerToken(): string | null {
 
     return localStorage.getItem('token');
   }
 
   estaLogueado(): boolean {
 
-    return this.obtenerToken() != null;
+    return AuthService.obtenerToken() !== null;
   }
 
   cerrarSesion(): Observable<string> {
@@ -130,12 +130,12 @@ export class AuthService {
         )
       ),
       finalize(() => {
-        this.limpiarSesionLocal();
+        AuthService.limpiarSesionLocal();
       })
     );
   }
 
-  private limpiarSesionLocal(): void {
+  private static limpiarSesionLocal(): void {
 
     localStorage.removeItem('token');
     localStorage.removeItem('tipoToken');

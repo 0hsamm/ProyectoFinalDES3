@@ -58,6 +58,10 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
   error = '';
 
+  private readonly nombreConversacionPorDefecto = '';
+
+  private readonly fotoConversacionPorDefecto = '';
+
   private refrescoSub?: Subscription;
 
   private destruido = false;
@@ -115,9 +119,10 @@ export class ChatListComponent implements OnInit, OnDestroy {
         next: (conversaciones) => {
 
           this.conversaciones =
-            this.ordenarConversaciones(
-              conversaciones || []
-            );
+            this.conversaciones =
+              ChatListComponent.ordenarConversaciones(
+                conversaciones || []
+              );
 
           if (
             this.conversacionSeleccionada?.id != null
@@ -145,7 +150,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
           if (
             this.conversaciones.length > 0 &&
             this.conversacionSeleccionada == null &&
-            !this.esPantallaMovil()
+            !ChatListComponent.esPantallaMovil()
           ) {
 
             this.seleccionarConversacion(
@@ -260,7 +265,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
           if (
             this.conversaciones.length > 0 &&
             this.conversacionSeleccionada == null &&
-            !this.esPantallaMovil()
+            !ChatListComponent.esPantallaMovil()
           ) {
             this.seleccionarConversacion(
               this.conversaciones[0]
@@ -297,7 +302,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
       return conversacion.nombre.trim();
     }
 
-    return conversacion.tipoConversacion || '';
+    return conversacion.tipoConversacion ||
+      this.nombreConversacionPorDefecto;
   }
 
   obtenerIniciales(
@@ -326,7 +332,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
     const participanteVisible =
       conversacion.participantes?.[0];
 
-    return participanteVisible?.fotoPerfil || '';
+    return participanteVisible?.fotoPerfil ||
+      this.fotoConversacionPorDefecto;
   }
 
   obtenerUltimoMensaje(
@@ -424,10 +431,10 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
       conversacion.nombre =
         nombres.length > 0
-          ? this.formatearNombreGrupal(
-              nombres,
-              visibles.length
-            )
+          ? ChatListComponent.formatearNombreGrupal(
+            nombres,
+            visibles.length
+          )
           : `Grupo (${participantes.length})`;
 
       conversacion.participantes =
@@ -490,7 +497,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
         : [];
   }
 
-  private ordenarConversaciones(
+  private static ordenarConversaciones(
     conversaciones: Conversacion[]
   ): Conversacion[] {
 
@@ -532,7 +539,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     return participantes;
   }
 
-  private formatearNombreGrupal(
+  private static formatearNombreGrupal(
     nombres: string[],
     totalParticipantesVisibles: number
   ): string {
@@ -595,7 +602,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     return `ultimoMensajeConversacion:${this.idUsuarioActual}:${conversacionId}`;
   }
 
-  private esPantallaMovil(): boolean {
+  private static esPantallaMovil(): boolean {
 
     return typeof window != 'undefined' &&
       window.innerWidth <= 760;

@@ -140,7 +140,7 @@ export class SettingsPanelComponent
             this.usuario.fotoPerfil || '';
           this.cargando = false;
           this.perfilError =
-            this.obtenerMensajeError(
+            SettingsPanelComponent.obtenerMensajeError(
               err,
               'No se pudo cargar el perfil desde el backend'
             );
@@ -221,7 +221,7 @@ export class SettingsPanelComponent
 
           this.toastService.error(
             'No se pudo guardar en backend',
-            this.obtenerMensajeError(
+            SettingsPanelComponent.obtenerMensajeError(
               err,
               'Los cambios quedaron guardados localmente'
             )
@@ -337,7 +337,7 @@ export class SettingsPanelComponent
 
           this.toastService.error(
             'No se pudo subir la foto',
-            this.obtenerMensajeError(
+            SettingsPanelComponent.obtenerMensajeError(
               err,
               'No se pudo guardar la imagen en el servidor'
             )
@@ -478,7 +478,7 @@ export class SettingsPanelComponent
     };
   }
 
-  private obtenerMensajeError(
+  private static obtenerMensajeError(
     err: unknown,
     mensajeDefecto: string
   ): string {

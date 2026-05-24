@@ -62,6 +62,8 @@ export class FriendsPanelComponent
 
   error = '';
 
+  private readonly textoInicialesPorDefecto = '';
+
   fraseSecretaChat = '';
 
   amigosSeleccionadosIds: number[] = [];
@@ -646,7 +648,8 @@ export class FriendsPanelComponent
   ): string {
 
     const texto =
-      (nombre || usuario || '').trim();
+      (nombre || usuario || this.textoInicialesPorDefecto)
+        .trim();
 
     return texto
       .split(' ')
