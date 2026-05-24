@@ -17,6 +17,7 @@ import {
 import { EstadoService } from '../../services/estado.service';
 
 import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog';
 
 import {
   forkJoin,
@@ -25,12 +26,18 @@ import {
   Subscription
 } from 'rxjs';
 
+type ErrorConRespuesta = {
+  error?: unknown;
+  message?: unknown;
+};
+
 @Component({
   selector: 'app-states-panel',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    ConfirmDialogComponent
   ],
   templateUrl: './states-panel.html',
   styleUrl: './states-panel.css'
@@ -59,6 +66,8 @@ export class StatesPanelComponent
   procesandoEstadoId: number | null = null;
 
   detalleEstado: Estado | null = null;
+
+  estadoPendienteEliminar: Estado | null = null;
 
   vistasDetalle: EstadoInteraccion[] = [];
 
@@ -371,16 +380,27 @@ export class StatesPanelComponent
 
       return;
     }
-    // skipcq: JS-0052
-    const confirmar = window.confirm(
-        '¿Quieres eliminar este estado? Esta acción no se puede deshacer.'
-      );
+    this.estadoPendienteEliminar = estado;
+    this.marcarCambio();
+  }
 
-    if (!confirmar) {
+  cancelarEliminacionEstado(): void {
+
+    this.estadoPendienteEliminar = null;
+    this.marcarCambio();
+  }
+
+  confirmarEliminacionEstado(): void {
+
+    const estado =
+      this.estadoPendienteEliminar;
+
+    if (estado?.id == null) {
 
       return;
     }
 
+    this.estadoPendienteEliminar = null;
     this.procesandoEstadoId = estado.id;
     this.marcarCambio();
 
@@ -581,29 +601,39 @@ export class StatesPanelComponent
   }
   // skipcq: JS-0105
   private obtenerMensajeError(
-    // skipcq: JS-0323
-    err: any,
+    err: unknown,
     mensajeDefecto: string
   ): string {
 
-    if (typeof err?.error == 'string') {
+    const error =
+      err as ErrorConRespuesta | null | undefined;
 
-      return err.error;
+    if (typeof error?.error == 'string') {
+
+      return error.error;
     }
 
-    if (typeof err?.error?.mensaje == 'string') {
+    if (
+      typeof error?.error === 'object' &&
+      error.error != null
+    ) {
+      const detalle =
+        error.error as Record<string, unknown>;
 
-      return err.error.mensaje;
-    }
+      if (typeof detalle['mensaje'] === 'string') {
 
-    if (typeof err?.error?.error == 'string') {
+        return detalle['mensaje'];
+      }
 
-      return err.error.error;
-    }
+      if (typeof detalle['error'] === 'string') {
 
-    if (typeof err?.error?.message == 'string') {
+        return detalle['error'];
+      }
 
-      return err.error.message;
+      if (typeof detalle['message'] === 'string') {
+
+        return detalle['message'];
+      }
     }
 
     return mensajeDefecto;

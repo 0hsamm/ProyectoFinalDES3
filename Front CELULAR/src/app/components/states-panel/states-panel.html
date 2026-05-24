@@ -283,4 +283,14 @@
     </aside>
   </section>
 
+  <app-confirm-dialog
+    [visible]="estadoPendienteEliminar != null"
+    title="Eliminar estado"
+    message="¿Quieres eliminar este estado? Esta acción no se puede deshacer."
+    confirmLabel="Eliminar"
+    cancelLabel="Cancelar"
+    (confirmed)="confirmarEliminacionEstado()"
+    (cancelled)="cancelarEliminacionEstado()"
+  />
+
 </div>

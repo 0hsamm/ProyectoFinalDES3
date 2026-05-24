@@ -26,14 +26,49 @@ import { AmistadService } from '../../services/amistad.service';
 
 import { ToastService } from '../../services/toast.service';
 
-import { LlamadaComponent } from '../llamada/llamada';
-import { LlamadaEntranteComponent } from '../llamada-entrante/llamada-entrante';
 import { Llamada, LlamadaRespuesta } from '../../models/llamada';
+import { ChatAttachmentPreviewComponent } from './chat-attachment-preview';
+import { ChatCallOverlaysComponent } from './chat-call-overlays';
 
 import {
   interval,
   Subscription
 } from 'rxjs';
+
+type ErrorConRespuesta = {
+  error?: unknown;
+};
+
+function normalizarUrlRecurso(
+  url: string
+): string {
+
+  const valor =
+    url.trim();
+
+  if (valor === '') {
+    return '';
+  }
+
+  try {
+    const baseApi =
+      new URL(environment.apiUrl);
+    const urlResuelta =
+      new URL(valor, environment.apiUrl);
+
+    if (
+      urlResuelta.hostname === baseApi.hostname &&
+      urlResuelta.protocol !== baseApi.protocol
+    ) {
+      urlResuelta.protocol =
+        baseApi.protocol;
+    }
+
+    return urlResuelta.toString();
+  } catch {
+    return valor;
+  }
+}
 
 @Component({
   selector: 'app-chat-window',
@@ -41,8 +76,8 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    LlamadaComponent,
-    LlamadaEntranteComponent
+    ChatAttachmentPreviewComponent,
+    ChatCallOverlaysComponent
   ],
   templateUrl: './chat-window.html',
   styleUrls: ['./chat-window.css']
@@ -84,6 +119,8 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   actualizandoBloqueo = false;
 
+  mensajePendienteEliminar: Mensaje | null = null;
+
   usuarioActual: string =
     localStorage.getItem('usuario') || '';
 
@@ -113,6 +150,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.nuevoMensaje = '';
       this.usuarioBloqueado = false;
       this.actualizandoBloqueo = false;
+      this.mensajePendienteEliminar = null;
       this.limpiarAdjuntoSeleccionado();
       this.fraseSecreta = '';
 
@@ -130,6 +168,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.nuevoMensaje = '';
       this.error = '';
       this.usuarioBloqueado = false;
+      this.mensajePendienteEliminar = null;
       this.limpiarAdjuntoSeleccionado();
       this.pollingLlamadaSub?.unsubscribe();
     }
@@ -780,8 +819,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   }
 
   private manejarErrorAdjunto(
-    // skipcq: JS-0323
-    err: any,
+    err: unknown,
     mensajeId: number,
     contenido: string
   ): void {
@@ -864,25 +902,35 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   }
   // skipcq: JS-0105
   private obtenerMensajeError(
-    // skipcq: JS-0323
-    err: any,
+    err: unknown,
     mensajeDefecto: string
   ): string {
 
-    if (typeof err?.error == 'string') {
-      return err.error;
+    const error =
+      err as ErrorConRespuesta | null | undefined;
+
+    if (typeof error?.error == 'string') {
+      return error.error;
     }
 
-    if (typeof err?.error?.mensaje == 'string') {
-      return err.error.mensaje;
-    }
+    if (
+      typeof error?.error === 'object' &&
+      error.error != null
+    ) {
+      const detalle =
+        error.error as Record<string, unknown>;
 
-    if (typeof err?.error?.error == 'string') {
-      return err.error.error;
-    }
+      if (typeof detalle['mensaje'] === 'string') {
+        return detalle['mensaje'];
+      }
 
-    if (typeof err?.error?.message == 'string') {
-      return err.error.message;
+      if (typeof detalle['error'] === 'string') {
+        return detalle['error'];
+      }
+
+      if (typeof detalle['message'] === 'string') {
+        return detalle['message'];
+      }
     }
 
     return mensajeDefecto;
@@ -1141,14 +1189,27 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       return;
     }
 
-    const confirmar =
-      window.confirm(
-        '¿Quieres eliminar este mensaje?'
-      );
+    this.mensajePendienteEliminar =
+      mensaje;
+    this.marcarCambio();
+  }
 
-    if (!confirmar) {
+  cancelarEliminacionMensaje(): void {
+
+    this.mensajePendienteEliminar = null;
+    this.marcarCambio();
+  }
+
+  confirmarEliminacionMensaje(): void {
+
+    const mensaje =
+      this.mensajePendienteEliminar;
+
+    if (mensaje?.id == null) {
       return;
     }
+
+    this.mensajePendienteEliminar = null;
 
     this.mensajeService
       .eliminarMensaje(mensaje.id)
@@ -1324,40 +1385,9 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       return `${environment.apiUrl}/mensajes/${mensaje.id}/adjunto`;
     }
 
-    return this.normalizarUrlRecurso(
+    return normalizarUrlRecurso(
       mensaje.adjuntoUrl || ''
     );
-  }
-
-  private normalizarUrlRecurso(
-    url: string
-  ): string {
-
-    const valor =
-      url.trim();
-
-    if (valor === '') {
-      return '';
-    }
-
-    try {
-      const baseApi =
-        new URL(environment.apiUrl);
-      const urlResuelta =
-        new URL(valor, environment.apiUrl);
-
-      if (
-        urlResuelta.hostname === baseApi.hostname &&
-        urlResuelta.protocol !== baseApi.protocol
-      ) {
-        urlResuelta.protocol =
-          baseApi.protocol;
-      }
-
-      return urlResuelta.toString();
-    } catch {
-      return valor;
-    }
   }
 }
 

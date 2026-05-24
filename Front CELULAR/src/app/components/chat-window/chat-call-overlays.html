@@ -1,0 +1,15 @@
+<app-llamada
+  *ngIf="llamadaActiva != null"
+  [llamada]="llamadaActiva"
+  [idUsuarioActual]="idUsuarioActual"
+  (colgar)="colgar.emit()"
+>
+</app-llamada>
+
+<app-llamada-entrante
+  *ngIf="llamadaEntrante != null"
+  [llamada]="llamadaEntrante"
+  [idUsuarioActual]="idUsuarioActual ?? 0"
+  (aceptada)="aceptada.emit($event)"
+  (rechazada)="rechazada.emit()"
+/>
