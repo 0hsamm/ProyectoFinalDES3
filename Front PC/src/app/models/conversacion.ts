@@ -26,5 +26,8 @@ export interface Participante {
   fotoPerfil?: string;
   sobreMi?: string;
   descripcion?: string;
-  nombre?: string;
+  nombrePersona?: string;
+  id?: number;
+  usuario?: string;
+  correo?: string;
 }
