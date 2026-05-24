@@ -3,7 +3,7 @@ package co.edu.unbosque.proyectofinal.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-
+import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
@@ -35,7 +35,7 @@ public class ConversacionDTO {
     	this.fechaUltimoMensaje = fechaUltimoMensaje;
     	this.participantesIds = participantesIds == null
     			? null
-    			: List.copyOf(participantesIds);
+    			: new ArrayList<>(participantesIds);
     	this.ultimoMensaje = ultimoMensaje;
     }
 
@@ -88,7 +88,7 @@ public class ConversacionDTO {
 	public void setParticipantesIds(List<Long> participantesIds) {
 		this.participantesIds = participantesIds == null
 				? null
-				: List.copyOf(participantesIds);
+				: new ArrayList<>(participantesIds);
 	}
 
 
