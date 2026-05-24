@@ -1,5 +1,5 @@
 package co.edu.unbosque.proyectofinal.dto;
-
+// skipcq: JAVA-W1069
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
