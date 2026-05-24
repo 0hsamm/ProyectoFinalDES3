@@ -119,16 +119,25 @@ public class InicioSesionUsuario {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
+
 		InicioSesionUsuario other = (InicioSesionUsuario) obj;
+
 		return Objects.equals(fechaCreacion, other.fechaCreacion)
-				&& Objects.equals(fechaExpiracion, other.fechaExpiracion) && Objects.equals(id, other.id)
-				&& Objects.equals(token, other.token) && Objects.equals(usuario, other.usuario);
+				&& Objects.equals(fechaExpiracion, other.fechaExpiracion)
+				&& id == other.id
+				&& Objects.equals(token, other.token)
+				&& Objects.equals(usuario, other.usuario);
 	}
 
 

@@ -55,8 +55,13 @@ public class Conversacion {
 		this.encripado = encripado;
 		this.fechaCreacion = fechaCreacion;
 		this.fechaUltimoMensaje = fechaUltimoMensaje;
-		this.participante = participante;
-		this.mensaje = mensaje;
+		this.participante = participante == null
+				? new ArrayList<>()
+				: new ArrayList<>(participante);
+
+		this.mensaje = mensaje == null
+				? new ArrayList<>()
+				: new ArrayList<>(mensaje);
 	}
 
 
@@ -116,9 +121,10 @@ public class Conversacion {
 
 
 	public void setParticipante(List<ParticipanteConversacion> participante) {
-		this.participante = participante;
+		this.participante = participante == null
+				? new ArrayList<>()
+				: new ArrayList<>(participante);
 	}
-
 
 	public List<Mensaje> getMensaje() {
 		return mensaje;
@@ -126,7 +132,9 @@ public class Conversacion {
 
 
 	public void setMensaje(List<Mensaje> mensaje) {
-		this.mensaje = mensaje;
+		this.mensaje = mensaje == null
+				? new ArrayList<>()
+				: new ArrayList<>(mensaje);
 	}
 
 

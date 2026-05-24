@@ -162,20 +162,44 @@ public class UsuarioDTO {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+
+		if (!(obj instanceof UsuarioDTO other)) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		UsuarioDTO other = (UsuarioDTO) obj;
-		return Objects.equals(contrasena, other.contrasena) && Objects.equals(correo, other.correo)
-				&& enLinea == other.enLinea && Objects.equals(fechaNacimiento, other.fechaNacimiento)
-				&& Objects.equals(fotoPerfil, other.fotoPerfil) && Objects.equals(id, other.id)
-				&& Objects.equals(mostrarEnLinea, other.mostrarEnLinea)
-				&& Objects.equals(nombrePersona, other.nombrePersona) && rol == other.rol
-				&& Objects.equals(sobreMi, other.sobreMi)
-				&& Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea) && Objects.equals(usuario, other.usuario);
+		}
+
+		return Objects.equals(
+				java.util.List.of(
+						contrasena,
+						correo,
+						enLinea,
+						fechaNacimiento,
+						fotoPerfil,
+						id,
+						mostrarEnLinea,
+						nombrePersona,
+						rol,
+						sobreMi,
+						ultimaVezEnLinea,
+						usuario
+				),
+				java.util.List.of(
+						other.contrasena,
+						other.correo,
+						other.enLinea,
+						other.fechaNacimiento,
+						other.fotoPerfil,
+						other.id,
+						other.mostrarEnLinea,
+						other.nombrePersona,
+						other.rol,
+						other.sobreMi,
+						other.ultimaVezEnLinea,
+						other.usuario
+				)
+		);
 	}
 
 	@Override

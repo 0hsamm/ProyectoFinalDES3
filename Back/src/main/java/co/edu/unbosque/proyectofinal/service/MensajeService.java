@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
+import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -774,7 +774,11 @@ public class MensajeService {
 			this.contentType =
 					contentType;
 			this.contenido =
-					contenido;
+					contenido == null
+							? null
+							: Arrays.copyOf(
+									contenido,
+									contenido.length);
 		}
 
 		public String getNombreArchivo() {
@@ -786,7 +790,11 @@ public class MensajeService {
 		}
 
 		public byte[] getContenido() {
-			return contenido;
+			return contenido == null
+					? null
+					: Arrays.copyOf(
+							contenido,
+							contenido.length);
 		}
 	}
 

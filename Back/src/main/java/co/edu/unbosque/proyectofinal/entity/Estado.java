@@ -263,7 +263,9 @@ public class Estado {
 
 
 		public void setVistas(List<EstadoVisto> vistas) {
-			this.vistas = vistas;
+			this.vistas = vistas == null
+					? new ArrayList<>()
+					: new ArrayList<>(vistas);
 		}
 
 

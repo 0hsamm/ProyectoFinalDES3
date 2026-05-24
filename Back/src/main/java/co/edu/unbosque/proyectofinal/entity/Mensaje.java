@@ -207,20 +207,46 @@ public class Mensaje {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+
+		if (!(obj instanceof Mensaje other)) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Mensaje other = (Mensaje) obj;
-		return Objects.equals(adjunto, other.adjunto) && Objects.equals(contenidoCifrado, other.contenidoCifrado)
-				&& Objects.equals(conversacion, other.conversacion) && estatusMensaje == other.estatusMensaje
-				&& Objects.equals(fechaFijado, other.fechaFijado) && fijado == other.fijado
-				&& Objects.equals(horaEnvio, other.horaEnvio) && Objects.equals(horaLeido, other.horaLeido)
-				&& Objects.equals(horaLlegada, other.horaLlegada) && id == other.id
-				&& Objects.equals(remitente, other.remitente) && tipoMensaje == other.tipoMensaje
-				&& Objects.equals(vi, other.vi);
+		}
+
+		return Objects.equals(
+				java.util.List.of(
+						adjunto,
+						contenidoCifrado,
+						conversacion,
+						estatusMensaje,
+						fechaFijado,
+						fijado,
+						horaEnvio,
+						horaLeido,
+						horaLlegada,
+						id,
+						remitente,
+						tipoMensaje,
+						vi
+				),
+				java.util.List.of(
+						other.adjunto,
+						other.contenidoCifrado,
+						other.conversacion,
+						other.estatusMensaje,
+						other.fechaFijado,
+						other.fijado,
+						other.horaEnvio,
+						other.horaLeido,
+						other.horaLlegada,
+						other.id,
+						other.remitente,
+						other.tipoMensaje,
+						other.vi
+				)
+		);
 	}
 
 	@Override
