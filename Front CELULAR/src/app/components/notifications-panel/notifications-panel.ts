@@ -47,8 +47,6 @@ export class NotificationsPanelComponent
 
   private destruido = false;
 
-  private readonly mensajeErrorPorDefecto = 'Intenta nuevamente';
-
   constructor(
     private amistadService: AmistadService,
     private llamadaService: LlamadaService,
@@ -231,48 +229,35 @@ export class NotificationsPanelComponent
       return `Llamaste a ${nombre}`;
     }
 
-    return `${nombre} te llamo`;
+    return `${nombre} te llamó`;
   }
-// skipcq: JS-0105
+  // skipcq: JS-0105
   private obtenerMensajeError(
-    err: unknown
+    // skipcq: JS-0323
+    err: any
   ): string {
 
-    const errorBody =
-      typeof err === 'object' && err !== null && 'error' in err
-        ? (err as { error?: unknown }).error
-        : undefined;
+    if (typeof err?.error == 'string') {
 
-    if (typeof errorBody === 'string') {
-
-      return errorBody;
+      return err.error;
     }
 
-    if (
-      typeof errorBody === 'object' &&
-      errorBody !== null
-    ) {
+    if (typeof err?.error?.mensaje == 'string') {
 
-      const errorObject =
-        errorBody as Record<string, unknown>;
-
-      if (typeof errorObject['mensaje'] === 'string') {
-
-        return errorObject['mensaje'];
-      }
-
-      if (typeof errorObject['error'] === 'string') {
-
-        return errorObject['error'];
-      }
-
-      if (typeof errorObject['message'] === 'string') {
-
-        return errorObject['message'];
-      }
+      return err.error.mensaje;
     }
 
-    return this.mensajeErrorPorDefecto;
+    if (typeof err?.error?.error == 'string') {
+
+      return err.error.error;
+    }
+
+    if (typeof err?.error?.message == 'string') {
+
+      return err.error.message;
+    }
+
+    return 'Intenta nuevamente';
   }
 
   private marcarCambio(): void {

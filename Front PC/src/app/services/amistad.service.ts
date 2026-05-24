@@ -31,6 +31,13 @@ export class AmistadService {
     );
   }
 
+  obtenerBloqueados(): Observable<Amistad[]> {
+
+    return this.http.get<Amistad[]>(
+      `${this.apiUrl}/bloqueados`
+    );
+  }
+
   enviarSolicitud(
     usernameDestino: string
   ): Observable<string> {
@@ -108,6 +115,31 @@ export class AmistadService {
 
     return this.http.delete(
       `${this.apiUrl}/${usuarioId}`,
+      {
+        responseType: 'text'
+      }
+    );
+  }
+
+  bloquearUsuario(
+    usuarioId: number
+  ): Observable<string> {
+
+    return this.http.post(
+      `${this.apiUrl}/${usuarioId}/bloquear`,
+      null,
+      {
+        responseType: 'text'
+      }
+    );
+  }
+
+  desbloquearUsuario(
+    usuarioId: number
+  ): Observable<string> {
+
+    return this.http.delete(
+      `${this.apiUrl}/${usuarioId}/bloquear`,
       {
         responseType: 'text'
       }

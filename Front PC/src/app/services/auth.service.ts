@@ -124,7 +124,7 @@ export class AuthService {
     ).pipe(
       catchError(() =>
         of(
-          'Sesion cerrada localmente'
+          'Sesión cerrada localmente'
         )
       ),
       finalize(() => {

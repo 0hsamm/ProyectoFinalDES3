@@ -40,5 +40,9 @@ export interface Mensaje {
 
   contenidoProtegido?: boolean;
 
+  fijado?: boolean;
+
+  fechaFijado?: string;
+
   fraseSecreta?: string;
 }

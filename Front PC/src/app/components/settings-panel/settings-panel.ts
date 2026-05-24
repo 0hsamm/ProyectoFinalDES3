@@ -104,7 +104,7 @@ export class SettingsPanelComponent
         this.obtenerPerfilLocal();
       this.cargando = false;
       this.perfilError =
-        'No se encontro una sesion activa';
+        'No se encontró una sesión activa';
       this.marcarCambio();
 
       return;
@@ -200,7 +200,7 @@ export class SettingsPanelComponent
 
             this.toastService.info(
               'Guardando foto',
-              'El perfil se actualizo, falta terminar la imagen'
+              'El perfil se actualizó, falta terminar la imagen'
             );
 
             return;
@@ -248,7 +248,7 @@ export class SettingsPanelComponent
     if (!archivo.type.startsWith('image/')) {
 
       this.toastService.warning(
-        'Archivo no valido',
+        'Archivo no válido',
         'Selecciona una imagen para tu foto de perfil'
       );
 
@@ -394,7 +394,7 @@ export class SettingsPanelComponent
 
     this.toastService.info(
       'Perfil guardado localmente',
-      'Se sincronizara visualmente en esta sesion'
+      'Se sincronizará visualmente en esta sesión'
     );
   }
 
@@ -506,17 +506,17 @@ export class SettingsPanelComponent
 
     if (err?.name === 'TimeoutError') {
 
-      return 'El backend tardo demasiado en responder';
+      return 'El backend tardó demasiado en responder';
     }
 
     if (err?.status === 413) {
 
-      return 'El archivo es demasiado grande. Usa una imagen de maximo 25MB.';
+      return 'El archivo es demasiado grande. Usa una imagen de máximo 25MB.';
     }
 
     if (err?.status === 0) {
 
-      return 'No hay conexion con el backend o el servidor rechazo la subida.';
+      return 'No hay conexión con el backend o el servidor rechazó la subida.';
     }
 
     return mensajeDefecto;

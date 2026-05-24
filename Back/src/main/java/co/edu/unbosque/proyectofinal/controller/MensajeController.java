@@ -108,6 +108,8 @@ public class MensajeController {
 	        return new ResponseEntity<>("El usuario no tiene permiso", HttpStatus.FORBIDDEN);
 	    } else if (status == 5) {
 	        return new ResponseEntity<>("Datos del mensaje incompletos", HttpStatus.BAD_REQUEST);
+	    } else if (status == 6) {
+	        return new ResponseEntity<>("No puedes enviar mensajes a un usuario bloqueado", HttpStatus.FORBIDDEN);
 	    } else {
 	        return new ResponseEntity<>("Error interno", HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
@@ -184,6 +186,29 @@ public class MensajeController {
                         fraseSecreta));
 	}
 
+	@GetMapping("/conversacion/{id}/fijados")
+	public ResponseEntity<?> obtenerFijados(
+			@PathVariable Long id,
+			@RequestParam(required = false)
+			String fraseSecreta,
+			HttpServletRequest request) {
+
+		Usuario usuarioAutenticado =
+				obtenerUsuarioAutenticado(request);
+
+		if (usuarioAutenticado == null) {
+			return new ResponseEntity<>(
+					"No autorizado",
+					HttpStatus.UNAUTHORIZED);
+		}
+
+		return ResponseEntity.ok(
+				mensajeService.getMensajesFijados(
+						id,
+						usuarioAutenticado.getId(),
+						fraseSecreta));
+	}
+
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> eliminar(
 			@PathVariable Long id,
@@ -203,5 +228,55 @@ public class MensajeController {
                         id,
                         usuarioAutenticado.getId(),
                         esAdmin(usuarioAutenticado)));
+	}
+
+	@PostMapping("/{id}/fijar")
+	public ResponseEntity<?> fijarMensaje(
+			@PathVariable Long id,
+			@RequestParam(required = false)
+			String fraseSecreta,
+			HttpServletRequest request) {
+
+		Usuario usuarioAutenticado =
+				obtenerUsuarioAutenticado(request);
+
+		if (usuarioAutenticado == null) {
+			return new ResponseEntity<>(
+					"No autorizado",
+					HttpStatus.UNAUTHORIZED);
+		}
+
+		return ResponseEntity.ok(
+				mensajeService.actualizarFijado(
+						id,
+						usuarioAutenticado.getId(),
+						esAdmin(usuarioAutenticado),
+						true,
+						fraseSecreta));
+	}
+
+	@DeleteMapping("/{id}/fijar")
+	public ResponseEntity<?> desfijarMensaje(
+			@PathVariable Long id,
+			@RequestParam(required = false)
+			String fraseSecreta,
+			HttpServletRequest request) {
+
+		Usuario usuarioAutenticado =
+				obtenerUsuarioAutenticado(request);
+
+		if (usuarioAutenticado == null) {
+			return new ResponseEntity<>(
+					"No autorizado",
+					HttpStatus.UNAUTHORIZED);
+		}
+
+		return ResponseEntity.ok(
+				mensajeService.actualizarFijado(
+						id,
+						usuarioAutenticado.getId(),
+						esAdmin(usuarioAutenticado),
+						false,
+						fraseSecreta));
 	}
 }

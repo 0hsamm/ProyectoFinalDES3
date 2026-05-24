@@ -15,6 +15,8 @@ public interface MensajeRepository extends JpaRepository<Mensaje, Long>{
 
     List<Mensaje> findTop20ByConversacion_IdOrderByHoraEnvioDesc(Long conversacionId);
 
+    List<Mensaje> findByConversacion_IdAndFijadoTrueOrderByFechaFijadoDesc(Long conversacionId);
+
     Page<Mensaje> findByConversacion_Id(Long conversacionId, Pageable pageable);
     
     List<Mensaje> findByRemitente(Usuario remitente);

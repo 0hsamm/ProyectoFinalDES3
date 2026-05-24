@@ -8,6 +8,12 @@ import io.agora.media.*;
 @Service
 public class AgoraTokenService {
 
+    private static final String AGORA_APP_ID_RESPALDO =
+            "640281ec7e064092b7824ac9372401be";
+
+    private static final String AGORA_APP_CERTIFICATE_RESPALDO =
+            "b7303e8509e246d5892c64750453d848";
+
     private static final int DURACION_TOKEN_SEGUNDOS = 3600;
 
     @Value("${agora.app-id}")
@@ -20,10 +26,15 @@ public class AgoraTokenService {
             String canal,
             int uid) {
 
-        validarAppId();
+        String appIdConfigurada =
+                getAppId();
 
-        if (appCertificate == null
-                || appCertificate.isBlank()) {
+        validarAppId(appIdConfigurada);
+
+        String appCertificateConfigurado =
+                getAppCertificate();
+
+        if (appCertificateConfigurado.isBlank()) {
             return null;
         }
 
@@ -32,8 +43,8 @@ public class AgoraTokenService {
                     new RtcTokenBuilder2();
 
             return tokenBuilder.buildTokenWithUid(
-                    appId.trim(),
-                    appCertificate.trim(),
+                    appIdConfigurada,
+                    appCertificateConfigurado,
                     canal,
                     uid,
                     RtcTokenBuilder2.Role.ROLE_PUBLISHER,
@@ -49,14 +60,29 @@ public class AgoraTokenService {
 
     public String getAppId() {
 
-        return appId == null
-                ? ""
-                : appId.trim();
+        if (appId != null
+                && !appId.isBlank()) {
+            return appId.trim();
+        }
+
+        return AGORA_APP_ID_RESPALDO;
     }
 
-    private void validarAppId() {
+    private String getAppCertificate() {
 
-        if (appId == null || appId.isBlank()) {
+        if (appCertificate != null
+                && !appCertificate.isBlank()) {
+            return appCertificate.trim();
+        }
+
+        return AGORA_APP_CERTIFICATE_RESPALDO;
+    }
+
+    private void validarAppId(
+            String appIdConfigurada) {
+
+        if (appIdConfigurada == null
+                || appIdConfigurada.isBlank()) {
             throw new IllegalStateException(
                     "AGORA_APP_ID no esta configurado en el backend");
         }

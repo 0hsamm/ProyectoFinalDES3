@@ -131,7 +131,7 @@ export class Login
         if (!respuesta.token) {
 
           this.error =
-            'No se pudo iniciar sesion';
+            'No se pudo iniciar sesión';
 
           this.cargando = false;
 
@@ -145,7 +145,7 @@ export class Login
         this.cargando = false;
 
         this.toastService.success(
-          'Sesion iniciada',
+          'Sesión iniciada',
           'Bienvenido a Reload'
         );
 
@@ -167,11 +167,11 @@ export class Login
         } else {
 
           this.error =
-            'Usuario o contrasena incorrectos';
+            'Usuario o contraseña incorrectos';
         }
 
         this.toastService.error(
-          'No se pudo iniciar sesion',
+          'No se pudo iniciar sesión',
           this.error
         );
       }

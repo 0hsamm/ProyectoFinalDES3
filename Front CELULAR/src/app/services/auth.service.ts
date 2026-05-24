@@ -34,9 +34,7 @@ export class AuthService {
   ): Observable<RespuestaAutenticacionDTO> {
 
     const datos: LoginDTO = {
-
       usuario,
-
       contrasena
     };
 
@@ -58,8 +56,8 @@ export class AuthService {
       }
     );
   }
-
-  static guardarSesion(
+  // skipcq: JS-0105
+  guardarSesion(
     respuesta: RespuestaAutenticacionDTO
   ): void {
 
@@ -104,15 +102,15 @@ export class AuthService {
       localStorage.removeItem('fotoPerfil');
     }
   }
-
-  static obtenerToken(): string | null {
+  // skipcq: JS-0105
+  obtenerToken(): string | null {
 
     return localStorage.getItem('token');
   }
-// skipcq: JS-0105
+
   estaLogueado(): boolean {
 
-    return AuthService.obtenerToken() !== null;
+    return this.obtenerToken() != null;
   }
 
   cerrarSesion(): Observable<string> {
@@ -126,16 +124,16 @@ export class AuthService {
     ).pipe(
       catchError(() =>
         of(
-          'Sesion cerrada localmente'
+          'Sesión cerrada localmente'
         )
       ),
       finalize(() => {
-        AuthService.limpiarSesionLocal();
+        this.limpiarSesionLocal();
       })
     );
   }
-
-  private static limpiarSesionLocal(): void {
+  // skipcq: JS-0105
+  private limpiarSesionLocal(): void {
 
     localStorage.removeItem('token');
     localStorage.removeItem('tipoToken');

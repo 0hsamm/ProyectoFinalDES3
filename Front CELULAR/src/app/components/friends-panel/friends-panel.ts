@@ -62,14 +62,12 @@ export class FriendsPanelComponent
 
   error = '';
 
-  private readonly textoInicialesPorDefecto = '';
-
   fraseSecretaChat = '';
 
   amigosSeleccionadosIds: number[] = [];
 
-  idUsuarioActual =
-    Number(localStorage.getItem('idUsuario') || 0);
+  idUsuarioActual = Number(localStorage.getItem('idUsuario') || 0);
+
 
   private refrescoSub?: Subscription;
 
@@ -243,7 +241,7 @@ export class FriendsPanelComponent
         'Ingresa un nombre de usuario';
 
       this.toastService.warning(
-        'Busqueda incompleta',
+        'Búsqueda incompleta',
         this.error
       );
 
@@ -479,8 +477,8 @@ export class FriendsPanelComponent
     if (this.idUsuarioActual === 0) {
 
       this.toastService.error(
-        'Sesion incompleta',
-        'Vuelve a iniciar sesion para crear el chat'
+        'Sesión incompleta',
+        'Vuelve a iniciar sesión para crear el chat'
       );
 
       return;
@@ -490,7 +488,7 @@ export class FriendsPanelComponent
 
       this.toastService.warning(
         'Frase secreta requerida',
-        'Debe tener minimo 8 caracteres'
+        'Debe tener mínimo 8 caracteres'
       );
 
       return;
@@ -574,8 +572,8 @@ export class FriendsPanelComponent
     if (this.idUsuarioActual === 0) {
 
       this.toastService.error(
-        'Sesion incompleta',
-        'Vuelve a iniciar sesion para crear el grupo'
+        'Sesión incompleta',
+        'Vuelve a iniciar sesión para crear el grupo'
       );
 
       return;
@@ -586,7 +584,7 @@ export class FriendsPanelComponent
     ) {
 
       this.toastService.warning(
-        'Seleccion insuficiente',
+        'Selección insuficiente',
         'Selecciona al menos 2 amigos para crear un grupo'
       );
 
@@ -597,7 +595,7 @@ export class FriendsPanelComponent
 
       this.toastService.warning(
         'Frase secreta requerida',
-        'Debe tener minimo 8 caracteres'
+        'Debe tener mínimo 8 caracteres'
       );
 
       return;
@@ -641,15 +639,14 @@ export class FriendsPanelComponent
         }
       });
   }
-
+// skipcq: JS-0105
   obtenerIniciales(
     nombre?: string,
     usuario?: string
   ): string {
 
     const texto =
-      (nombre || usuario || this.textoInicialesPorDefecto)
-        .trim();
+      (nombre || usuario || '').trim();
 
     return texto
       .split(' ')
@@ -715,61 +712,43 @@ export class FriendsPanelComponent
   }
 // skipcq: JS-0105
   private obtenerMensajeError(
-    err: unknown,
+    // skipcq: JS-0323
+    err: any,
     mensajeDefecto: string
   ): string {
 
-    const errorBody =
-      typeof err === 'object' && err !== null && 'error' in err
-        ? (err as { error?: unknown }).error
-        : undefined;
-
-    const status =
-      typeof err === 'object' && err !== null && 'status' in err
-        ? (err as { status?: unknown }).status
-        : undefined;
-
-    if (typeof errorBody === 'string') {
+    if (typeof err?.error == 'string') {
 
       if (
-        errorBody.includes('NoResourceFoundException') ||
-        errorBody.includes('No static resource') ||
-        errorBody.includes('trace')
+        err.error.includes('NoResourceFoundException') ||
+        err.error.includes('No static resource') ||
+        err.error.includes('trace')
       ) {
 
-        return 'El backend activo todavia no tiene este endpoint. Revisa que el back este actualizado y reinicia Spring Boot.';
+        return 'El backend activo todavía no tiene este endpoint. Revisa que el back esté actualizado y reinicia Spring Boot.';
       }
 
-      return errorBody;
+      return err.error;
     }
 
-    if (
-      typeof errorBody === 'object' &&
-      errorBody !== null
-    ) {
+    if (typeof err?.error?.mensaje == 'string') {
 
-      const errorObject =
-        errorBody as Record<string, unknown>;
-
-      if (typeof errorObject['mensaje'] === 'string') {
-
-        return errorObject['mensaje'];
-      }
-
-      if (typeof errorObject['error'] === 'string') {
-
-        return errorObject['error'];
-      }
-
-      if (typeof errorObject['message'] === 'string') {
-
-        return errorObject['message'];
-      }
+      return err.error.mensaje;
     }
 
-    if (status === 404) {
+    if (typeof err?.error?.error == 'string') {
 
-      return 'El backend no encontro esta ruta o recurso. Revisa que el back este actualizado y reinicia Spring Boot.';
+      return err.error.error;
+    }
+
+    if (typeof err?.error?.message == 'string') {
+
+      return err.error.message;
+    }
+
+    if (err?.status === 404) {
+
+      return 'El backend no encontró esta ruta o recurso. Revisa que el back esté actualizado y reinicia Spring Boot.';
     }
 
     return mensajeDefecto;

@@ -1,7 +1,8 @@
 .main-layout {
   display: grid;
   grid-template-columns: 85px 340px minmax(0, 1fr) 320px;
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100svh;
   overflow: hidden;
   background:
     linear-gradient(115deg, rgba(34, 211, 238, 0.13), transparent 34%),
@@ -19,6 +20,24 @@
 .panel-pane {
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
+}
+
+.chat-list-pane,
+.chat-window-pane,
+.chat-info-pane,
+.panel-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-list-pane > app-chat-list,
+.chat-window-pane > app-chat-window,
+.chat-info-pane > app-chat-info,
+.panel-pane > * {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .panel-pane {
@@ -27,6 +46,20 @@
 
 .mobile-toolbar {
   display: none;
+  flex: 0 0 auto;
+}
+
+@media (min-width: 761px) {
+  .chat-list-pane,
+  .chat-window-pane,
+  .chat-info-pane,
+  .panel-pane {
+    display: flex !important;
+  }
+
+  .mobile-toolbar {
+    display: none !important;
+  }
 }
 
 @media (max-width: 1180px) {
@@ -59,18 +92,13 @@
     grid-row: 1;
     grid-column: 1;
     display: none;
-    min-height: 0;
   }
 
   .main-layout.mobile-list .chat-list-pane,
   .main-layout.mobile-chat .chat-window-pane,
   .main-layout.mobile-detail .chat-info-pane,
   .main-layout.single-panel .panel-pane {
-    display: block;
-  }
-
-  .main-layout.single-panel .panel-pane {
-    overflow: auto;
+    display: flex;
   }
 
   .mobile-toolbar {

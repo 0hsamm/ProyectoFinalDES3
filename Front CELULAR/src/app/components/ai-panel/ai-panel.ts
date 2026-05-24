@@ -136,41 +136,11 @@ export class AiPanelComponent
   }
 
   private static obtenerMensajeError(err: unknown): string {
-
-    const errorBody =
-      typeof err === 'object' && err !== null && 'error' in err
-        ? (err as { error?: unknown }).error
-        : undefined;
-
-    if (typeof errorBody === 'string') {
-
-      return errorBody;
-    }
-
-    if (
-      typeof errorBody === 'object' &&
-      errorBody !== null
-    ) {
-
-      const errorObject =
-        errorBody as Record<string, unknown>;
-
-      if (typeof errorObject['error'] === 'string') {
-
-        return errorObject['error'];
-      }
-
-      if (typeof errorObject['mensaje'] === 'string') {
-
-        return errorObject['mensaje'];
-      }
-
-      if (typeof errorObject['message'] === 'string') {
-
-        return errorObject['message'];
-      }
-    }
-
-    return 'Revisa la configuracion de GEMINI_API_KEY en el backend';
+    const error = err as Record<string, unknown>;
+    if (typeof (error?.['error'] as Record<string, unknown>)?.['error'] === 'string') return (error['error'] as Record<string, unknown>)['error'] as string;
+    if (typeof (error?.['error'] as Record<string, unknown>)?.['mensaje'] === 'string') return (error['error'] as Record<string, unknown>)['mensaje'] as string;
+    if (typeof (error?.['error'] as Record<string, unknown>)?.['message'] === 'string') return (error['error'] as Record<string, unknown>)['message'] as string;
+    if (typeof error?.['error'] === 'string') return error['error'] as string;
+    return 'Revisa la configuración de GEMINI_API_KEY en el backend';
   }
 }

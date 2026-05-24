@@ -209,7 +209,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     const confirmar =
       // skipcq: JS-0052
       window.confirm(
-        'Eliminar esta conversacion de tu lista? Volvera a aparecer si alguien envia un mensaje nuevo.'
+        '¿Eliminar esta conversación de tu lista? Volverá a aparecer si alguien envía un mensaje nuevo.'
       );
 
     if (!confirmar) {
@@ -238,8 +238,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
           this.eliminandoConversacionId = null;
           this.toastService.success(
-            'Conversacion eliminada',
-            'Se oculto de tu lista'
+            'Conversación eliminada',
+            'Se ocultó de tu lista'
           );
           this.marcarCambio();
 
@@ -258,7 +258,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
             'No se pudo eliminar',
             typeof err.error == 'string'
               ? err.error
-              : 'Intentalo nuevamente'
+              : 'Inténtalo nuevamente'
           );
           this.marcarCambio();
         }

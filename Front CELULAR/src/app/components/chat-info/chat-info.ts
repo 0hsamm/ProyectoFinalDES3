@@ -5,12 +5,9 @@ import {
 
 import { CommonModule } from '@angular/common';
 
-import { Conversacion } from '../../models/conversacion';
+import { Conversacion, Participante} from '../../models/conversacion';
 
-interface ParticipanteDescripcion {
-  sobreMi?: string | null;
-  descripcion?: string | null;
-}
+
 
 @Component({
   selector: 'app-chat-info',
@@ -22,9 +19,6 @@ interface ParticipanteDescripcion {
   styleUrls: ['./chat-info.css']
 })
 export class ChatInfoComponent {
-
-  private readonly descripcionParticipantePorDefecto =
-    'Sin descripcion';
 
   @Input()
   conversacion: Conversacion | null = null;
@@ -89,21 +83,15 @@ export class ChatInfoComponent {
     }
 
     return this.conversacion?.tipoConversacion === 'GRUPAL'
-      ? 'Conversacion grupal'
-      : 'Sin descripcion disponible';
+      ? 'Conversación grupal'
+      : 'Sin descripción disponible';
   }
 
+// skipcq: JS-0105
   obtenerDescripcionParticipante(
-    participante: ParticipanteDescripcion | null | undefined
+    participante: Participante
   ): string {
-
-    const descripcion =
-      participante?.sobreMi ||
-      participante?.descripcion ||
-      '';
-
-    return descripcion.trim() !== ''
-      ? descripcion.trim()
-      : this.descripcionParticipantePorDefecto;
+    const descripcion = participante?.sobreMi || participante?.descripcion || '';
+    return descripcion.trim() !== '' ? descripcion.trim() : 'Sin descripción';
   }
 }

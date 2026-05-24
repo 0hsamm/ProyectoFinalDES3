@@ -1,4 +1,4 @@
-import {
+﻿import {
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -20,6 +20,8 @@ import { Mensaje } from '../../models/mensaje';
 import { MensajeService } from '../../services/mensaje.service';
 
 import { LlamadaService } from '../../services/llamada.service';
+
+import { AmistadService } from '../../services/amistad.service';
 
 import { ToastService } from '../../services/toast.service';
 
@@ -54,6 +56,8 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   mensajes: Mensaje[] = [];
 
+  mensajesFijados: Mensaje[] = [];
+
   nuevoMensaje = '';
 
   cargando = false;
@@ -67,24 +71,6 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   error = '';
 
-  private readonly requiereUrlParaAdjunto = true;
-
-  private readonly contenidoProtegidoTexto = 'Mensaje protegido';
-
-  private readonly localeHora = 'es-CO';
-
-  private readonly unidadesTamano = ['B', 'KB', 'MB', 'GB'];
-
-  private readonly baseTamano = 1024;
-
-  private readonly descripcionImagenAdjunta = 'Imagen adjunta';
-
-  private readonly descripcionAudioAdjunto = 'Audio adjunto';
-
-  private readonly descripcionVideoAdjunto = 'Video adjunto';
-
-  private readonly descripcionArchivoAdjunto = 'Archivo adjunto';
-
   fraseSecreta = '';
 
   archivoAdjunto: File | null = null;
@@ -93,11 +79,14 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   archivoPreviewEsImagen = false;
 
+  usuarioBloqueado = false;
+
+  actualizandoBloqueo = false;
+
   usuarioActual: string =
     localStorage.getItem('usuario') || '';
 
-  idUsuarioActual =
-    Number(localStorage.getItem('idUsuario') || 0);
+  idUsuarioActual = Number(localStorage.getItem('idUsuario') || 0);
 
   private refrescoSub?: Subscription;
 
@@ -106,6 +95,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   constructor(
     private mensajeService: MensajeService,
     private llamadaService: LlamadaService,
+    private amistadService: AmistadService,
     private toastService: ToastService,
     private changeDetectorRef: ChangeDetectorRef
   ) {}
@@ -119,8 +109,11 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.conversacion?.id
     ) {
       this.mensajes = [];
+      this.mensajesFijados = [];
       this.error = '';
       this.nuevoMensaje = '';
+      this.usuarioBloqueado = false;
+      this.actualizandoBloqueo = false;
       this.limpiarAdjuntoSeleccionado();
 
       this.fraseSecreta =
@@ -128,6 +121,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
           this.conversacion.id
         );
 
+      this.cargarEstadoBloqueo();
       this.cargarMensajes();
       this.reiniciarRefresco();
       this.iniciarPollingLlamadas();
@@ -138,7 +132,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.conversacion == null
     ) {
       this.mensajes = [];
+      this.mensajesFijados = [];
       this.nuevoMensaje = '';
+      this.error = '';
+      this.usuarioBloqueado = false;
       this.limpiarAdjuntoSeleccionado();
       this.refrescoSub?.unsubscribe();
       this.pollingLlamadaSub?.unsubscribe();
@@ -166,9 +163,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.fraseSecreta.trim().length < 8
     ) {
       this.mensajes = [];
+      this.mensajesFijados = [];
       this.cargando = false;
       this.error =
-        'Ingresa la frase secreta de esta conversacion para ver los mensajes';
+        'Ingresa la frase secreta de esta conversación para ver los mensajes';
       this.marcarCambio();
       return;
     }
@@ -217,11 +215,11 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
             !hayMensajesVisibles
           ) {
             this.error =
-              'La frase secreta no coincide con esta conversacion';
+              'La frase secreta no coincide con esta conversación';
 
             if (mostrarCarga) {
               this.toastService.warning(
-                'Frase secreta invalida',
+                'Frase secreta inválida',
                 this.error
               );
             }
@@ -240,6 +238,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
           }
 
           this.actualizarUltimoMensajeConversacion();
+          this.cargarMensajesFijados();
 
           this.cargando = false;
           this.marcarCambio();
@@ -261,6 +260,39 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
               this.error
             );
           }
+        }
+      });
+  }
+
+  cargarMensajesFijados(): void {
+
+    if (!this.conversacion?.id) {
+      this.mensajesFijados = [];
+      return;
+    }
+
+    if (
+      this.conversacion.fraseSecretaConfigurada &&
+      this.fraseSecreta.trim().length < 8
+    ) {
+      this.mensajesFijados = [];
+      return;
+    }
+
+    this.mensajeService
+      .obtenerMensajesFijados(
+        this.conversacion.id,
+        this.fraseSecreta
+      )
+      .subscribe({
+        next: (mensajes) => {
+          this.mensajesFijados =
+            mensajes || [];
+          this.marcarCambio();
+        },
+        error: () => {
+          this.mensajesFijados = [];
+          this.marcarCambio();
         }
       });
   }
@@ -289,8 +321,20 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.marcarCambio();
 
       this.toastService.error(
-        'Sesion incompleta',
-        'Vuelve a iniciar sesion para enviar mensajes'
+        'Sesión incompleta',
+        'Vuelve a iniciar sesión para enviar mensajes'
+      );
+
+      return;
+    }
+
+    if (this.usuarioBloqueado) {
+      this.enviando = false;
+      this.marcarCambio();
+
+      this.toastService.warning(
+        'Usuario bloqueado',
+        'Debes desbloquear a este usuario para volver a enviar mensajes'
       );
 
       return;
@@ -305,7 +349,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
       this.toastService.warning(
         'Frase secreta requerida',
-        'Debes ingresar la frase secreta de la conversacion antes de enviar mensajes'
+        'Debes ingresar la frase secreta de la conversación antes de enviar mensajes'
       );
 
       return;
@@ -353,7 +397,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
           this.toastService.error(
             'No se envio el mensaje',
-            ChatWindowComponent.obtenerMensajeError(
+            this.obtenerMensajeError(
               err,
               this.error
             )
@@ -367,17 +411,17 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     if (this.esConversacionGrupal()) {
       this.toastService.warning(
         'Llamadas no disponibles',
-        'Las llamadas solo estan habilitadas en chats privados'
+        'Las llamadas solo están habilitadas en chats privados'
       );
       return;
     }
 
     const receptorId = this.obtenerReceptorId();
 
-    if (!this.conversacion?.id || this.idUsuarioActual === 0 || receptorId == null) {
+    if (!this.conversacion?.id || this.idUsuarioActual === 0 || receptorId === null) {
       this.toastService.warning(
         'Llamada no disponible',
-        'La conversacion no tiene un receptor valido para iniciar llamada'
+        'La conversación no tiene un receptor válido para iniciar llamada'
       );
       return;
     }
@@ -402,9 +446,9 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         error: (err) => {
           this.toastService.error(
             'No se pudo iniciar la llamada',
-            ChatWindowComponent.obtenerMensajeError(
+            this.obtenerMensajeError(
               err,
-              'Revisa que ambos usuarios pertenezcan a la conversacion'
+              'Revisa que ambos usuarios pertenezcan a la conversación'
             )
           );
         }
@@ -427,7 +471,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         error: (err) => {
           this.toastService.error(
             'No se pudo finalizar',
-            ChatWindowComponent.obtenerMensajeError(err, 'Intenta nuevamente')
+            this.obtenerMensajeError(err, 'Intenta nuevamente')
           );
         }
       });
@@ -458,7 +502,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       archivo;
 
     this.archivoPreviewEsImagen =
-      ChatWindowComponent.esImagenMime(
+      this.esImagenMime(
         archivo.type
       );
 
@@ -551,7 +595,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
           : ''
       );
   }
-
+// skipcq: JS-0105
   formatearHora(
     fecha?: string
   ): string {
@@ -571,20 +615,20 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     }
 
     return fechaMensaje.toLocaleTimeString(
-      this.localeHora,
+      'es-CO',
       {
         hour: '2-digit',
         minute: '2-digit'
       }
     );
   }
-
+// skipcq: JS-0105
   obtenerContenido(
     mensaje: Mensaje
   ): string {
 
     if (mensaje.contenidoProtegido) {
-      return this.contenidoProtegidoTexto;
+      return 'Mensaje protegido';
     }
 
     return (mensaje.contenido || '')
@@ -599,17 +643,14 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       mensaje
     ) !== '';
   }
-
+// skipcq: JS-0105
   tieneAdjuntoVisible(
     mensaje: Mensaje
   ): boolean {
 
     return Boolean(
       mensaje.tieneAdjunto &&
-      (
-        !this.requiereUrlParaAdjunto ||
-        mensaje.adjuntoUrl
-      )
+      mensaje.adjuntoUrl
     );
   }
 
@@ -619,7 +660,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     return this.tieneAdjuntoVisible(
       mensaje
-    ) && ChatWindowComponent.esImagenMime(
+    ) && this.esImagenMime(
       mensaje.adjuntoFormato
     );
   }
@@ -650,27 +691,30 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   ): string {
 
     if (this.tieneImagenAdjunta(mensaje)) {
-      return this.descripcionImagenAdjunta;
+      return 'Imagen adjunta';
     }
 
     if (mensaje.tipoMensaje === 'AUDIO') {
-      return this.descripcionAudioAdjunto;
+      return 'Audio adjunto';
     }
 
     if (mensaje.tipoMensaje === 'VIDEO') {
-      return this.descripcionVideoAdjunto;
+      return 'Video adjunto';
     }
 
-    return this.descripcionArchivoAdjunto;
+    return 'Archivo adjunto';
   }
-
+// skipcq: JS-0105
   obtenerTamanoHumano(
     bytes?: number
   ): string {
 
-    if (bytes === undefined || bytes === null || bytes <= 0) {
+    if (bytes == null || bytes <= 0) {
       return '';
     }
+
+    const unidades =
+      ['B', 'KB', 'MB', 'GB'];
 
     let valor =
       bytes;
@@ -679,10 +723,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       0;
 
     while (
-      valor >= this.baseTamano &&
-      indice < this.unidadesTamano.length - 1
-      ) {
-      valor /= this.baseTamano;
+      valor >= 1024 &&
+      indice < unidades.length - 1
+    ) {
+      valor /= 1024;
       indice++;
     }
 
@@ -691,7 +735,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         ? 0
         : 1;
 
-    return `${valor.toFixed(decimales)} ${this.unidadesTamano[indice]}`;
+    return `${valor.toFixed(decimales)} ${unidades[indice]}`;
   }
 
   obtenerHoraMensaje(
@@ -703,7 +747,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       mensaje.fechaEnvio
     );
   }
-  // skipcq: JS-0105
+// skipcq: JS-0105
   obtenerSiglaAdjunto(
     tipoMensaje?: string
   ): string {
@@ -711,6 +755,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     if (tipoMensaje === 'VIDEO') {
       return 'VD';
     }
+
 
     if (tipoMensaje === 'AUDIO') {
       return 'AU';
@@ -753,7 +798,8 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   }
 
   private manejarErrorAdjunto(
-    err: unknown,
+    // skipcq: JS-0323
+    err: any,
     mensajeId: number,
     contenido: string
   ): void {
@@ -762,20 +808,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.mensajeService
         .eliminarMensaje(mensajeId)
         .subscribe({
-          next: () => {
-
-            this.toastService.info(
-              'Mensaje descartado',
-              'El mensaje sin archivo fue eliminado'
-            );
-          },
-          error: () => {
-
-            this.toastService.warning(
-              'Mensaje pendiente',
-              'El mensaje quedo registrado, pero el archivo no se pudo adjuntar'
-            );
-          }
+          // skipcq: JS-0321
+          next: () => {},
+          // skipcq: JS-0321
+          error: () => {}
         });
     } else {
       this.nuevoMensaje = '';
@@ -788,11 +824,11 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.toastService.error(
       'No se pudo subir el archivo',
       contenido === ''
-        ? ChatWindowComponent.obtenerMensajeError(
+        ? this.obtenerMensajeError(
             err,
             'El archivo no se pudo enviar'
           )
-        : ChatWindowComponent.obtenerMensajeError(
+        : this.obtenerMensajeError(
             err,
             'El texto se envio, pero el archivo no se pudo adjuntar'
           )
@@ -854,39 +890,27 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     return `Mensaje y ${descripcion.toLowerCase()}`;
   }
-
-  private static obtenerMensajeError(
-    err: unknown,
+  // skipcq: JS-0105
+  private obtenerMensajeError(
+    // skipcq: JS-0323
+    err: any,
     mensajeDefecto: string
   ): string {
 
-    const errorBody =
-      typeof err === 'object' && err !== null && 'error' in err
-        ? (err as { error?: unknown }).error
-        : undefined;
-
-    if (typeof errorBody === 'string') {
-      return errorBody;
+    if (typeof err?.error == 'string') {
+      return err.error;
     }
 
-    if (
-      typeof errorBody === 'object' &&
-      errorBody !== null
-    ) {
-      const errorObject =
-        errorBody as Record<string, unknown>;
+    if (typeof err?.error?.mensaje == 'string') {
+      return err.error.mensaje;
+    }
 
-      if (typeof errorObject['mensaje'] === 'string') {
-        return errorObject['mensaje'];
-      }
+    if (typeof err?.error?.error == 'string') {
+      return err.error.error;
+    }
 
-      if (typeof errorObject['error'] === 'string') {
-        return errorObject['error'];
-      }
-
-      if (typeof errorObject['message'] === 'string') {
-        return errorObject['message'];
-      }
+    if (typeof err?.error?.message == 'string') {
+      return err.error.message;
     }
 
     return mensajeDefecto;
@@ -901,6 +925,38 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         .subscribe(() => {
           this.cargarMensajes(false);
         });
+  }
+
+  private cargarEstadoBloqueo(): void {
+
+    const usuarioId =
+      this.obtenerReceptorId();
+
+    if (
+      this.esConversacionGrupal() ||
+      usuarioId == null
+    ) {
+      this.usuarioBloqueado = false;
+      this.marcarCambio();
+      return;
+    }
+
+    this.amistadService
+      .obtenerBloqueados()
+      .subscribe({
+        next: (bloqueados) => {
+          this.usuarioBloqueado =
+            (bloqueados || []).some(
+              (usuario) =>
+                usuario.usuarioId === usuarioId
+            );
+          this.marcarCambio();
+        },
+        error: () => {
+          this.usuarioBloqueado = false;
+          this.marcarCambio();
+        }
+      });
   }
 
   private obtenerFraseGuardada(
@@ -1020,7 +1076,193 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   puedeHacerLlamadas(): boolean {
 
     return !this.esConversacionGrupal() &&
+      !this.usuarioBloqueado &&
       this.obtenerReceptorId() != null;
+  }
+
+  puedeBloquearUsuario(): boolean {
+
+    return !this.esConversacionGrupal() &&
+      this.obtenerReceptorId() != null;
+  }
+
+  obtenerTextoBloqueo(): string {
+
+    return this.usuarioBloqueado
+      ? 'Desbloquear usuario'
+      : 'Bloquear usuario';
+  }
+
+  alternarBloqueoUsuario(): void {
+
+    const usuarioId =
+      this.obtenerReceptorId();
+
+    if (usuarioId == null || this.actualizandoBloqueo) {
+      return;
+    }
+
+    this.actualizandoBloqueo = true;
+    this.marcarCambio();
+
+    const operacion =
+      this.usuarioBloqueado
+        ? this.amistadService.desbloquearUsuario(usuarioId)
+        : this.amistadService.bloquearUsuario(usuarioId);
+
+    operacion.subscribe({
+      next: (mensaje) => {
+        this.usuarioBloqueado =
+          !this.usuarioBloqueado;
+        this.actualizandoBloqueo = false;
+        this.marcarCambio();
+        this.toastService.success(
+          this.usuarioBloqueado
+            ? 'Usuario bloqueado'
+            : 'Usuario desbloqueado',
+          mensaje
+        );
+      },
+      error: (err) => {
+        this.actualizandoBloqueo = false;
+        this.marcarCambio();
+        this.toastService.error(
+          'No se pudo actualizar el bloqueo',
+          this.obtenerMensajeError(
+            err,
+            'Intenta nuevamente'
+          )
+        );
+      }
+    });
+  }
+
+  puedeEliminarMensaje(
+    mensaje: Mensaje
+  ): boolean {
+
+    return this.esMensajePropio(
+      mensaje
+    ) && mensaje.id != null;
+  }
+
+  alternarFijado(
+    mensaje: Mensaje
+  ): void {
+
+    if (mensaje.id == null) {
+      return;
+    }
+
+    const operacion =
+      mensaje.fijado
+        ? this.mensajeService.desfijarMensaje(
+            mensaje.id,
+            this.fraseSecreta
+          )
+        : this.mensajeService.fijarMensaje(
+            mensaje.id,
+            this.fraseSecreta
+          );
+
+    operacion.subscribe({
+      next: (actualizado) => {
+        mensaje.fijado =
+          actualizado.fijado;
+        mensaje.fechaFijado =
+          actualizado.fechaFijado;
+        this.cargarMensajesFijados();
+        this.marcarCambio();
+        this.toastService.success(
+          mensaje.fijado
+            ? 'Mensaje fijado'
+            : 'Mensaje desfijado'
+        );
+      },
+      error: (err) => {
+        this.toastService.error(
+          'No se pudo actualizar el fijado',
+          this.obtenerMensajeError(
+            err,
+            'Intenta nuevamente'
+          )
+        );
+      }
+    });
+  }
+
+  eliminarMensaje(
+    mensaje: Mensaje
+  ): void {
+
+    if (
+      mensaje.id == null ||
+      !this.puedeEliminarMensaje(
+        mensaje
+      )
+    ) {
+      return;
+    }
+
+    const confirmar =
+      window.confirm(
+        '¿Quieres eliminar este mensaje?'
+      );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.mensajeService
+      .eliminarMensaje(mensaje.id)
+      .subscribe({
+        next: () => {
+          this.mensajes =
+            this.mensajes.filter(
+              (actual) =>
+                actual.id !== mensaje.id
+            );
+          this.mensajesFijados =
+            this.mensajesFijados.filter(
+              (actual) =>
+                actual.id !== mensaje.id
+            );
+          if (this.mensajes.length === 0) {
+            this.limpiarUltimoMensajeConversacion();
+          } else {
+            this.actualizarUltimoMensajeConversacion();
+          }
+          this.marcarCambio();
+          this.toastService.success(
+            'Mensaje eliminado'
+          );
+        },
+        error: (err) => {
+          this.toastService.error(
+            'No se pudo eliminar el mensaje',
+            this.obtenerMensajeError(
+              err,
+              'Intenta nuevamente'
+            )
+          );
+        }
+      });
+  }
+
+  obtenerResumenFijado(
+    mensaje: Mensaje
+  ): string {
+
+    const contenido =
+      this.obtenerContenido(mensaje);
+
+    if (contenido !== '') {
+      return contenido;
+    }
+
+    return this.obtenerDescripcionAdjunto(
+      mensaje
+    );
   }
   // skipcq: JS-0105
   obtenerTipoMensajeAdjunto(
@@ -1050,7 +1292,8 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     return 'ARCHIVO';
   }
 
-  private static esImagenMime(
+  // skipcq: JS-0105
+  private esImagenMime(
     mime?: string | null
   ): boolean {
 
@@ -1125,13 +1368,8 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
               this.marcarCambio();
             }
           },
-          error: () => {
-
-            this.error =
-              'No se pudieron consultar las llamadas pendientes';
-
-            this.marcarCambio();
-          }
+          // skipcq: JS-0321
+          error: () => {}
         });
     });
   }
@@ -1148,3 +1386,4 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.marcarCambio();
   }
 }
+

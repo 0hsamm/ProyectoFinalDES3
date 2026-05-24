@@ -35,11 +35,11 @@
         <i class="pi pi-sparkles"></i>
       </button>
 
-      <button class="menu-item" type="button" title="Configuracion" [class.active]="panelActivo == 'configuracion'" (click)="cambiarPanel('configuracion')">
+      <button class="menu-item" type="button" title="Configuración" [class.active]="panelActivo == 'configuracion'" (click)="cambiarPanel('configuracion')">
         <i class="pi pi-cog"></i>
       </button>
 
-      <button class="menu-item" type="button" title="Cerrar sesion" (click)="solicitarCerrarSesion()">
+      <button class="menu-item" type="button" title="Cerrar sesión" (click)="solicitarCerrarSesion()">
         <i class="pi pi-sign-out"></i>
       </button>
 
@@ -64,11 +64,11 @@
 
 <div class="confirm-backdrop" *ngIf="confirmandoSalida">
   <div class="confirm-dialog">
-    <h3>Cerrar sesion</h3>
-    <p>Tu sesion actual se cerrara en este dispositivo.</p>
+    <h3>Cerrar sesión</h3>
+    <p>Tu sesión actual se cerrará en este dispositivo.</p>
     <div class="confirm-actions">
       <button type="button" class="ghost" (click)="cancelarCerrarSesion()">Cancelar</button>
-      <button type="button" (click)="cerrarSesion()">Cerrar sesion</button>
+      <button type="button" (click)="cerrarSesion()">Cerrar sesión</button>
     </div>
   </div>
 </div>

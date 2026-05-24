@@ -241,7 +241,7 @@ export class FriendsPanelComponent
         'Ingresa un nombre de usuario';
 
       this.toastService.warning(
-        'Busqueda incompleta',
+        'Búsqueda incompleta',
         this.error
       );
 
@@ -477,8 +477,8 @@ export class FriendsPanelComponent
     if (this.idUsuarioActual === 0) {
 
       this.toastService.error(
-        'Sesion incompleta',
-        'Vuelve a iniciar sesion para crear el chat'
+        'Sesión incompleta',
+        'Vuelve a iniciar sesión para crear el chat'
       );
 
       return;
@@ -488,7 +488,7 @@ export class FriendsPanelComponent
 
       this.toastService.warning(
         'Frase secreta requerida',
-        'Debe tener minimo 8 caracteres'
+        'Debe tener mínimo 8 caracteres'
       );
 
       return;
@@ -572,8 +572,8 @@ export class FriendsPanelComponent
     if (this.idUsuarioActual === 0) {
 
       this.toastService.error(
-        'Sesion incompleta',
-        'Vuelve a iniciar sesion para crear el grupo'
+        'Sesión incompleta',
+        'Vuelve a iniciar sesión para crear el grupo'
       );
 
       return;
@@ -584,7 +584,7 @@ export class FriendsPanelComponent
     ) {
 
       this.toastService.warning(
-        'Seleccion insuficiente',
+        'Selección insuficiente',
         'Selecciona al menos 2 amigos para crear un grupo'
       );
 
@@ -595,7 +595,7 @@ export class FriendsPanelComponent
 
       this.toastService.warning(
         'Frase secreta requerida',
-        'Debe tener minimo 8 caracteres'
+        'Debe tener mínimo 8 caracteres'
       );
 
       return;
@@ -725,7 +725,7 @@ export class FriendsPanelComponent
         err.error.includes('trace')
       ) {
 
-        return 'El backend activo todavia no tiene este endpoint. Revisa que el back este actualizado y reinicia Spring Boot.';
+        return 'El backend activo todavía no tiene este endpoint. Revisa que el back esté actualizado y reinicia Spring Boot.';
       }
 
       return err.error;
@@ -748,7 +748,7 @@ export class FriendsPanelComponent
 
     if (err?.status === 404) {
 
-      return 'El backend no encontro esta ruta o recurso. Revisa que el back este actualizado y reinicia Spring Boot.';
+      return 'El backend no encontró esta ruta o recurso. Revisa que el back esté actualizado y reinicia Spring Boot.';
     }
 
     return mensajeDefecto;

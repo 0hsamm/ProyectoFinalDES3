@@ -35,6 +35,9 @@ import co.edu.unbosque.proyectofinal.repository.InteraccionIaRepository;
 @Service
 public class AsistenteIaService {
 
+    private static final String GEMINI_API_KEY_RESPALDO =
+            "AIzaSyBhhL3b7BwmAcY6_xzMhso7MB5_TWYLIXM";
+
     private static final int MAXIMO_CARACTERES_MENSAJE = 4000;
 
     private static final int MAXIMO_CARACTERES_CONTEXTO = 8000;
@@ -304,8 +307,10 @@ public class AsistenteIaService {
     private String consultarGemini(
             String instruccion) {
 
-        if (apiKey == null
-                || apiKey.trim().isEmpty()) {
+        String apiKeyConfigurada =
+                obtenerApiKeyConfigurada();
+
+        if (apiKeyConfigurada.isBlank()) {
 
             throw new IllegalStateException(
                     "GEMINI_API_KEY no esta configurada en el backend");
@@ -317,7 +322,7 @@ public class AsistenteIaService {
                             .uri(URI.create(construirUrlGemini()))
                             .timeout(Duration.ofSeconds(45))
                             .header("Content-Type", "application/json")
-                            .header("x-goog-api-key", apiKey.trim())
+                            .header("x-goog-api-key", apiKeyConfigurada)
                             .POST(HttpRequest.BodyPublishers.ofString(
                                     construirCuerpoGemini(instruccion)))
                             .build();
@@ -373,6 +378,16 @@ public class AsistenteIaService {
                 + "/v1beta/"
                 + modeloLimpio
                 + ":generateContent";
+    }
+
+    private String obtenerApiKeyConfigurada() {
+
+        if (apiKey != null
+                && !apiKey.trim().isEmpty()) {
+            return apiKey.trim();
+        }
+
+        return GEMINI_API_KEY_RESPALDO;
     }
 
     private String construirCuerpoGemini(

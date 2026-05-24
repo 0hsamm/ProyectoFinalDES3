@@ -17,7 +17,7 @@
         </h3>
 
         <p>
-          En linea
+          En línea
         </p>
 
       </div>
@@ -28,7 +28,7 @@
 
       <input
         type="text"
-        placeholder="Buscar conversacion">
+        placeholder="Buscar conversación">
 
     </div>
 
@@ -43,11 +43,8 @@
           of conversaciones
         "
 
-        (click)="
-          seleccionarConversacion(
-            conversacion.id
-          )
-        "
+        (click)="seleccionarConversacion(conversacion.id!)"
+        [class.active]="conversacion.id === conversacionSeleccionada"
 
         [class.active]="
           conversacion.id ==
@@ -64,7 +61,7 @@
 
           <h4>
 
-            Conversacion
+            Conversación
             {{ conversacion.id }}
 
           </h4>
@@ -83,7 +80,7 @@
 
       <h2>
 
-        Conversacion
+        Conversación
         {{ conversacionSeleccionada }}
 
       </h2>
@@ -100,18 +97,9 @@
         ">
 
         <div
-
           class="message"
-
-          [class.sent]="
-            mensaje.remitenteUsuario ==
-            usuarioActual
-          "
-
-          [class.received]="
-            mensaje.remitenteUsuario !=
-            usuarioActual
-          ">
+          [class.sent]="mensaje.remitenteUsuario === usuarioActual"
+          [class.received]="mensaje.remitenteUsuario !== usuarioActual">
 
           {{ mensaje.contenido }}
 

@@ -57,6 +57,12 @@ public class Mensaje {
 
 	@Column(nullable = true)
 	private LocalDateTime horaLeido; //Cuando el destinatario leyó el mensaje
+
+	@Column(nullable = false)
+	private boolean fijado = false;
+
+	@Column(nullable = true)
+	private LocalDateTime fechaFijado;
 	
 	@OneToOne(mappedBy = "mensaje", fetch = FetchType.LAZY)
 	private ArchivoAdjunto adjunto; //los archivos que se pueden adjuntar
@@ -67,7 +73,7 @@ public class Mensaje {
 
 	public Mensaje(Conversacion conversacion, Usuario remitente, TipoMensaje tipoMensaje, String contenidoCifrado,
 			String vi, EstatusMensaje estatusMensaje, LocalDateTime horaEnvio, LocalDateTime horaLlegada,
-			LocalDateTime horaLeido, ArchivoAdjunto adjunto) {
+			LocalDateTime horaLeido, boolean fijado, LocalDateTime fechaFijado, ArchivoAdjunto adjunto) {
 		super();
 		this.conversacion = conversacion;
 		this.remitente = remitente;
@@ -78,6 +84,8 @@ public class Mensaje {
 		this.horaEnvio = horaEnvio;
 		this.horaLlegada = horaLlegada;
 		this.horaLeido = horaLeido;
+		this.fijado = fijado;
+		this.fechaFijado = fechaFijado;
 		this.adjunto = adjunto;
 	}
 
@@ -161,6 +169,22 @@ public class Mensaje {
 		this.horaLeido = horaLeido;
 	}
 
+	public boolean isFijado() {
+		return fijado;
+	}
+
+	public void setFijado(boolean fijado) {
+		this.fijado = fijado;
+	}
+
+	public LocalDateTime getFechaFijado() {
+		return fechaFijado;
+	}
+
+	public void setFechaFijado(LocalDateTime fechaFijado) {
+		this.fechaFijado = fechaFijado;
+	}
+
 	public ArchivoAdjunto getAdjunto() {
 		return adjunto;
 	}
@@ -171,8 +195,8 @@ public class Mensaje {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(adjunto, contenidoCifrado, conversacion, estatusMensaje, horaEnvio, horaLeido, horaLlegada,
-				id, remitente, tipoMensaje, vi);
+		return Objects.hash(adjunto, contenidoCifrado, conversacion, estatusMensaje, fechaFijado, fijado, horaEnvio,
+				horaLeido, horaLlegada, id, remitente, tipoMensaje, vi);
 	}
 
 	@Override
@@ -186,6 +210,7 @@ public class Mensaje {
 		Mensaje other = (Mensaje) obj;
 		return Objects.equals(adjunto, other.adjunto) && Objects.equals(contenidoCifrado, other.contenidoCifrado)
 				&& Objects.equals(conversacion, other.conversacion) && estatusMensaje == other.estatusMensaje
+				&& Objects.equals(fechaFijado, other.fechaFijado) && fijado == other.fijado
 				&& Objects.equals(horaEnvio, other.horaEnvio) && Objects.equals(horaLeido, other.horaLeido)
 				&& Objects.equals(horaLlegada, other.horaLlegada) && id == other.id
 				&& Objects.equals(remitente, other.remitente) && tipoMensaje == other.tipoMensaje
@@ -197,7 +222,7 @@ public class Mensaje {
 		return "Mensaje [id=" + id + ", conversacion=" + conversacion + ", remitente=" + remitente + ", tipoMensaje="
 				+ tipoMensaje + ", contenidoCifrado=" + contenidoCifrado + ", vi=" + vi + ", estatusMensaje="
 				+ estatusMensaje + ", horaEnvio=" + horaEnvio + ", horaLlegada=" + horaLlegada + ", horaLeido="
-				+ horaLeido + ", adjunto=" + adjunto + "]";
+				+ horaLeido + ", fijado=" + fijado + ", fechaFijado=" + fechaFijado + ", adjunto=" + adjunto + "]";
 	}
 	
 	

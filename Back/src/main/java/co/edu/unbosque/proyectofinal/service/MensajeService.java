@@ -20,6 +20,7 @@ import co.edu.unbosque.proyectofinal.entity.ArchivoAdjunto;
 import co.edu.unbosque.proyectofinal.entity.Conversacion;
 import co.edu.unbosque.proyectofinal.entity.Mensaje;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.enums.EstadoSolicitudAmistad;
 import co.edu.unbosque.proyectofinal.enums.EstatusMensaje;
 import co.edu.unbosque.proyectofinal.enums.RolParticipante;
 import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
@@ -31,6 +32,7 @@ import co.edu.unbosque.proyectofinal.repository.ArchivoAdjuntoRepository;
 import co.edu.unbosque.proyectofinal.repository.ConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.MensajeRepository;
 import co.edu.unbosque.proyectofinal.repository.ParticipanteConversacionRepository;
+import co.edu.unbosque.proyectofinal.repository.SolicitudAmistadRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 
 @Service
@@ -51,6 +53,9 @@ public class MensajeService {
 
 	@Autowired
 	private ParticipanteConversacionRepository participanteRepo;
+
+	@Autowired
+	private SolicitudAmistadRepository solicitudAmistadRepo;
 
 	@Autowired
 	private ArchivoAdjuntoRepository archivoAdjuntoRepo;
@@ -74,6 +79,9 @@ public class MensajeService {
 
 	    int permisoParticipante = validarPermisoParticipante(dto, conversacion.get());
 	    if (permisoParticipante != 0) return ResultadoCreacionMensaje.conCodigo(permisoParticipante);
+
+	    int validacionBloqueo = validarBloqueo(dto, conversacion.get());
+	    if (validacionBloqueo != 0) return ResultadoCreacionMensaje.conCodigo(validacionBloqueo);
 
 	    int validacionContenido = validarContenido(dto, conversacion.get());
 	    if (validacionContenido != 0) return ResultadoCreacionMensaje.conCodigo(validacionContenido);
@@ -105,6 +113,34 @@ public class MensajeService {
 	        if (!esAdmin) return 4;
 	    }
 	    return 0;
+	}
+
+	private int validarBloqueo(MensajeDTO dto, Conversacion conversacion) {
+	    if (conversacion.getTipoConversacion() != TipoConversacion.PRIVADA) return 0;
+
+	    Long usuarioDestino = obtenerOtroParticipanteId(conversacion, dto.getRemitenteId());
+	    if (usuarioDestino == null) return 0;
+
+	    boolean hayBloqueo =
+	            solicitudAmistadRepo.existsBySolicitante_IdAndReceptor_IdAndEstado(
+	                    dto.getRemitenteId(),
+	                    usuarioDestino,
+	                    EstadoSolicitudAmistad.BLOQUEADA)
+	            || solicitudAmistadRepo.existsBySolicitante_IdAndReceptor_IdAndEstado(
+	                    usuarioDestino,
+	                    dto.getRemitenteId(),
+	                    EstadoSolicitudAmistad.BLOQUEADA);
+
+	    return hayBloqueo ? 6 : 0;
+	}
+
+	private Long obtenerOtroParticipanteId(Conversacion conversacion, Long usuarioIdActual) {
+	    return conversacion.getParticipante()
+	            .stream()
+	            .map(participante -> participante.getUsuario().getId())
+	            .filter(id -> !id.equals(usuarioIdActual))
+	            .findFirst()
+	            .orElse(null);
 	}
 
 	private int validarContenido(MensajeDTO dto, Conversacion conversacion) {
@@ -273,6 +309,66 @@ public class MensajeService {
 		return dtoList;
 	}
 
+	public List<MensajeDTO> getMensajesFijados(
+			Long conversacionId,
+			Long usuarioId,
+			String fraseSecreta) {
+
+		if (usuarioId != null
+				&& !participanteRepo.existsByConversacion_IdAndUsuario_Id(
+						conversacionId,
+						usuarioId)) {
+			throw new AccessDeniedException(
+					"No tienes acceso a esta conversacion");
+		}
+
+		List<MensajeDTO> dtoList =
+				new ArrayList<>();
+
+		mensajeRepo.findByConversacion_IdAndFijadoTrueOrderByFechaFijadoDesc(
+				conversacionId)
+				.forEach(mensaje ->
+						dtoList.add(
+								mapear(
+										mensaje,
+										fraseSecreta)));
+
+		return dtoList;
+	}
+
+	public MensajeDTO actualizarFijado(
+			Long mensajeId,
+			Long usuarioId,
+			boolean esAdmin,
+			boolean fijado,
+			String fraseSecreta) {
+
+		Mensaje mensaje =
+				mensajeRepo.findById(mensajeId)
+						.orElseThrow(
+								MensajeNoEncontradoException::new);
+
+		if (!esAdmin
+				&& !participanteRepo.existsByConversacion_IdAndUsuario_Id(
+						mensaje.getConversacion().getId(),
+						usuarioId)) {
+			throw new AccessDeniedException(
+					"No tienes permiso para fijar mensajes en esta conversacion");
+		}
+
+		mensaje.setFijado(fijado);
+		mensaje.setFechaFijado(
+				fijado
+						? LocalDateTime.now()
+						: null);
+
+		mensajeRepo.save(mensaje);
+
+		return mapear(
+				mensaje,
+				fraseSecreta);
+	}
+
 	public int deleteById(Long id) {
 
 		return deleteById(id, null, false);
@@ -428,6 +524,10 @@ public class MensajeService {
 				mensaje.getHoraLlegada());
 		dto.setHoraLeido(
 				mensaje.getHoraLeido());
+		dto.setFijado(
+				mensaje.isFijado());
+		dto.setFechaFijado(
+				mensaje.getFechaFijado());
 		dto.setTieneAdjunto(
 				mensaje.getAdjunto() != null);
 		if (adjuntoVisible) {

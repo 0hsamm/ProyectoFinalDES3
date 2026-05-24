@@ -1,4 +1,4 @@
-import {
+﻿import {
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -20,6 +20,8 @@ import { Mensaje } from '../../models/mensaje';
 import { MensajeService } from '../../services/mensaje.service';
 
 import { LlamadaService } from '../../services/llamada.service';
+
+import { AmistadService } from '../../services/amistad.service';
 
 import { ToastService } from '../../services/toast.service';
 
@@ -54,6 +56,8 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   mensajes: Mensaje[] = [];
 
+  mensajesFijados: Mensaje[] = [];
+
   nuevoMensaje = '';
 
   cargando = false;
@@ -75,6 +79,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   archivoPreviewEsImagen = false;
 
+  usuarioBloqueado = false;
+
+  actualizandoBloqueo = false;
+
   usuarioActual: string =
     localStorage.getItem('usuario') || '';
 
@@ -87,6 +95,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   constructor(
     private mensajeService: MensajeService,
     private llamadaService: LlamadaService,
+    private amistadService: AmistadService,
     private toastService: ToastService,
     private changeDetectorRef: ChangeDetectorRef
   ) {}
@@ -100,8 +109,11 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.conversacion?.id
     ) {
       this.mensajes = [];
+      this.mensajesFijados = [];
       this.error = '';
       this.nuevoMensaje = '';
+      this.usuarioBloqueado = false;
+      this.actualizandoBloqueo = false;
       this.limpiarAdjuntoSeleccionado();
 
       this.fraseSecreta =
@@ -109,6 +121,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
           this.conversacion.id
         );
 
+      this.cargarEstadoBloqueo();
       this.cargarMensajes();
       this.reiniciarRefresco();
       this.iniciarPollingLlamadas();
@@ -119,7 +132,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.conversacion == null
     ) {
       this.mensajes = [];
+      this.mensajesFijados = [];
       this.nuevoMensaje = '';
+      this.error = '';
+      this.usuarioBloqueado = false;
       this.limpiarAdjuntoSeleccionado();
       this.refrescoSub?.unsubscribe();
       this.pollingLlamadaSub?.unsubscribe();
@@ -147,9 +163,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.fraseSecreta.trim().length < 8
     ) {
       this.mensajes = [];
+      this.mensajesFijados = [];
       this.cargando = false;
       this.error =
-        'Ingresa la frase secreta de esta conversacion para ver los mensajes';
+        'Ingresa la frase secreta de esta conversación para ver los mensajes';
       this.marcarCambio();
       return;
     }
@@ -198,11 +215,11 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
             !hayMensajesVisibles
           ) {
             this.error =
-              'La frase secreta no coincide con esta conversacion';
+              'La frase secreta no coincide con esta conversación';
 
             if (mostrarCarga) {
               this.toastService.warning(
-                'Frase secreta invalida',
+                'Frase secreta inválida',
                 this.error
               );
             }
@@ -221,6 +238,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
           }
 
           this.actualizarUltimoMensajeConversacion();
+          this.cargarMensajesFijados();
 
           this.cargando = false;
           this.marcarCambio();
@@ -242,6 +260,39 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
               this.error
             );
           }
+        }
+      });
+  }
+
+  cargarMensajesFijados(): void {
+
+    if (!this.conversacion?.id) {
+      this.mensajesFijados = [];
+      return;
+    }
+
+    if (
+      this.conversacion.fraseSecretaConfigurada &&
+      this.fraseSecreta.trim().length < 8
+    ) {
+      this.mensajesFijados = [];
+      return;
+    }
+
+    this.mensajeService
+      .obtenerMensajesFijados(
+        this.conversacion.id,
+        this.fraseSecreta
+      )
+      .subscribe({
+        next: (mensajes) => {
+          this.mensajesFijados =
+            mensajes || [];
+          this.marcarCambio();
+        },
+        error: () => {
+          this.mensajesFijados = [];
+          this.marcarCambio();
         }
       });
   }
@@ -270,8 +321,20 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.marcarCambio();
 
       this.toastService.error(
-        'Sesion incompleta',
-        'Vuelve a iniciar sesion para enviar mensajes'
+        'Sesión incompleta',
+        'Vuelve a iniciar sesión para enviar mensajes'
+      );
+
+      return;
+    }
+
+    if (this.usuarioBloqueado) {
+      this.enviando = false;
+      this.marcarCambio();
+
+      this.toastService.warning(
+        'Usuario bloqueado',
+        'Debes desbloquear a este usuario para volver a enviar mensajes'
       );
 
       return;
@@ -286,7 +349,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
       this.toastService.warning(
         'Frase secreta requerida',
-        'Debes ingresar la frase secreta de la conversacion antes de enviar mensajes'
+        'Debes ingresar la frase secreta de la conversación antes de enviar mensajes'
       );
 
       return;
@@ -348,7 +411,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     if (this.esConversacionGrupal()) {
       this.toastService.warning(
         'Llamadas no disponibles',
-        'Las llamadas solo estan habilitadas en chats privados'
+        'Las llamadas solo están habilitadas en chats privados'
       );
       return;
     }
@@ -358,7 +421,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     if (!this.conversacion?.id || this.idUsuarioActual === 0 || receptorId === null) {
       this.toastService.warning(
         'Llamada no disponible',
-        'La conversacion no tiene un receptor valido para iniciar llamada'
+        'La conversación no tiene un receptor válido para iniciar llamada'
       );
       return;
     }
@@ -385,7 +448,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
             'No se pudo iniciar la llamada',
             this.obtenerMensajeError(
               err,
-              'Revisa que ambos usuarios pertenezcan a la conversacion'
+              'Revisa que ambos usuarios pertenezcan a la conversación'
             )
           );
         }
@@ -864,6 +927,38 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         });
   }
 
+  private cargarEstadoBloqueo(): void {
+
+    const usuarioId =
+      this.obtenerReceptorId();
+
+    if (
+      this.esConversacionGrupal() ||
+      usuarioId == null
+    ) {
+      this.usuarioBloqueado = false;
+      this.marcarCambio();
+      return;
+    }
+
+    this.amistadService
+      .obtenerBloqueados()
+      .subscribe({
+        next: (bloqueados) => {
+          this.usuarioBloqueado =
+            (bloqueados || []).some(
+              (usuario) =>
+                usuario.usuarioId === usuarioId
+            );
+          this.marcarCambio();
+        },
+        error: () => {
+          this.usuarioBloqueado = false;
+          this.marcarCambio();
+        }
+      });
+  }
+
   private obtenerFraseGuardada(
     conversacionId: number
   ): string {
@@ -981,7 +1076,193 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   puedeHacerLlamadas(): boolean {
 
     return !this.esConversacionGrupal() &&
+      !this.usuarioBloqueado &&
       this.obtenerReceptorId() != null;
+  }
+
+  puedeBloquearUsuario(): boolean {
+
+    return !this.esConversacionGrupal() &&
+      this.obtenerReceptorId() != null;
+  }
+
+  obtenerTextoBloqueo(): string {
+
+    return this.usuarioBloqueado
+      ? 'Desbloquear usuario'
+      : 'Bloquear usuario';
+  }
+
+  alternarBloqueoUsuario(): void {
+
+    const usuarioId =
+      this.obtenerReceptorId();
+
+    if (usuarioId == null || this.actualizandoBloqueo) {
+      return;
+    }
+
+    this.actualizandoBloqueo = true;
+    this.marcarCambio();
+
+    const operacion =
+      this.usuarioBloqueado
+        ? this.amistadService.desbloquearUsuario(usuarioId)
+        : this.amistadService.bloquearUsuario(usuarioId);
+
+    operacion.subscribe({
+      next: (mensaje) => {
+        this.usuarioBloqueado =
+          !this.usuarioBloqueado;
+        this.actualizandoBloqueo = false;
+        this.marcarCambio();
+        this.toastService.success(
+          this.usuarioBloqueado
+            ? 'Usuario bloqueado'
+            : 'Usuario desbloqueado',
+          mensaje
+        );
+      },
+      error: (err) => {
+        this.actualizandoBloqueo = false;
+        this.marcarCambio();
+        this.toastService.error(
+          'No se pudo actualizar el bloqueo',
+          this.obtenerMensajeError(
+            err,
+            'Intenta nuevamente'
+          )
+        );
+      }
+    });
+  }
+
+  puedeEliminarMensaje(
+    mensaje: Mensaje
+  ): boolean {
+
+    return this.esMensajePropio(
+      mensaje
+    ) && mensaje.id != null;
+  }
+
+  alternarFijado(
+    mensaje: Mensaje
+  ): void {
+
+    if (mensaje.id == null) {
+      return;
+    }
+
+    const operacion =
+      mensaje.fijado
+        ? this.mensajeService.desfijarMensaje(
+            mensaje.id,
+            this.fraseSecreta
+          )
+        : this.mensajeService.fijarMensaje(
+            mensaje.id,
+            this.fraseSecreta
+          );
+
+    operacion.subscribe({
+      next: (actualizado) => {
+        mensaje.fijado =
+          actualizado.fijado;
+        mensaje.fechaFijado =
+          actualizado.fechaFijado;
+        this.cargarMensajesFijados();
+        this.marcarCambio();
+        this.toastService.success(
+          mensaje.fijado
+            ? 'Mensaje fijado'
+            : 'Mensaje desfijado'
+        );
+      },
+      error: (err) => {
+        this.toastService.error(
+          'No se pudo actualizar el fijado',
+          this.obtenerMensajeError(
+            err,
+            'Intenta nuevamente'
+          )
+        );
+      }
+    });
+  }
+
+  eliminarMensaje(
+    mensaje: Mensaje
+  ): void {
+
+    if (
+      mensaje.id == null ||
+      !this.puedeEliminarMensaje(
+        mensaje
+      )
+    ) {
+      return;
+    }
+
+    const confirmar =
+      window.confirm(
+        '¿Quieres eliminar este mensaje?'
+      );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.mensajeService
+      .eliminarMensaje(mensaje.id)
+      .subscribe({
+        next: () => {
+          this.mensajes =
+            this.mensajes.filter(
+              (actual) =>
+                actual.id !== mensaje.id
+            );
+          this.mensajesFijados =
+            this.mensajesFijados.filter(
+              (actual) =>
+                actual.id !== mensaje.id
+            );
+          if (this.mensajes.length === 0) {
+            this.limpiarUltimoMensajeConversacion();
+          } else {
+            this.actualizarUltimoMensajeConversacion();
+          }
+          this.marcarCambio();
+          this.toastService.success(
+            'Mensaje eliminado'
+          );
+        },
+        error: (err) => {
+          this.toastService.error(
+            'No se pudo eliminar el mensaje',
+            this.obtenerMensajeError(
+              err,
+              'Intenta nuevamente'
+            )
+          );
+        }
+      });
+  }
+
+  obtenerResumenFijado(
+    mensaje: Mensaje
+  ): string {
+
+    const contenido =
+      this.obtenerContenido(mensaje);
+
+    if (contenido !== '') {
+      return contenido;
+    }
+
+    return this.obtenerDescripcionAdjunto(
+      mensaje
+    );
   }
   // skipcq: JS-0105
   obtenerTipoMensajeAdjunto(
@@ -1105,3 +1386,4 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.marcarCambio();
   }
 }
+

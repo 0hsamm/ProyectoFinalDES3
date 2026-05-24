@@ -141,6 +141,6 @@ export class AiPanelComponent
     if (typeof (error?.['error'] as Record<string, unknown>)?.['mensaje'] === 'string') return (error['error'] as Record<string, unknown>)['mensaje'] as string;
     if (typeof (error?.['error'] as Record<string, unknown>)?.['message'] === 'string') return (error['error'] as Record<string, unknown>)['message'] as string;
     if (typeof error?.['error'] === 'string') return error['error'] as string;
-    return 'Revisa la configuracion de GEMINI_API_KEY en el backend';
+    return 'Revisa la configuración de GEMINI_API_KEY en el backend';
   }
 }

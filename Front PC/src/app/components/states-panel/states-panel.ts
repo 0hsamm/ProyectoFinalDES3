@@ -193,7 +193,7 @@ export class StatesPanelComponent
     if (!esImagen && !esVideo) {
 
       this.toastService.warning(
-        'Archivo no valido',
+        'Archivo no válido',
         'Selecciona una imagen o un video'
       );
 
@@ -264,10 +264,10 @@ export class StatesPanelComponent
         this.marcarCambio();
 
         this.toastService.error(
-          'No se publico el estado',
+        'No se publicó el estado',
           this.obtenerMensajeError(
             err,
-            'Revisa la conexion con el backend'
+            'Revisa la conexión con el backend'
           )
         );
       }
@@ -373,7 +373,7 @@ export class StatesPanelComponent
     }
     // skipcq: JS-0052
     const confirmar = window.confirm(
-        'Quieres eliminar este estado? Esta accion no se puede deshacer.'
+        '¿Quieres eliminar este estado? Esta acción no se puede deshacer.'
       );
 
     if (!confirmar) {

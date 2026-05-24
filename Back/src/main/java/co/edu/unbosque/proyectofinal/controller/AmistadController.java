@@ -348,6 +348,22 @@ public class AmistadController {
                 HttpStatus.OK);
     }
 
+    @GetMapping("/bloqueados")
+    public ResponseEntity<List<AmistadDTO>> obtenerBloqueados(
+            HttpServletRequest request) {
+
+        String correo = extraerCorreo(request);
+
+        if (correo == null) {
+            return new ResponseEntity<>(
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        return new ResponseEntity<>(
+                solicitudAmistadService.obtenerBloqueados(correo),
+                HttpStatus.OK);
+    }
+
     @DeleteMapping("/{usuarioId}")
     public ResponseEntity<String> eliminarAmistad(
             @PathVariable Long usuarioId,
@@ -397,6 +413,116 @@ public class AmistadController {
         default:
             return new ResponseEntity<>(
                     "Error al eliminar la amistad",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/{usuarioId}/bloquear")
+    public ResponseEntity<String> bloquearUsuario(
+            @PathVariable Long usuarioId,
+            HttpServletRequest request) {
+
+        String correo = extraerCorreo(request);
+
+        if (correo == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        int estado =
+                solicitudAmistadService.bloquearUsuario(
+                        correo,
+                        usuarioId);
+
+        if (estado == 0) {
+            auditoriaService.registrarConCorreo(
+                    correo,
+                    "BLOQUEAR_USUARIO",
+                    "AMISTADES",
+                    "Usuario bloqueado: " + usuarioId,
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"),
+                    null,
+                    null,
+                    null,
+                    true);
+
+            return ResponseEntity.ok(
+                    "Usuario bloqueado correctamente");
+        }
+
+        switch (estado) {
+        case 1:
+            return new ResponseEntity<>(
+                    "Usuario autenticado no encontrado",
+                    HttpStatus.NOT_FOUND);
+        case 2:
+            return new ResponseEntity<>(
+                    "El usuario no existe",
+                    HttpStatus.NOT_FOUND);
+        case 3:
+            return new ResponseEntity<>(
+                    "No puedes bloquear ese usuario",
+                    HttpStatus.BAD_REQUEST);
+        case 4:
+            return new ResponseEntity<>(
+                    "Ese usuario ya estaba bloqueado",
+                    HttpStatus.BAD_REQUEST);
+        default:
+            return new ResponseEntity<>(
+                    "Error al bloquear al usuario",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/{usuarioId}/bloquear")
+    public ResponseEntity<String> desbloquearUsuario(
+            @PathVariable Long usuarioId,
+            HttpServletRequest request) {
+
+        String correo = extraerCorreo(request);
+
+        if (correo == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        int estado =
+                solicitudAmistadService.desbloquearUsuario(
+                        correo,
+                        usuarioId);
+
+        if (estado == 0) {
+            auditoriaService.registrarConCorreo(
+                    correo,
+                    "DESBLOQUEAR_USUARIO",
+                    "AMISTADES",
+                    "Usuario desbloqueado: " + usuarioId,
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"),
+                    null,
+                    null,
+                    null,
+                    true);
+
+            return ResponseEntity.ok(
+                    "Usuario desbloqueado correctamente");
+        }
+
+        switch (estado) {
+        case 1:
+            return new ResponseEntity<>(
+                    "Usuario autenticado no encontrado",
+                    HttpStatus.NOT_FOUND);
+        case 2:
+            return new ResponseEntity<>(
+                    "Ese usuario no estaba bloqueado",
+                    HttpStatus.NOT_FOUND);
+        default:
+            return new ResponseEntity<>(
+                    "Error al desbloquear al usuario",
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

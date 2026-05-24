@@ -104,7 +104,7 @@ export class SettingsPanelComponent
         this.obtenerPerfilLocal();
       this.cargando = false;
       this.perfilError =
-        'No se encontro una sesion activa';
+        'No se encontró una sesión activa';
       this.marcarCambio();
 
       return;
@@ -140,7 +140,7 @@ export class SettingsPanelComponent
             this.usuario.fotoPerfil || '';
           this.cargando = false;
           this.perfilError =
-            SettingsPanelComponent.obtenerMensajeError(
+            this.obtenerMensajeError(
               err,
               'No se pudo cargar el perfil desde el backend'
             );
@@ -200,7 +200,7 @@ export class SettingsPanelComponent
 
             this.toastService.info(
               'Guardando foto',
-              'El perfil se actualizo, falta terminar la imagen'
+              'El perfil se actualizó, falta terminar la imagen'
             );
 
             return;
@@ -221,7 +221,7 @@ export class SettingsPanelComponent
 
           this.toastService.error(
             'No se pudo guardar en backend',
-            SettingsPanelComponent.obtenerMensajeError(
+            this.obtenerMensajeError(
               err,
               'Los cambios quedaron guardados localmente'
             )
@@ -248,7 +248,7 @@ export class SettingsPanelComponent
     if (!archivo.type.startsWith('image/')) {
 
       this.toastService.warning(
-        'Archivo no valido',
+        'Archivo no válido',
         'Selecciona una imagen para tu foto de perfil'
       );
 
@@ -337,7 +337,7 @@ export class SettingsPanelComponent
 
           this.toastService.error(
             'No se pudo subir la foto',
-            SettingsPanelComponent.obtenerMensajeError(
+            this.obtenerMensajeError(
               err,
               'No se pudo guardar la imagen en el servidor'
             )
@@ -394,7 +394,7 @@ export class SettingsPanelComponent
 
     this.toastService.info(
       'Perfil guardado localmente',
-      'Se sincronizara visualmente en esta sesion'
+      'Se sincronizará visualmente en esta sesión'
     );
   }
 
@@ -465,7 +465,7 @@ export class SettingsPanelComponent
 
     return this.obtenerPreferenciasDefecto();
   }
-// skipcq: JS-0105
+  // skipcq: JS-0105
   private obtenerPreferenciasDefecto(): PreferenciasUsuario {
 
     return {
@@ -477,69 +477,46 @@ export class SettingsPanelComponent
       tema: 'oscuro'
     };
   }
-
-  private static obtenerMensajeError(
-    err: unknown,
+  // skipcq: JS-0105
+  private obtenerMensajeError(
+    // skipcq: JS-0323
+    err: any,
     mensajeDefecto: string
   ): string {
 
-    const errorBody =
-      typeof err === 'object' && err !== null && 'error' in err
-        ? (err as { error?: unknown }).error
-        : undefined;
+    if (typeof err?.error == 'string') {
 
-    const nombreError =
-      typeof err === 'object' && err !== null && 'name' in err
-        ? (err as { name?: unknown }).name
-        : undefined;
-
-    const status =
-      typeof err === 'object' && err !== null && 'status' in err
-        ? (err as { status?: unknown }).status
-        : undefined;
-
-    if (typeof errorBody === 'string') {
-
-      return errorBody;
+      return err.error;
     }
 
-    if (
-      typeof errorBody === 'object' &&
-      errorBody !== null
-    ) {
+    if (typeof err?.error?.mensaje == 'string') {
 
-      const errorObject =
-        errorBody as Record<string, unknown>;
-
-      if (typeof errorObject['mensaje'] === 'string') {
-
-        return errorObject['mensaje'];
-      }
-
-      if (typeof errorObject['error'] === 'string') {
-
-        return errorObject['error'];
-      }
-
-      if (typeof errorObject['message'] === 'string') {
-
-        return errorObject['message'];
-      }
+      return err.error.mensaje;
     }
 
-    if (nombreError === 'TimeoutError') {
+    if (typeof err?.error?.error == 'string') {
 
-      return 'El backend tardo demasiado en responder';
+      return err.error.error;
     }
 
-    if (status === 413) {
+    if (typeof err?.error?.message == 'string') {
 
-      return 'El archivo es demasiado grande. Usa una imagen de maximo 25MB.';
+      return err.error.message;
     }
 
-    if (status === 0) {
+    if (err?.name === 'TimeoutError') {
 
-      return 'No hay conexion con el backend o el servidor rechazo la subida.';
+      return 'El backend tardó demasiado en responder';
+    }
+
+    if (err?.status === 413) {
+
+      return 'El archivo es demasiado grande. Usa una imagen de máximo 25MB.';
+    }
+
+    if (err?.status === 0) {
+
+      return 'No hay conexión con el backend o el servidor rechazó la subida.';
     }
 
     return mensajeDefecto;

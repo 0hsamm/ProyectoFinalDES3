@@ -24,8 +24,7 @@ import { Mensaje }
 
 export class MensajeService {
 
-  private apiUrl =
-    `${environment.apiUrl}/mensajes`;
+  private apiUrl = `${environment.apiUrl}/mensajes`;
 
   constructor(
     private http: HttpClient
@@ -56,6 +55,30 @@ export class MensajeService {
 
       { params }
 
+    );
+  }
+
+  obtenerMensajesFijados(
+    id: number,
+    fraseSecreta?: string
+  ): Observable<Mensaje[]> {
+
+    let params =
+      new HttpParams();
+
+    if (
+      fraseSecreta != null &&
+      fraseSecreta.trim() !== ''
+    ) {
+      params = params.set(
+        'fraseSecreta',
+        fraseSecreta
+      );
+    }
+
+    return this.http.get<Mensaje[]>(
+      `${this.apiUrl}/conversacion/${id}/fijados`,
+      { params }
     );
   }
 
@@ -139,8 +162,57 @@ export class MensajeService {
     mensajeId: number
   ): Observable<unknown> {
 
-    return this.http.delete<unknown>(
+    return this.http.delete(
       `${this.apiUrl}/${mensajeId}`
+    );
+  }
+
+  fijarMensaje(
+    mensajeId: number,
+    fraseSecreta?: string
+  ): Observable<Mensaje> {
+
+    let params =
+      new HttpParams();
+
+    if (
+      fraseSecreta != null &&
+      fraseSecreta.trim() !== ''
+    ) {
+      params = params.set(
+        'fraseSecreta',
+        fraseSecreta
+      );
+    }
+
+    return this.http.post<Mensaje>(
+      `${this.apiUrl}/${mensajeId}/fijar`,
+      null,
+      { params }
+    );
+  }
+
+  desfijarMensaje(
+    mensajeId: number,
+    fraseSecreta?: string
+  ): Observable<Mensaje> {
+
+    let params =
+      new HttpParams();
+
+    if (
+      fraseSecreta != null &&
+      fraseSecreta.trim() !== ''
+    ) {
+      params = params.set(
+        'fraseSecreta',
+        fraseSecreta
+      );
+    }
+
+    return this.http.delete<Mensaje>(
+      `${this.apiUrl}/${mensajeId}/fijar`,
+      { params }
     );
   }
 

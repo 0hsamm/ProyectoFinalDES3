@@ -7,10 +7,25 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
+
+    private static final String MAIL_HOST_RESPALDO =
+            "smtp.gmail.com";
+
+    private static final int MAIL_PORT_RESPALDO = 587;
+
+    private static final String MAIL_USERNAME_RESPALDO =
+            "reload.proyecto.des3@gmail.com";
+
+    private static final String MAIL_PASSWORD_RESPALDO =
+            "wdcl ckjn wbkl sbag";
+
+    private static final String MAIL_FROM_RESPALDO =
+            "reload.proyecto.des3@gmail.com";
 
     private final JavaMailSender mailSender;
 
@@ -46,18 +61,35 @@ public class EmailService {
             String allowedOriginsRaw) {
 
         this.mailSender = mailSender;
-        this.mailHost = mailHost;
-        this.mailPort = mailPort;
-        this.mailUsername = mailUsername;
-        this.mailPassword = mailPassword;
+        this.mailHost =
+                resolverTexto(
+                        mailHost,
+                        MAIL_HOST_RESPALDO);
+        this.mailPort =
+                mailPort > 0
+                        ? mailPort
+                        : MAIL_PORT_RESPALDO;
+        this.mailUsername =
+                resolverTexto(
+                        mailUsername,
+                        MAIL_USERNAME_RESPALDO);
+        this.mailPassword =
+                resolverTexto(
+                        mailPassword,
+                        MAIL_PASSWORD_RESPALDO);
         this.frontendUrl = frontendUrl;
-        this.mailFrom = mailFrom;
+        this.mailFrom =
+                resolverTexto(
+                        mailFrom,
+                        MAIL_FROM_RESPALDO);
         this.origenesFrontPermitidos =
                 Arrays.stream(
                                 allowedOriginsRaw.split(","))
                         .map(String::trim)
                         .filter(origin -> !origin.isBlank())
                         .collect(Collectors.toSet());
+
+        configurarMailSender();
     }
 
     public void enviarCorreoVerificacion(
@@ -145,6 +177,39 @@ public class EmailService {
                             + propiedad
                             + " para el envio de correos.");
         }
+    }
+
+    private void configurarMailSender() {
+
+        if (!(mailSender instanceof JavaMailSenderImpl javaMailSender)) {
+            return;
+        }
+
+        javaMailSender.setHost(mailHost);
+        javaMailSender.setPort(mailPort);
+        javaMailSender.setUsername(mailUsername);
+        javaMailSender.setPassword(mailPassword);
+        javaMailSender.getJavaMailProperties().put(
+                "mail.smtp.auth",
+                "true");
+        javaMailSender.getJavaMailProperties().put(
+                "mail.smtp.starttls.enable",
+                "true");
+        javaMailSender.getJavaMailProperties().put(
+                "mail.smtp.starttls.required",
+                "true");
+    }
+
+    private String resolverTexto(
+            String valor,
+            String respaldo) {
+
+        if (valor != null
+                && !valor.isBlank()) {
+            return valor.trim();
+        }
+
+        return respaldo;
     }
 
     private String normalizarFrontendUrl() {

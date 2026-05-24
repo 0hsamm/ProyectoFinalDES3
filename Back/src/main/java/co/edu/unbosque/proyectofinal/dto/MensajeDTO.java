@@ -27,6 +27,8 @@ public class MensajeDTO {
     private String adjuntoNombreOriginal;
     private String adjuntoFormato;
     private Long adjuntoTamano;
+    private Boolean fijado = false;
+    private LocalDateTime fechaFijado;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String fraseSecreta;
@@ -199,10 +201,26 @@ public class MensajeDTO {
 		this.adjuntoTamano = adjuntoTamano;
 	}
 
+	public boolean isFijado() {
+		return Boolean.TRUE.equals(fijado);
+	}
+
+	public void setFijado(Boolean fijado) {
+		this.fijado = fijado;
+	}
+
+	public LocalDateTime getFechaFijado() {
+		return fechaFijado;
+	}
+
+	public void setFechaFijado(LocalDateTime fechaFijado) {
+		this.fechaFijado = fechaFijado;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(adjuntoFormato, adjuntoNombreOriginal, adjuntoTamano, adjuntoUrl, contenido, contenidoProtegido,
-				conversacionId, estatusMensaje, horaEnvio, horaLeido, horaLlegada, id, remitenteId,
+				conversacionId, estatusMensaje, fechaFijado, fijado, horaEnvio, horaLeido, horaLlegada, id, remitenteId,
 				remitenteNombre, remitenteUsuario, tieneAdjunto, tipoMensaje);
 	}
 
@@ -214,6 +232,8 @@ public class MensajeDTO {
 	    return Objects.equals(id, other.id)
 	        && Objects.equals(conversacionId, other.conversacionId)
 	        && Objects.equals(remitenteId, other.remitenteId)
+	        && Objects.equals(fijado, other.fijado)
+	        && Objects.equals(fechaFijado, other.fechaFijado)
 	        && tipoMensaje == other.tipoMensaje
 	        && estatusMensaje == other.estatusMensaje
 	        && Objects.equals(contenido, other.contenido)
@@ -230,7 +250,8 @@ public class MensajeDTO {
 				+ ", tieneAdjunto=" + tieneAdjunto + ", contenidoProtegido=" + contenidoProtegido
 				+ ", remitenteUsuario=" + remitenteUsuario + ", remitenteNombre=" + remitenteNombre
 				+ ", adjuntoUrl=" + adjuntoUrl + ", adjuntoNombreOriginal=" + adjuntoNombreOriginal
-				+ ", adjuntoFormato=" + adjuntoFormato + ", adjuntoTamano=" + adjuntoTamano + "]";
+				+ ", adjuntoFormato=" + adjuntoFormato + ", adjuntoTamano=" + adjuntoTamano
+				+ ", fijado=" + fijado + ", fechaFijado=" + fechaFijado + "]";
 	}
     
     

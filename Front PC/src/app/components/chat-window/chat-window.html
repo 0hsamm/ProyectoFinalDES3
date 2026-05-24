@@ -1,4 +1,4 @@
-<div class="chat-window">
+﻿<div class="chat-window">
 
   <ng-container *ngIf="conversacion; else sinConversacion">
 
@@ -24,7 +24,7 @@
           </div>
 
           <div class="status">
-            Conversacion activa
+            Conversación activa
           </div>
 
         </div>
@@ -76,6 +76,18 @@
           <span class="icon icon-refresh"></span>
         </button>
 
+        <button
+          class="action-btn warn-btn"
+          type="button"
+          *ngIf="puedeBloquearUsuario()"
+          [title]="obtenerTextoBloqueo()"
+          [attr.aria-label]="obtenerTextoBloqueo()"
+          [disabled]="actualizandoBloqueo"
+          (click)="alternarBloqueoUsuario()"
+        >
+          <span class="icon icon-ban"></span>
+        </button>
+
       </div>
 
     </div>
@@ -89,7 +101,7 @@
 
         <input
           type="password"
-          placeholder="Frase secreta de la conversacion"
+          placeholder="Frase secreta de la conversación"
           [(ngModel)]="fraseSecreta"
         >
 
@@ -111,11 +123,42 @@
       </div>
 
       <div
+        class="state warning"
+        *ngIf="!cargando && usuarioBloqueado"
+      >
+        Has bloqueado a este usuario. Puedes leer el historial, pero no enviar mensajes ni iniciar llamadas hasta desbloquearlo.
+      </div>
+
+      <div
         class="state error"
         *ngIf="!cargando && error != ''"
       >
         {{ error }}
       </div>
+
+      <section
+        class="pinned-strip"
+        *ngIf="!cargando && mensajesFijados.length > 0"
+      >
+        <div class="pinned-strip-header">
+          <strong>Mensajes fijados</strong>
+          <span>{{ mensajesFijados.length }}</span>
+        </div>
+
+        <div class="pinned-items">
+          <article
+            class="pinned-card"
+            *ngFor="let mensaje of mensajesFijados | slice:0:3"
+          >
+            <span class="pinned-author">
+              {{ obtenerNombreRemitente(mensaje) }}
+            </span>
+            <span class="pinned-copy">
+              {{ obtenerResumenFijado(mensaje) }}
+            </span>
+          </article>
+        </div>
+      </section>
 
       <ng-container *ngIf="!cargando">
 
@@ -134,6 +177,38 @@
           </div>
 
           <div class="message-content">
+
+            <div class="message-toolbar">
+              <span
+                class="message-pin"
+                *ngIf="mensaje.fijado"
+              >
+                Fijado
+              </span>
+
+              <div class="message-actions">
+                <button
+                  type="button"
+                  class="message-action-btn"
+                  title="Fijar mensaje"
+                  aria-label="Fijar mensaje"
+                  (click)="alternarFijado(mensaje)"
+                >
+                  <i class="pi" [class.pi-thumbtack]="!mensaje.fijado" [class.pi-times]="mensaje.fijado"></i>
+                </button>
+
+                <button
+                  *ngIf="puedeEliminarMensaje(mensaje)"
+                  type="button"
+                  class="message-action-btn danger"
+                  title="Eliminar mensaje"
+                  aria-label="Eliminar mensaje"
+                  (click)="eliminarMensaje(mensaje)"
+                >
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </div>
 
             <a
               class="message-image-link"
@@ -197,11 +272,11 @@
         </div>
 
         <div
-          class="state"
-          *ngIf="mensajes.length == 0 && error == ''"
-        >
-          Aun no hay mensajes en esta conversacion
-        </div>
+        class="state"
+        *ngIf="mensajes.length == 0 && error == ''"
+      >
+        Aún no hay mensajes en esta conversación
+      </div>
 
       </ng-container>
 
@@ -272,7 +347,7 @@
         name="nuevoMensaje"
         placeholder="Escribe un mensaje"
         [(ngModel)]="nuevoMensaje"
-        [disabled]="enviando"
+        [disabled]="enviando || usuarioBloqueado"
       >
 
       <button
@@ -280,7 +355,7 @@
         type="submit"
         title="Enviar mensaje"
         aria-label="Enviar mensaje"
-        [disabled]="(nuevoMensaje.trim() == '' && !archivoAdjunto) || enviando || (conversacion.fraseSecretaConfigurada && fraseSecreta.trim().length < 8)"
+        [disabled]="(nuevoMensaje.trim() == '' && !archivoAdjunto) || enviando || usuarioBloqueado || (conversacion.fraseSecretaConfigurada && fraseSecreta.trim().length < 8)"
       >
         <span class="icon icon-send"></span>
       </button>
@@ -303,10 +378,10 @@
         R
       </div>
 
-      <h2>Selecciona una conversacion</h2>
+      <h2>Selecciona una conversación</h2>
 
       <p>
-        Tus mensajes apareceran aqui cuando elijas una conversacion.
+        Tus mensajes aparecerán aquí cuando elijas una conversación.
       </p>
 
     </div>
@@ -320,3 +395,4 @@
     (rechazada)="onLlamadaRechazada()"
   />
 </div>
+

@@ -17,8 +17,8 @@ import {
 })
 export class AmistadService {
 
-  private apiUrl =
-    `${environment.apiUrl}/amistades`;
+  private apiUrl = `${environment.apiUrl}/amistades`;
+
 
   constructor(
     private http: HttpClient
@@ -28,6 +28,13 @@ export class AmistadService {
 
     return this.http.get<Amistad[]>(
       this.apiUrl
+    );
+  }
+
+  obtenerBloqueados(): Observable<Amistad[]> {
+
+    return this.http.get<Amistad[]>(
+      `${this.apiUrl}/bloqueados`
     );
   }
 
@@ -108,6 +115,31 @@ export class AmistadService {
 
     return this.http.delete(
       `${this.apiUrl}/${usuarioId}`,
+      {
+        responseType: 'text'
+      }
+    );
+  }
+
+  bloquearUsuario(
+    usuarioId: number
+  ): Observable<string> {
+
+    return this.http.post(
+      `${this.apiUrl}/${usuarioId}/bloquear`,
+      null,
+      {
+        responseType: 'text'
+      }
+    );
+  }
+
+  desbloquearUsuario(
+    usuarioId: number
+  ): Observable<string> {
+
+    return this.http.delete(
+      `${this.apiUrl}/${usuarioId}/bloquear`,
       {
         responseType: 'text'
       }

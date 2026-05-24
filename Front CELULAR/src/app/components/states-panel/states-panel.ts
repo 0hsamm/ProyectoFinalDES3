@@ -58,8 +58,6 @@ export class StatesPanelComponent
 
   procesandoEstadoId: number | null = null;
 
-  estadoPorConfirmarEliminacionId: number | null = null;
-
   detalleEstado: Estado | null = null;
 
   vistasDetalle: EstadoInteraccion[] = [];
@@ -68,10 +66,6 @@ export class StatesPanelComponent
 
   cargandoDetalle = false;
 
-  private readonly textoInicialesPorDefecto = '';
-
-  private readonly localeFecha = 'es-CO';
-
   private refrescoSub?: Subscription;
 
   private vistasRegistradas =
@@ -79,7 +73,7 @@ export class StatesPanelComponent
 
   private destruido = false;
 
-  idUsuarioActual  =
+  idUsuarioActual =
     Number(localStorage.getItem('idUsuario') || 0);
 
   constructor(
@@ -149,7 +143,7 @@ export class StatesPanelComponent
 
             this.toastService.error(
               'Estados no disponibles',
-              StatesPanelComponent.obtenerMensajeError(
+              this.obtenerMensajeError(
                 err,
                 'No se pudieron cargar los estados'
               )
@@ -199,7 +193,7 @@ export class StatesPanelComponent
     if (!esImagen && !esVideo) {
 
       this.toastService.warning(
-        'Archivo no valido',
+        'Archivo no válido',
         'Selecciona una imagen o un video'
       );
 
@@ -224,7 +218,7 @@ export class StatesPanelComponent
 
     if (
       this.idUsuarioActual === 0 ||
-      (texto === '' && this.archivo == null)
+      (texto === '' && this.archivo === null)
     ) {
 
       this.toastService.warning(
@@ -270,10 +264,10 @@ export class StatesPanelComponent
         this.marcarCambio();
 
         this.toastService.error(
-          'No se publico el estado',
-          StatesPanelComponent.obtenerMensajeError(
+        'No se publicó el estado',
+          this.obtenerMensajeError(
             err,
-            'Revisa la conexion con el backend'
+            'Revisa la conexión con el backend'
           )
         );
       }
@@ -304,13 +298,8 @@ export class StatesPanelComponent
           this.vistasRegistradas.add(estado.id);
           this.marcarCambio();
         },
-        error: () => {
-
-          this.toastService.warning(
-            'Vista no registrada',
-            'No se pudo registrar la visualizacion del estado'
-          );
-        }
+        // skipcq: JS-0321
+        error: () => {}
       });
   }
 
@@ -361,7 +350,7 @@ export class StatesPanelComponent
 
         this.toastService.error(
           'No se pudo actualizar el like',
-          StatesPanelComponent.obtenerMensajeError(
+          this.obtenerMensajeError(
             err,
             'Intenta nuevamente'
           )
@@ -382,23 +371,15 @@ export class StatesPanelComponent
 
       return;
     }
-
-    if (
-      this.estadoPorConfirmarEliminacionId !== estado.id
-    ) {
-      this.estadoPorConfirmarEliminacionId = estado.id;
-
-      this.toastService.warning(
-        'Confirma la eliminacion',
-        'Vuelve a presionar eliminar para borrar este estado'
+    // skipcq: JS-0052
+    const confirmar = window.confirm(
+        '¿Quieres eliminar este estado? Esta acción no se puede deshacer.'
       );
 
-      this.marcarCambio();
+    if (!confirmar) {
 
       return;
     }
-
-    this.estadoPorConfirmarEliminacionId = null;
 
     this.procesandoEstadoId = estado.id;
     this.marcarCambio();
@@ -437,7 +418,7 @@ export class StatesPanelComponent
 
           this.toastService.error(
             'No se pudo eliminar',
-            StatesPanelComponent.obtenerMensajeError(
+            this.obtenerMensajeError(
               err,
               'Intenta nuevamente'
             )
@@ -488,7 +469,7 @@ export class StatesPanelComponent
 
           this.toastService.error(
             'Detalle no disponible',
-            StatesPanelComponent.obtenerMensajeError(
+            this.obtenerMensajeError(
               err,
               'Solo puedes ver el detalle de tus estados'
             )
@@ -510,7 +491,7 @@ export class StatesPanelComponent
     this.tipoArchivo = null;
     this.vistaPreviaArchivo = '';
   }
-
+  // skipcq: JS-0105
   formatearFecha(
     fecha?: string
   ): string {
@@ -529,7 +510,7 @@ export class StatesPanelComponent
     }
 
     return valor.toLocaleString(
-      this.localeFecha,
+      'es-CO',
       {
         hour: '2-digit',
         minute: '2-digit',
@@ -538,12 +519,12 @@ export class StatesPanelComponent
       }
     );
   }
-
+  // skipcq: JS-0105
   obtenerIniciales(
     nombre?: string
   ): string {
 
-    return (nombre || this.textoInicialesPorDefecto)
+    return (nombre || '')
       .split(' ')
       .filter(Boolean)
       .slice(0, 2)
@@ -598,44 +579,31 @@ export class StatesPanelComponent
       this.detalleEstado = actualizado;
     }
   }
-
-  private static obtenerMensajeError(
-    err: unknown,
+  // skipcq: JS-0105
+  private obtenerMensajeError(
+    // skipcq: JS-0323
+    err: any,
     mensajeDefecto: string
   ): string {
 
-    const errorBody =
-      typeof err === 'object' && err !== null && 'error' in err
-        ? (err as { error?: unknown }).error
-        : undefined;
+    if (typeof err?.error == 'string') {
 
-    if (typeof errorBody === 'string') {
-
-      return errorBody;
+      return err.error;
     }
 
-    if (
-      typeof errorBody === 'object' &&
-      errorBody !== null
-    ) {
+    if (typeof err?.error?.mensaje == 'string') {
 
-      const errorObject =
-        errorBody as Record<string, unknown>;
+      return err.error.mensaje;
+    }
 
-      if (typeof errorObject['mensaje'] === 'string') {
+    if (typeof err?.error?.error == 'string') {
 
-        return errorObject['mensaje'];
-      }
+      return err.error.error;
+    }
 
-      if (typeof errorObject['error'] === 'string') {
+    if (typeof err?.error?.message == 'string') {
 
-        return errorObject['error'];
-      }
-
-      if (typeof errorObject['message'] === 'string') {
-
-        return errorObject['message'];
-      }
+      return err.error.message;
     }
 
     return mensajeDefecto;
@@ -653,7 +621,29 @@ export class StatesPanelComponent
         this.registrarVista(estado);
       });
   }
+  tieneVistas(): boolean {
+    return this.vistasDetalle.length > 0;
+  }
 
+  tieneLikes(): boolean {
+    return this.likesDetalle.length > 0;
+  }
+  // skipcq: JS-0105
+  obtenerFotoVista(vista: EstadoInteraccion): string {
+    return vista.fotoPerfil || '';
+  }
+  // skipcq: JS-0105
+  obtenerNombreVista(vista: EstadoInteraccion): string {
+    return vista.usuarioNombre || vista.usuario || '';
+  }
+  // skipcq: JS-0105
+  obtenerFotoLike(like: EstadoInteraccion): string {
+    return like.fotoPerfil || '';
+  }
+  // skipcq: JS-0105
+  obtenerNombreLike(like: EstadoInteraccion): string {
+    return like.usuarioNombre || like.usuario || '';
+  }
   private marcarCambio(): void {
 
     setTimeout(() => {

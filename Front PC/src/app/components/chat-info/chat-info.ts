@@ -83,8 +83,8 @@ export class ChatInfoComponent {
     }
 
     return this.conversacion?.tipoConversacion === 'GRUPAL'
-      ? 'Conversacion grupal'
-      : 'Sin descripcion disponible';
+      ? 'Conversación grupal'
+      : 'Sin descripción disponible';
   }
 
 // skipcq: JS-0105
@@ -92,6 +92,6 @@ export class ChatInfoComponent {
     participante: Participante
   ): string {
     const descripcion = participante?.sobreMi || participante?.descripcion || '';
-    return descripcion.trim() !== '' ? descripcion.trim() : 'Sin descripcion';
+    return descripcion.trim() !== '' ? descripcion.trim() : 'Sin descripción';
   }
 }

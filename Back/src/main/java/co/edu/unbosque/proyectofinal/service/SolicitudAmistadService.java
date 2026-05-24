@@ -349,6 +349,137 @@ public class SolicitudAmistadService {
         return 2;
     }
 
+    public List<AmistadDTO> obtenerBloqueados(
+            String correoUsuario) {
+
+        Usuario usuario =
+                buscarUsuarioPorCorreo(correoUsuario);
+
+        if (usuario == null) {
+            return new ArrayList<>();
+        }
+
+        return solicitudAmistadRepository
+                .findBySolicitante_IdAndEstado(
+                        usuario.getId(),
+                        EstadoSolicitudAmistad.BLOQUEADA)
+                .stream()
+                .sorted(
+                        Comparator.comparing(
+                                SolicitudAmistad::getFechaRespuesta,
+                                Comparator.nullsLast(
+                                        Comparator.naturalOrder()))
+                                .reversed())
+                .map(relacion ->
+                        mapearUsuarioRelacionado(relacion.getReceptor()))
+                .toList();
+    }
+
+    public int bloquearUsuario(
+            String correoUsuario,
+            Long usuarioId) {
+
+        Usuario usuarioActual =
+                buscarUsuarioPorCorreo(correoUsuario);
+
+        if (usuarioActual == null) {
+            return 1;
+        }
+
+        if (usuarioId == null
+                || usuarioActual.getId().equals(usuarioId)) {
+            return 3;
+        }
+
+        Usuario usuarioObjetivo =
+                usuarioRepository.findById(usuarioId)
+                        .filter(Usuario::isHabilitado)
+                        .orElse(null);
+
+        if (usuarioObjetivo == null) {
+            return 2;
+        }
+
+        Optional<SolicitudAmistad> directa =
+                solicitudAmistadRepository
+                        .findBySolicitante_IdAndReceptor_Id(
+                                usuarioActual.getId(),
+                                usuarioObjetivo.getId());
+
+        if (directa.isPresent()
+                && directa.get().getEstado()
+                        == EstadoSolicitudAmistad.BLOQUEADA) {
+            return 4;
+        }
+
+        SolicitudAmistad relacion =
+                directa.orElseGet(() ->
+                        solicitudAmistadRepository
+                                .findBySolicitante_IdAndReceptor_Id(
+                                        usuarioObjetivo.getId(),
+                                        usuarioActual.getId())
+                                .orElseGet(SolicitudAmistad::new));
+
+        relacion.setSolicitante(usuarioActual);
+        relacion.setReceptor(usuarioObjetivo);
+        relacion.setEstado(EstadoSolicitudAmistad.BLOQUEADA);
+        relacion.setFechaSolicitud(LocalDateTime.now());
+        relacion.setFechaRespuesta(LocalDateTime.now());
+
+        solicitudAmistadRepository.save(relacion);
+
+        return 0;
+    }
+
+    public int desbloquearUsuario(
+            String correoUsuario,
+            Long usuarioId) {
+
+        Usuario usuarioActual =
+                buscarUsuarioPorCorreo(correoUsuario);
+
+        if (usuarioActual == null) {
+            return 1;
+        }
+
+        Optional<SolicitudAmistad> relacion =
+                solicitudAmistadRepository
+                        .findBySolicitante_IdAndReceptor_Id(
+                                usuarioActual.getId(),
+                                usuarioId);
+
+        if (!relacion.isPresent()
+                || relacion.get().getEstado()
+                        != EstadoSolicitudAmistad.BLOQUEADA) {
+            return 2;
+        }
+
+        solicitudAmistadRepository.delete(relacion.get());
+
+        return 0;
+    }
+
+    public boolean existeBloqueoEntreUsuarios(
+            Long primerUsuarioId,
+            Long segundoUsuarioId) {
+
+        if (primerUsuarioId == null
+                || segundoUsuarioId == null) {
+            return false;
+        }
+
+        return solicitudAmistadRepository
+                .existsBySolicitante_IdAndReceptor_IdAndEstado(
+                        primerUsuarioId,
+                        segundoUsuarioId,
+                        EstadoSolicitudAmistad.BLOQUEADA)
+                || solicitudAmistadRepository
+                        .existsBySolicitante_IdAndReceptor_IdAndEstado(
+                                segundoUsuarioId,
+                                primerUsuarioId,
+                                EstadoSolicitudAmistad.BLOQUEADA);
+    }
+
     private int manejarRelacionDirectaExistente(
             SolicitudAmistad solicitud) {
 
@@ -445,6 +576,27 @@ public class SolicitudAmistadService {
         dto.setSobreMi(amigo.getSobreMi());
         dto.setEnLinea(amigo.isEnLinea());
         dto.setFechaAmistad(solicitud.getFechaRespuesta());
+
+        return dto;
+    }
+
+    private AmistadDTO mapearUsuarioRelacionado(
+            Usuario usuario) {
+
+        if (usuario == null
+                || !usuario.isHabilitado()) {
+            return new AmistadDTO();
+        }
+
+        AmistadDTO dto =
+                new AmistadDTO();
+
+        dto.setUsuarioId(usuario.getId());
+        dto.setUsuario(usuario.getUsuario());
+        dto.setNombrePersona(usuario.getNombrePersona());
+        dto.setFotoPerfil(usuario.getFotoPerfil());
+        dto.setSobreMi(usuario.getSobreMi());
+        dto.setEnLinea(usuario.isEnLinea());
 
         return dto;
     }

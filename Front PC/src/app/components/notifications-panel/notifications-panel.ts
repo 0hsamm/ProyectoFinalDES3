@@ -229,7 +229,7 @@ export class NotificationsPanelComponent
       return `Llamaste a ${nombre}`;
     }
 
-    return `${nombre} te llamo`;
+    return `${nombre} te llamó`;
   }
   // skipcq: JS-0105
   private obtenerMensajeError(

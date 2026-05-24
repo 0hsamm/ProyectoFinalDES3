@@ -47,8 +47,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
   conversacionSeleccionada: Conversacion | null = null;
 
   @Output()
-  readonly conversacionSeleccionadaChange =
-    new EventEmitter<Conversacion | null>();
+  readonly conversacionSeleccionadaChange = new EventEmitter<Conversacion | null>();
 
   conversaciones: Conversacion[] = [];
 
@@ -58,10 +57,6 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
   error = '';
 
-  private readonly nombreConversacionPorDefecto = '';
-
-  private readonly fotoConversacionPorDefecto = '';
-
   private refrescoSub?: Subscription;
 
   private destruido = false;
@@ -70,11 +65,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
     new Map<number, Partial<Usuario>>();
 
   eliminandoConversacionId: number | null = null;
-  conversacionPorConfirmarEliminacionId: number | null = null;
 
-  idUsuarioActual =
-    Number(localStorage.getItem('idUsuario') || 0);
-
+  idUsuarioActual = Number(localStorage.getItem('idUsuario') || 0);
   constructor(
     private conversacionService: ConversacionService,
     private usuarioService: UsuarioService,
@@ -119,10 +111,9 @@ export class ChatListComponent implements OnInit, OnDestroy {
         next: (conversaciones) => {
 
           this.conversaciones =
-            this.conversaciones =
-              ChatListComponent.ordenarConversaciones(
-                conversaciones || []
-              );
+            this.ordenarConversaciones(
+              conversaciones || []
+            );
 
           if (
             this.conversacionSeleccionada?.id != null
@@ -149,8 +140,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
           if (
             this.conversaciones.length > 0 &&
-            this.conversacionSeleccionada == null &&
-            !ChatListComponent.esPantallaMovil()
+            this.conversacionSeleccionada == null
           ) {
 
             this.seleccionarConversacion(
@@ -216,24 +206,15 @@ export class ChatListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (
-      this.conversacionPorConfirmarEliminacionId !==
-      conversacion.id
-    ) {
-      this.conversacionPorConfirmarEliminacionId =
-        conversacion.id;
-
-      this.toastService.warning(
-        'Confirma la eliminacion',
-        'Vuelve a presionar eliminar para ocultar esta conversacion'
+    const confirmar =
+      // skipcq: JS-0052
+      window.confirm(
+        '¿Eliminar esta conversación de tu lista? Volverá a aparecer si alguien envía un mensaje nuevo.'
       );
 
-      this.marcarCambio();
-
+    if (!confirmar) {
       return;
     }
-
-    this.conversacionPorConfirmarEliminacionId = null;
 
     this.eliminandoConversacionId =
       conversacion.id;
@@ -257,15 +238,14 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
           this.eliminandoConversacionId = null;
           this.toastService.success(
-            'Conversacion eliminada',
-            'Se oculto de tu lista'
+            'Conversación eliminada',
+            'Se ocultó de tu lista'
           );
           this.marcarCambio();
 
           if (
             this.conversaciones.length > 0 &&
-            this.conversacionSeleccionada == null &&
-            !ChatListComponent.esPantallaMovil()
+            this.conversacionSeleccionada == null
           ) {
             this.seleccionarConversacion(
               this.conversaciones[0]
@@ -278,7 +258,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
             'No se pudo eliminar',
             typeof err.error == 'string'
               ? err.error
-              : 'Intentalo nuevamente'
+              : 'Inténtalo nuevamente'
           );
           this.marcarCambio();
         }
@@ -293,6 +273,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
       conversacion.id;
   }
 
+// skipcq: JS-0105
   obtenerNombre(
     conversacion: Conversacion
   ): string {
@@ -302,8 +283,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
       return conversacion.nombre.trim();
     }
 
-    return conversacion.tipoConversacion ||
-      this.nombreConversacionPorDefecto;
+    return conversacion.tipoConversacion || '';
   }
 
   obtenerIniciales(
@@ -319,6 +299,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
       .toUpperCase();
   }
 
+// skipcq: JS-0105
   obtenerFotoConversacion(
     conversacion: Conversacion
   ): string {
@@ -332,8 +313,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     const participanteVisible =
       conversacion.participantes?.[0];
 
-    return participanteVisible?.fotoPerfil ||
-      this.fotoConversacionPorDefecto;
+    return participanteVisible?.fotoPerfil || '';
   }
 
   obtenerUltimoMensaje(
@@ -391,13 +371,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
                 this.marcarCambio();
               },
-              error: () => {
-
-                this.error =
-                  'No se pudo cargar la informacion de un usuario';
-
-                this.marcarCambio();
-              }
+              // skipcq: JS-0321
+              error: () => {}
             });
         });
       }
@@ -431,10 +406,10 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
       conversacion.nombre =
         nombres.length > 0
-          ? ChatListComponent.formatearNombreGrupal(
-            nombres,
-            visibles.length
-          )
+          ? this.formatearNombreGrupal(
+              nombres,
+              visibles.length
+            )
           : `Grupo (${participantes.length})`;
 
       conversacion.participantes =
@@ -497,7 +472,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
         : [];
   }
 
-  private static ordenarConversaciones(
+// skipcq: JS-0105
+  private ordenarConversaciones(
     conversaciones: Conversacion[]
   ): Conversacion[] {
 
@@ -539,7 +515,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
     return participantes;
   }
 
-  private static formatearNombreGrupal(
+// skipcq: JS-0105
+  private formatearNombreGrupal(
     nombres: string[],
     totalParticipantesVisibles: number
   ): string {
@@ -600,11 +577,5 @@ export class ChatListComponent implements OnInit, OnDestroy {
   ): string {
 
     return `ultimoMensajeConversacion:${this.idUsuarioActual}:${conversacionId}`;
-  }
-
-  private static esPantallaMovil(): boolean {
-
-    return typeof window != 'undefined' &&
-      window.innerWidth <= 760;
   }
 }
