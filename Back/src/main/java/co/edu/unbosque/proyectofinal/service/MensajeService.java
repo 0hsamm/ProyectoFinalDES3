@@ -762,6 +762,8 @@ public class MensajeService {
 
 		private final String contentType;
 
+
+	    @SuppressWarnings("java:S2384")
 		private final byte[] contenido;
 
 		public ArchivoAdjuntoDescargable(
