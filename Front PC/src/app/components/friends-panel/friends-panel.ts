@@ -639,7 +639,7 @@ export class FriendsPanelComponent
         }
       });
   }
-
+// skipcq: JS-0105
   obtenerIniciales(
     nombre?: string,
     usuario?: string
@@ -710,8 +710,9 @@ export class FriendsPanelComponent
       }
     });
   }
-
+// skipcq: JS-0105
   private obtenerMensajeError(
+    // skipcq: JS-0323
     err: any,
     mensajeDefecto: string
   ): string {

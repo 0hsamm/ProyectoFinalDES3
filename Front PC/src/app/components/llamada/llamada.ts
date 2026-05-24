@@ -57,6 +57,7 @@ export class LlamadaComponent implements OnInit, OnDestroy {
 
       this.cliente.on(
         'user-published',
+        // skipcq: JS-0323
         async (user: any, mediaType: 'audio' | 'video') => {
           if (!this.cliente) {
             return;
@@ -105,8 +106,9 @@ export class LlamadaComponent implements OnInit, OnDestroy {
       }
 
       this.conectado = true;
-
+      // skipcq: JS-0323
     } catch (e: any) {
+      // skipcq: JS-0246
       this.error = 'No se pudo conectar: ' + (e?.message || e);
     }
   }

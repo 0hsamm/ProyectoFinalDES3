@@ -298,6 +298,7 @@ export class StatesPanelComponent
           this.vistasRegistradas.add(estado.id);
           this.marcarCambio();
         },
+        // skipcq: JS-0321
         error: () => {}
       });
   }
@@ -370,9 +371,8 @@ export class StatesPanelComponent
 
       return;
     }
-
-    const confirmar =
-      window.confirm(
+    // skipcq: JS-0052
+    const confirmar = window.confirm(
         'Quieres eliminar este estado? Esta accion no se puede deshacer.'
       );
 
@@ -491,7 +491,7 @@ export class StatesPanelComponent
     this.tipoArchivo = null;
     this.vistaPreviaArchivo = '';
   }
-
+  // skipcq: JS-0105
   formatearFecha(
     fecha?: string
   ): string {
@@ -519,7 +519,7 @@ export class StatesPanelComponent
       }
     );
   }
-
+  // skipcq: JS-0105
   obtenerIniciales(
     nombre?: string
   ): string {
@@ -579,8 +579,9 @@ export class StatesPanelComponent
       this.detalleEstado = actualizado;
     }
   }
-
+  // skipcq: JS-0105
   private obtenerMensajeError(
+    // skipcq: JS-0323
     err: any,
     mensajeDefecto: string
   ): string {

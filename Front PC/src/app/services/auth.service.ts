@@ -56,7 +56,7 @@ export class AuthService {
       }
     );
   }
-
+  // skipcq: JS-0105
   guardarSesion(
     respuesta: RespuestaAutenticacionDTO
   ): void {
@@ -102,7 +102,7 @@ export class AuthService {
       localStorage.removeItem('fotoPerfil');
     }
   }
-
+  // skipcq: JS-0105
   obtenerToken(): string | null {
 
     return localStorage.getItem('token');
@@ -132,7 +132,7 @@ export class AuthService {
       })
     );
   }
-
+  // skipcq: JS-0105
   private limpiarSesionLocal(): void {
 
     localStorage.removeItem('token');

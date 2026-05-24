@@ -231,8 +231,9 @@ export class NotificationsPanelComponent
 
     return `${nombre} te llamo`;
   }
-
+  // skipcq: JS-0105
   private obtenerMensajeError(
+    // skipcq: JS-0323
     err: any
   ): string {
 

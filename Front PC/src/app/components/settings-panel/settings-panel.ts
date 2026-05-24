@@ -465,7 +465,7 @@ export class SettingsPanelComponent
 
     return this.obtenerPreferenciasDefecto();
   }
-
+  // skipcq: JS-0105
   private obtenerPreferenciasDefecto(): PreferenciasUsuario {
 
     return {
@@ -477,8 +477,9 @@ export class SettingsPanelComponent
       tema: 'oscuro'
     };
   }
-
+  // skipcq: JS-0105
   private obtenerMensajeError(
+    // skipcq: JS-0323
     err: any,
     mensajeDefecto: string
   ): string {

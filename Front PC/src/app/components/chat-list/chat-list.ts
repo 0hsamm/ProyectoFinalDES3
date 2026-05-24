@@ -206,7 +206,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
       return;
     }
 
-// skipcq: JS-0052
+    // skipcq: JS-0052
     const confirmar =
       window.confirm(
         'Eliminar esta conversacion de tu lista? Volvera a aparecer si alguien envia un mensaje nuevo.'

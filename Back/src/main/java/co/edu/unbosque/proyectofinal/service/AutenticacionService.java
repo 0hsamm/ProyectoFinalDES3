@@ -30,7 +30,7 @@ public class AutenticacionService {
             LoggerFactory.getLogger(AutenticacionService.class);
 
     private static final String SOBRE_MI_POR_DEFECTO =
-            "Hola! Estoy usando WZ";
+            "Reload, lo mejor!";
 
     private final UsuarioRepository usuarioRepo;
 
