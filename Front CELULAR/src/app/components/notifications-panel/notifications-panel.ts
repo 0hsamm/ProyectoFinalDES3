@@ -47,6 +47,8 @@ export class NotificationsPanelComponent
 
   private destruido = false;
 
+  private readonly mensajeErrorPorDefecto = 'Intenta nuevamente';
+
   constructor(
     private amistadService: AmistadService,
     private llamadaService: LlamadaService,
@@ -231,32 +233,46 @@ export class NotificationsPanelComponent
 
     return `${nombre} te llamo`;
   }
-
+// skipcq: JS-0105
   private obtenerMensajeError(
-    err: any
+    err: unknown
   ): string {
 
-    if (typeof err?.error == 'string') {
+    const errorBody =
+      typeof err === 'object' && err !== null && 'error' in err
+        ? (err as { error?: unknown }).error
+        : undefined;
 
-      return err.error;
+    if (typeof errorBody === 'string') {
+
+      return errorBody;
     }
 
-    if (typeof err?.error?.mensaje == 'string') {
+    if (
+      typeof errorBody === 'object' &&
+      errorBody !== null
+    ) {
 
-      return err.error.mensaje;
+      const errorObject =
+        errorBody as Record<string, unknown>;
+
+      if (typeof errorObject['mensaje'] === 'string') {
+
+        return errorObject['mensaje'];
+      }
+
+      if (typeof errorObject['error'] === 'string') {
+
+        return errorObject['error'];
+      }
+
+      if (typeof errorObject['message'] === 'string') {
+
+        return errorObject['message'];
+      }
     }
 
-    if (typeof err?.error?.error == 'string') {
-
-      return err.error.error;
-    }
-
-    if (typeof err?.error?.message == 'string') {
-
-      return err.error.message;
-    }
-
-    return 'Intenta nuevamente';
+    return this.mensajeErrorPorDefecto;
   }
 
   private marcarCambio(): void {

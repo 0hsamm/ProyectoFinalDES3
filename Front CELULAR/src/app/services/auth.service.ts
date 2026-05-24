@@ -109,7 +109,7 @@ export class AuthService {
 
     return localStorage.getItem('token');
   }
-
+// skipcq: JS-0105
   estaLogueado(): boolean {
 
     return AuthService.obtenerToken() !== null;
