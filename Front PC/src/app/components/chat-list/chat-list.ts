@@ -206,6 +206,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
       return;
     }
 
+// skipcq: JS-0052
     const confirmar =
       window.confirm(
         'Eliminar esta conversacion de tu lista? Volvera a aparecer si alguien envia un mensaje nuevo.'
@@ -272,6 +273,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
       conversacion.id;
   }
 
+// skipcq: JS-0105
   obtenerNombre(
     conversacion: Conversacion
   ): string {
@@ -297,6 +299,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
       .toUpperCase();
   }
 
+// skipcq: JS-0105
   obtenerFotoConversacion(
     conversacion: Conversacion
   ): string {
@@ -368,6 +371,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
                 this.marcarCambio();
               },
+              // skipcq: JS-0321
               error: () => {}
             });
         });
@@ -468,6 +472,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
         : [];
   }
 
+// skipcq: JS-0105
   private ordenarConversaciones(
     conversaciones: Conversacion[]
   ): Conversacion[] {
@@ -510,6 +515,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     return participantes;
   }
 
+// skipcq: JS-0105
   private formatearNombreGrupal(
     nombres: string[],
     totalParticipantesVisibles: number

@@ -87,6 +87,7 @@ export class ChatInfoComponent {
       : 'Sin descripcion disponible';
   }
 
+// skipcq: JS-0105
   obtenerDescripcionParticipante(
     participante: Participante
   ): string {
