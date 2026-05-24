@@ -87,8 +87,9 @@ public class ConversacionDTO {
 	    return participantesIds == null ? null : new ArrayList<>(participantesIds);
 	}
 
-	// skipcq: JAVA-E1086
+	
 	public void setParticipantesIds(List<Long> participantesIds) {
+		// skipcq: JAVA-E1086
 		this.participantesIds = participantesIds == null
 				? null
 				: new ArrayList<>(participantesIds);
