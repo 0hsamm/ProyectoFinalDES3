@@ -6,6 +6,8 @@ export interface ParticipanteConversacion {
 
   nombrePersona?: string;
 
+  correo?: string;
+
   fotoPerfil?: string;
 
   sobreMi?: string;

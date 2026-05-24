@@ -68,6 +68,10 @@ export class StatesPanelComponent
 
   cargandoDetalle = false;
 
+  private readonly textoInicialesPorDefecto = '';
+
+  private readonly localeFecha = 'es-CO';
+
   private refrescoSub?: Subscription;
 
   private vistasRegistradas =
@@ -145,7 +149,7 @@ export class StatesPanelComponent
 
             this.toastService.error(
               'Estados no disponibles',
-              this.obtenerMensajeError(
+              StatesPanelComponent.obtenerMensajeError(
                 err,
                 'No se pudieron cargar los estados'
               )
@@ -267,7 +271,7 @@ export class StatesPanelComponent
 
         this.toastService.error(
           'No se publico el estado',
-          this.obtenerMensajeError(
+          StatesPanelComponent.obtenerMensajeError(
             err,
             'Revisa la conexion con el backend'
           )
@@ -357,7 +361,7 @@ export class StatesPanelComponent
 
         this.toastService.error(
           'No se pudo actualizar el like',
-          this.obtenerMensajeError(
+          StatesPanelComponent.obtenerMensajeError(
             err,
             'Intenta nuevamente'
           )
@@ -433,7 +437,7 @@ export class StatesPanelComponent
 
           this.toastService.error(
             'No se pudo eliminar',
-            this.obtenerMensajeError(
+            StatesPanelComponent.obtenerMensajeError(
               err,
               'Intenta nuevamente'
             )
@@ -484,7 +488,7 @@ export class StatesPanelComponent
 
           this.toastService.error(
             'Detalle no disponible',
-            this.obtenerMensajeError(
+            StatesPanelComponent.obtenerMensajeError(
               err,
               'Solo puedes ver el detalle de tus estados'
             )
@@ -525,7 +529,7 @@ export class StatesPanelComponent
     }
 
     return valor.toLocaleString(
-      'es-CO',
+      this.localeFecha,
       {
         hour: '2-digit',
         minute: '2-digit',
@@ -539,7 +543,7 @@ export class StatesPanelComponent
     nombre?: string
   ): string {
 
-    return (nombre || '')
+    return (nombre || this.textoInicialesPorDefecto)
       .split(' ')
       .filter(Boolean)
       .slice(0, 2)
@@ -595,7 +599,7 @@ export class StatesPanelComponent
     }
   }
 
-  private obtenerMensajeError(
+  private static obtenerMensajeError(
     err: unknown,
     mensajeDefecto: string
   ): string {

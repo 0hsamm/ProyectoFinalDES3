@@ -138,7 +138,7 @@ export class Login
           return;
         }
 
-        this.authService.guardarSesion(
+        AuthService.guardarSesion(
           respuesta
         );
 

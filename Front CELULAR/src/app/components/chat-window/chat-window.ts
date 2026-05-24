@@ -67,6 +67,16 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   error = '';
 
+  private readonly requiereUrlParaAdjunto = true;
+
+  private readonly contenidoProtegidoTexto = 'Mensaje protegido';
+
+  private readonly localeHora = 'es-CO';
+
+  private readonly unidadesTamano = ['B', 'KB', 'MB', 'GB'];
+
+  private readonly baseTamano = 1024;
+
   fraseSecreta = '';
 
   archivoAdjunto: File | null = null;
@@ -299,7 +309,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         this.conversacion.id,
         contenido === '' ? null : contenido,
         this.fraseSecreta,
-        this.obtenerTipoMensajeAdjunto(
+        ChatWindowComponent.obtenerTipoMensajeAdjunto(
           archivo
         ),
         archivo != null
@@ -335,7 +345,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
           this.toastService.error(
             'No se envio el mensaje',
-            this.obtenerMensajeError(
+            ChatWindowComponent.obtenerMensajeError(
               err,
               this.error
             )
@@ -384,7 +394,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         error: (err) => {
           this.toastService.error(
             'No se pudo iniciar la llamada',
-            this.obtenerMensajeError(
+            ChatWindowComponent.obtenerMensajeError(
               err,
               'Revisa que ambos usuarios pertenezcan a la conversacion'
             )
@@ -409,7 +419,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         error: (err) => {
           this.toastService.error(
             'No se pudo finalizar',
-            this.obtenerMensajeError(err, 'Intenta nuevamente')
+            ChatWindowComponent.obtenerMensajeError(err, 'Intenta nuevamente')
           );
         }
       });
@@ -440,7 +450,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       archivo;
 
     this.archivoPreviewEsImagen =
-      this.esImagenMime(
+      ChatWindowComponent.esImagenMime(
         archivo.type
       );
 
@@ -553,7 +563,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     }
 
     return fechaMensaje.toLocaleTimeString(
-      'es-CO',
+      this.localeHora,
       {
         hour: '2-digit',
         minute: '2-digit'
@@ -566,7 +576,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   ): string {
 
     if (mensaje.contenidoProtegido) {
-      return 'Mensaje protegido';
+      return this.contenidoProtegidoTexto;
     }
 
     return (mensaje.contenido || '')
@@ -588,7 +598,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     return Boolean(
       mensaje.tieneAdjunto &&
-      mensaje.adjuntoUrl
+      (
+        !this.requiereUrlParaAdjunto ||
+        mensaje.adjuntoUrl
+      )
     );
   }
 
@@ -598,7 +611,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
     return this.tieneAdjuntoVisible(
       mensaje
-    ) && this.esImagenMime(
+    ) && ChatWindowComponent.esImagenMime(
       mensaje.adjuntoFormato
     );
   }
@@ -647,12 +660,9 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     bytes?: number
   ): string {
 
-    if (bytes == null || bytes <= 0) {
+    if (bytes === undefined || bytes === null || bytes <= 0) {
       return '';
     }
-
-    const unidades =
-      ['B', 'KB', 'MB', 'GB'];
 
     let valor =
       bytes;
@@ -661,10 +671,10 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       0;
 
     while (
-      valor >= 1024 &&
-      indice < unidades.length - 1
-    ) {
-      valor /= 1024;
+      valor >= this.baseTamano &&
+      indice < this.unidadesTamano.length - 1
+      ) {
+      valor /= this.baseTamano;
       indice++;
     }
 
@@ -673,7 +683,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         ? 0
         : 1;
 
-    return `${valor.toFixed(decimales)} ${unidades[indice]}`;
+    return `${valor.toFixed(decimales)} ${this.unidadesTamano[indice]}`;
   }
 
   obtenerHoraMensaje(
@@ -770,11 +780,11 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     this.toastService.error(
       'No se pudo subir el archivo',
       contenido === ''
-        ? this.obtenerMensajeError(
+        ? ChatWindowComponent.obtenerMensajeError(
             err,
             'El archivo no se pudo enviar'
           )
-        : this.obtenerMensajeError(
+        : ChatWindowComponent.obtenerMensajeError(
             err,
             'El texto se envio, pero el archivo no se pudo adjuntar'
           )
@@ -837,7 +847,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     return `Mensaje y ${descripcion.toLowerCase()}`;
   }
 
-  private obtenerMensajeError(
+  private static obtenerMensajeError(
     err: unknown,
     mensajeDefecto: string
   ): string {
@@ -1005,7 +1015,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.obtenerReceptorId() != null;
   }
 
-  obtenerTipoMensajeAdjunto(
+  static obtenerTipoMensajeAdjunto(
     archivo: File | null
   ): string {
 
@@ -1032,7 +1042,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
     return 'ARCHIVO';
   }
 
-  private esImagenMime(
+  private static esImagenMime(
     mime?: string | null
   ): boolean {
 

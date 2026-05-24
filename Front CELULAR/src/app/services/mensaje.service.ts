@@ -137,9 +137,9 @@ export class MensajeService {
 
   eliminarMensaje(
     mensajeId: number
-  ): Observable<void> {
+  ): Observable<unknown> {
 
-    return this.http.delete<void>(
+    return this.http.delete<unknown>(
       `${this.apiUrl}/${mensajeId}`
     );
   }
