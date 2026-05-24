@@ -7,4 +7,6 @@ import co.edu.unbosque.proyectofinal.entity.ArchivoAdjunto;
 
 public interface ArchivoAdjuntoRepository extends JpaRepository<ArchivoAdjunto, Long> {
 
+
+	
 }

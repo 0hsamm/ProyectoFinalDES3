@@ -374,30 +374,27 @@ public class MensajeService {
 		return deleteById(id, null, false);
 	}
 
-	public int deleteById(
-			Long id,
-			Long usuarioId,
-			boolean esAdmin) {
+	public int deleteById(Long id, Long usuarioId, boolean esAdmin) {
 
-	    Optional<Mensaje> mensaje =
-	            mensajeRepo.findById(id);
+	    Optional<Mensaje> mensajeOpt = mensajeRepo.findById(id);
+	    if (!mensajeOpt.isPresent()) throw new MensajeNoEncontradoException();
 
-	    if (mensaje.isPresent()) {
+	    Mensaje mensaje = mensajeOpt.get();
 
-	        if (usuarioId != null
-	                && !esAdmin
-	                && !mensaje.get().getRemitente().getId().equals(usuarioId)) {
-	            throw new AccessDeniedException(
-	                    "No tienes permiso para eliminar este mensaje");
-	        }
-
-	        mensajeRepo.delete(mensaje.get());
-	        return 0;
+	    if (usuarioId != null && !esAdmin 
+	            && !mensaje.getRemitente().getId().equals(usuarioId)) {
+	        throw new AccessDeniedException("No tienes permiso para eliminar este mensaje");
 	    }
 
-	    throw new MensajeNoEncontradoException();
-	}
-	
+	    if (mensaje.getAdjunto() != null) {
+	        archivoAdjuntoRepo.deleteById(mensaje.getAdjunto().getId());
+	        archivoAdjuntoRepo.flush();
+	        mensaje.setAdjunto(null);  // desasocia en memoria
+	    }
+
+	    mensajeRepo.delete(mensaje);
+	    return 0;
+	}	
 	
 	public Map<String, Object> subirAudio(
 			MultipartFile archivo)

@@ -40,6 +40,7 @@ export class LlamadaComponent implements OnInit, OnDestroy {
   private videoTrack: ILocalVideoTrack | null = null;
   private contadorDuracion?: ReturnType<typeof setInterval>;
   private cerrando = false;
+  private inicioLlamada: number | null = null;
 
   ngOnInit(): void {
 
@@ -106,6 +107,7 @@ export class LlamadaComponent implements OnInit, OnDestroy {
       }
 
       this.conectado = true;
+      this.inicioLlamada = Date.now();
       // skipcq: JS-0323
     } catch (e: any) {
       // skipcq: JS-0246
@@ -179,17 +181,11 @@ export class LlamadaComponent implements OnInit, OnDestroy {
   }
 
   private actualizarDuracion(): void {
-
-    const inicio =
-      this.llamada?.fechaInicio
-        ? new Date(this.llamada.fechaInicio).getTime()
-        : Date.now();
-
-    this.duracionSegundos =
-      Math.max(
-        0,
-        Math.floor((Date.now() - inicio) / 1000)
-      );
+    if (!this.inicioLlamada) {
+      this.duracionSegundos = 0;
+      return;
+    }
+    this.duracionSegundos = Math.floor((Date.now() - this.inicioLlamada) / 1000);
   }
 
   private limpiarContador(): void {

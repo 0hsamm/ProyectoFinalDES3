@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import co.edu.unbosque.proyectofinal.enums.EstatusMensaje;
 import co.edu.unbosque.proyectofinal.enums.TipoMensaje;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -64,8 +65,13 @@ public class Mensaje {
 	@Column(nullable = true)
 	private LocalDateTime fechaFijado;
 	
-	@OneToOne(mappedBy = "mensaje", fetch = FetchType.LAZY)
-	private ArchivoAdjunto adjunto; //los archivos que se pueden adjuntar
+	@OneToOne(
+		    mappedBy = "mensaje",
+		    fetch = FetchType.LAZY,
+		    cascade = CascadeType.ALL,
+		    orphanRemoval = true
+		)
+		private ArchivoAdjunto adjunto;
 	
 	public Mensaje() {
 		// TODO Auto-generated constructor stub
