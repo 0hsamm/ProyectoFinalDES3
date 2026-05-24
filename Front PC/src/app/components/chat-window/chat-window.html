@@ -1,0 +1,395 @@
+﻿<div class="chat-window">
+
+  <ng-container *ngIf="conversacion; else sinConversacion">
+
+    <div class="chat-topbar">
+
+      <div class="user-info">
+
+        <div class="avatar">
+          <img
+            *ngIf="obtenerFotoConversacion()"
+            [src]="obtenerFotoConversacion()"
+            [alt]="obtenerNombreConversacion()"
+          >
+          <span *ngIf="!obtenerFotoConversacion()">
+            {{ obtenerIniciales() }}
+          </span>
+        </div>
+
+        <div class="texts">
+
+          <div class="name">
+            {{ obtenerNombreConversacion() }}
+          </div>
+
+          <div class="status">
+            Conversación activa
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="actions">
+
+        <button
+          class="action-btn"
+          type="button"
+          title="Llamada de voz"
+          aria-label="Llamada de voz"
+          *ngIf="puedeHacerLlamadas()"
+          (click)="iniciarLlamada('VOZ')"
+        >
+          <span class="icon icon-phone"></span>
+        </button>
+
+        <button
+          class="action-btn"
+          type="button"
+          title="Videollamada"
+          aria-label="Videollamada"
+          *ngIf="puedeHacerLlamadas()"
+          (click)="iniciarLlamada('VIDEO')"
+        >
+          <span class="icon icon-video"></span>
+        </button>
+
+        <button
+          class="action-btn end-call"
+          type="button"
+          title="Finalizar llamada"
+          aria-label="Finalizar llamada"
+          *ngIf="puedeHacerLlamadas() && llamadaActivaId != null"
+          (click)="finalizarLlamada()"
+        >
+          <span class="icon icon-phone"></span>
+        </button>
+
+        <button
+          class="action-btn"
+          type="button"
+          title="Actualizar mensajes"
+          aria-label="Actualizar mensajes"
+          (click)="cargarMensajes()"
+        >
+          <span class="icon icon-refresh"></span>
+        </button>
+
+        <button
+          class="action-btn warn-btn"
+          type="button"
+          *ngIf="puedeBloquearUsuario()"
+          [title]="obtenerTextoBloqueo()"
+          [attr.aria-label]="obtenerTextoBloqueo()"
+          [disabled]="actualizandoBloqueo"
+          (click)="alternarBloqueoUsuario()"
+        >
+          <span class="icon icon-ban"></span>
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="messages-container">
+
+      <div
+        class="secret-bar"
+        *ngIf="conversacion.fraseSecretaConfigurada"
+      >
+
+        <input
+          type="password"
+          name="fraseSecretaProtegida"
+          autocomplete="new-password"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+          placeholder="Frase secreta de la conversación"
+          [(ngModel)]="fraseSecreta"
+        >
+
+        <button
+          type="button"
+          (click)="cargarMensajes()"
+        >
+          Desbloquear
+        </button>
+
+      </div>
+
+      <div
+        class="state"
+        *ngIf="cargando"
+      >
+        <i class="pi pi-spin pi-spinner"></i>
+        Cargando mensajes...
+      </div>
+
+      <div
+        class="state warning"
+        *ngIf="!cargando && usuarioBloqueado"
+      >
+        Has bloqueado a este usuario. Puedes leer el historial, pero no enviar mensajes ni iniciar llamadas hasta desbloquearlo.
+      </div>
+
+      <div
+        class="state error"
+        *ngIf="!cargando && error != ''"
+      >
+        {{ error }}
+      </div>
+
+      <section
+        class="pinned-strip"
+        *ngIf="!cargando && mensajesFijados.length > 0"
+      >
+        <div class="pinned-strip-header">
+          <strong>Mensajes fijados</strong>
+          <span>{{ mensajesFijados.length }}</span>
+        </div>
+
+        <div class="pinned-items">
+          <article
+            class="pinned-card"
+            *ngFor="let mensaje of mensajesFijados | slice:0:3"
+          >
+            <span class="pinned-author">
+              {{ obtenerNombreRemitente(mensaje) }}
+            </span>
+            <span class="pinned-copy">
+              {{ obtenerResumenFijado(mensaje) }}
+            </span>
+          </article>
+        </div>
+      </section>
+
+      <ng-container *ngIf="!cargando">
+
+        <div
+          class="message"
+          *ngFor="let mensaje of mensajes"
+          [class.me]="esMensajePropio(mensaje)"
+          [class.other]="!esMensajePropio(mensaje)"
+        >
+
+          <div
+            class="sender"
+            *ngIf="debeMostrarRemitente(mensaje)"
+          >
+            {{ obtenerNombreRemitente(mensaje) }}
+          </div>
+
+          <div class="message-content">
+
+            <div class="message-toolbar">
+              <span
+                class="message-pin"
+                *ngIf="mensaje.fijado"
+              >
+                Fijado
+              </span>
+
+              <div class="message-actions">
+                <button
+                  type="button"
+                  class="message-action-btn"
+                  title="Fijar mensaje"
+                  aria-label="Fijar mensaje"
+                  (click)="alternarFijado(mensaje)"
+                >
+                  <i class="pi" [class.pi-thumbtack]="!mensaje.fijado" [class.pi-times]="mensaje.fijado"></i>
+                </button>
+
+                <button
+                  *ngIf="puedeEliminarMensaje(mensaje)"
+                  type="button"
+                  class="message-action-btn danger"
+                  title="Eliminar mensaje"
+                  aria-label="Eliminar mensaje"
+                  (click)="eliminarMensaje(mensaje)"
+                >
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <a
+              class="message-image-link"
+              *ngIf="tieneImagenAdjunta(mensaje)"
+              [href]="obtenerUrlAdjunto(mensaje)"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                class="message-image"
+                [src]="obtenerUrlAdjunto(mensaje)"
+                [alt]="obtenerNombreAdjunto(mensaje)"
+              >
+            </a>
+
+            <a
+              class="message-file"
+              *ngIf="tieneAdjuntoNoImagen(mensaje)"
+              [href]="obtenerUrlAdjunto(mensaje)"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div class="message-file-icon">
+                {{ obtenerSiglaAdjunto(mensaje.tipoMensaje) }}
+              </div>
+
+              <div class="message-file-copy">
+                <strong>{{ obtenerNombreAdjunto(mensaje) }}</strong>
+                <span>
+                  {{ obtenerDescripcionAdjunto(mensaje) }}
+                  <ng-container *ngIf="obtenerTamanoHumano(mensaje.adjuntoTamano) != ''">
+                    - {{ obtenerTamanoHumano(mensaje.adjuntoTamano) }}
+                  </ng-container>
+                </span>
+              </div>
+            </a>
+
+            <div
+              class="message-text"
+              *ngIf="tieneContenidoVisible(mensaje)"
+            >
+              {{ obtenerContenido(mensaje) }}
+            </div>
+
+            <div
+              class="message-text"
+              *ngIf="!tieneImagenAdjunta(mensaje) && !tieneContenidoVisible(mensaje)"
+            >
+              {{ obtenerContenido(mensaje) }}
+            </div>
+
+          </div>
+
+          <div
+            class="time"
+            *ngIf="obtenerHoraMensaje(mensaje) != ''"
+          >
+            {{ obtenerHoraMensaje(mensaje) }}
+          </div>
+
+        </div>
+
+        <div
+        class="state"
+        *ngIf="mensajes.length == 0 && error == ''"
+      >
+        Aún no hay mensajes en esta conversación
+      </div>
+
+      </ng-container>
+
+    </div>
+
+    <app-chat-attachment-preview
+      [archivoAdjunto]="archivoAdjunto"
+      [archivoPreviewUrl]="archivoPreviewUrl"
+      [archivoPreviewEsImagen]="archivoPreviewEsImagen"
+      (quitar)="quitarAdjunto()"
+    />
+
+    <form
+      class="message-input-container"
+      (ngSubmit)="enviarMensaje()"
+    >
+
+      <label
+        class="attach-btn"
+        title="Adjuntar archivo"
+        aria-label="Adjuntar archivo"
+      >
+        <span class="icon icon-clip"></span>
+        <input
+          type="file"
+          #adjuntoInput
+          (change)="adjuntoSeleccionado($event)"
+        >
+      </label>
+
+      <input
+        type="text"
+        name="nuevoMensaje"
+        placeholder="Escribe un mensaje"
+        [(ngModel)]="nuevoMensaje"
+        [disabled]="enviando || usuarioBloqueado"
+      >
+
+      <button
+        class="send-btn"
+        type="submit"
+        title="Enviar mensaje"
+        aria-label="Enviar mensaje"
+        [disabled]="(nuevoMensaje.trim() == '' && !archivoAdjunto) || enviando || usuarioBloqueado || (conversacion.fraseSecretaConfigurada && fraseSecreta.trim().length < 8)"
+      >
+        <span class="icon icon-send"></span>
+      </button>
+
+    </form>
+
+  </ng-container>
+  <app-chat-call-overlays
+    [llamadaActiva]="llamadaActiva"
+    [llamadaEntrante]="llamadaEntrante"
+    [idUsuarioActual]="idUsuarioActual"
+    (colgar)="onColgar()"
+    (aceptada)="onLlamadaAceptada($event)"
+    (rechazada)="onLlamadaRechazada()"
+  />
+  <ng-template #sinConversacion>
+
+    <div class="empty-window">
+
+      <div class="empty-icon">
+        R
+      </div>
+
+      <h2>Selecciona una conversación</h2>
+
+      <p>
+        Tus mensajes aparecerán aquí cuando elijas una conversación.
+      </p>
+
+    </div>
+
+  </ng-template>
+  <div
+    class="confirm-overlay"
+    [class.is-open]="mensajePendienteEliminar != null"
+    [attr.aria-hidden]="mensajePendienteEliminar == null"
+  >
+    <div
+      class="confirm-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-delete-title"
+    >
+      <h3 id="confirm-delete-title">Eliminar mensaje</h3>
+      <p>¿Quieres eliminar este mensaje?</p>
+
+      <div class="confirm-actions">
+        <button
+          type="button"
+          class="confirm-btn secondary"
+          (click)="cancelarEliminacionMensaje()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="confirm-btn danger"
+          (click)="confirmarEliminacionMensaje()"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

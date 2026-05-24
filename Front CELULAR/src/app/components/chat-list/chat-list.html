@@ -1,0 +1,108 @@
+<div class="chat-list">
+
+  <div class="chat-header">
+
+    <h2>Conversaciones</h2>
+
+    <div class="search-box">
+
+      <span class="search-icon"></span>
+
+      <input
+        type="text"
+        placeholder="Buscar conversación"
+        [(ngModel)]="filtro"
+      >
+
+    </div>
+
+  </div>
+
+  <div
+    class="state"
+    *ngIf="cargando"
+  >
+    <i class="pi pi-spin pi-spinner"></i>
+    Cargando conversaciones...
+  </div>
+
+  <div
+    class="state error"
+    *ngIf="!cargando && error != ''"
+  >
+    {{ error }}
+  </div>
+
+  <div
+    class="chat-items"
+    *ngIf="!cargando && error == ''"
+  >
+
+    <div
+      class="chat-item"
+      *ngFor="let conversacion of obtenerConversacionesFiltradas()"
+      [class.active]="estaSeleccionada(conversacion)"
+      (click)="seleccionarConversacion(conversacion)"
+    >
+
+      <div class="avatar">
+        <img
+          *ngIf="obtenerFotoConversacion(conversacion)"
+          [src]="obtenerFotoConversacion(conversacion)"
+          [alt]="obtenerNombre(conversacion)"
+        >
+        <span *ngIf="!obtenerFotoConversacion(conversacion)">
+          {{ obtenerIniciales(conversacion) }}
+        </span>
+      </div>
+
+      <div class="chat-info">
+
+        <div class="name">
+          {{ obtenerNombre(conversacion) }}
+        </div>
+
+        <div class="message">
+          {{ obtenerUltimoMensaje(conversacion) }}
+        </div>
+
+      </div>
+
+      <button
+        class="delete-chat"
+        type="button"
+        title="Eliminar conversación"
+        aria-label="Eliminar conversación"
+        [disabled]="eliminandoConversacionId == conversacion.id"
+        (click)="eliminarConversacion(conversacion, $event)"
+      >
+        <i
+          class="pi"
+          [class.pi-trash]="eliminandoConversacionId != conversacion.id"
+          [class.pi-spinner]="eliminandoConversacionId == conversacion.id"
+          [class.pi-spin]="eliminandoConversacionId == conversacion.id"
+        ></i>
+      </button>
+
+    </div>
+
+    <div
+      class="state"
+      *ngIf="obtenerConversacionesFiltradas().length == 0"
+    >
+      No hay conversaciones para mostrar
+    </div>
+
+  </div>
+
+  <app-confirm-dialog
+    [visible]="conversacionPendienteEliminar != null"
+    title="Eliminar conversación"
+    message="¿Eliminar esta conversación de tu lista? Volverá a aparecer si alguien envía un mensaje nuevo."
+    confirmLabel="Eliminar"
+    cancelLabel="Cancelar"
+    (confirmed)="confirmarEliminacionConversacion()"
+    (cancelled)="cancelarEliminacionConversacion()"
+  />
+
+</div>

@@ -1,0 +1,53 @@
+<div class="workspace-panel">
+
+  <header class="panel-heading">
+    <div>
+      <p>Centro</p>
+      <h2>Notificaciones</h2>
+    </div>
+    <button class="tool-btn" type="button" (click)="cargar()">
+      <i class="pi pi-refresh"></i>
+    </button>
+  </header>
+
+  <div class="state-box" *ngIf="cargando">
+    <i class="pi pi-spin pi-spinner"></i>
+    Cargando notificaciones...
+  </div>
+
+  <section class="section-card" *ngIf="!cargando">
+    <h3>Solicitudes de amistad</h3>
+
+    <article class="item" *ngFor="let solicitud of solicitudes">
+      <i class="pi pi-user-plus"></i>
+      <div>
+        <strong>{{ solicitud.solicitanteNombre }}</strong>
+        <span>{{ solicitud.solicitanteUsuario }}</span>
+      </div>
+      <button type="button" (click)="aceptar(solicitud)">Aceptar</button>
+      <button type="button" class="ghost" (click)="rechazar(solicitud)">Rechazar</button>
+    </article>
+
+    <div class="empty-state" *ngIf="solicitudes.length == 0">
+      No tienes solicitudes pendientes
+    </div>
+  </section>
+
+  <section class="section-card" *ngIf="!cargando">
+    <h3>Actividad de llamadas</h3>
+
+    <article class="item call" *ngFor="let llamada of llamadas">
+      <i class="pi" [class.pi-phone]="llamada.tipoLlamada == 'VOZ'" [class.pi-video]="llamada.tipoLlamada == 'VIDEO'"></i>
+      <div>
+        <strong>{{ llamada.tipoLlamada }}</strong>
+        <span>{{ llamada.estadoLlamada || 'Registrada' }}</span>
+      </div>
+      <small>{{ obtenerEtiquetaLlamada(llamada) }}</small>
+    </article>
+
+    <div class="empty-state" *ngIf="llamadas.length == 0">
+      No hay actividad de llamadas
+    </div>
+  </section>
+
+</div>

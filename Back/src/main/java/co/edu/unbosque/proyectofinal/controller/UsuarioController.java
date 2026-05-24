@@ -1,0 +1,269 @@
+package co.edu.unbosque.proyectofinal.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import co.edu.unbosque.proyectofinal.dto.UsuarioDTO;
+import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.security.JwtUtil;
+import co.edu.unbosque.proyectofinal.service.AuditoriaService;
+import co.edu.unbosque.proyectofinal.service.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
+
+@RestController
+@RequestMapping("/usuarios")
+public class UsuarioController {
+
+	@Autowired
+	private UsuarioService usuarioService;
+
+	@Autowired
+	private AuditoriaService auditoriaService;
+	
+    @Autowired
+    private JwtUtil jwtUtil;
+	
+    
+    private String extraerCorreo(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return jwtUtil.extractUsername(authHeader.substring(7));
+        }
+        return null;
+    }
+
+    private Usuario obtenerUsuarioAutenticado(
+            HttpServletRequest request) {
+
+        String correo =
+                extraerCorreo(request);
+
+        if (correo == null) {
+            return null;
+        }
+
+        return usuarioService
+                .buscarEntidadPorCorreo(correo)
+                .orElse(null);
+    }
+
+    private boolean puedeGestionarUsuario(
+            Usuario usuarioAutenticado,
+            Long usuarioObjetivoId) {
+
+        return usuarioAutenticado != null
+                && (usuarioService.esAdmin(usuarioAutenticado)
+                || usuarioAutenticado.getId().equals(usuarioObjetivoId));
+    }
+
+	@PostMapping
+	public ResponseEntity<String> crear(
+	        @RequestBody UsuarioDTO dto,
+	        HttpServletRequest request) {
+
+	    String ip = request.getRemoteAddr();
+	    String navegador = request.getHeader("User-Agent");
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (!usuarioService.esAdmin(usuarioAutenticado)) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.FORBIDDEN);
+        }
+
+	    int status = usuarioService.create(dto);
+
+	    if (status == 0) {
+	    	 auditoriaService.registrarConCorreo(
+	                    extraerCorreo(request),
+	                    "CREAR_USUARIO",
+	                    "USUARIOS",
+	                    "Nuevo usuario creado: " + dto.getUsuario(),
+	                    ip, navegador, null, null, null, true);
+	        return new ResponseEntity<>(
+	                "Usuario creado correctamente",
+	                HttpStatus.CREATED);
+	    }
+	    return new ResponseEntity<>(
+	            "Error al crear el usuario",
+	            HttpStatus.BAD_REQUEST);
+	}
+
+	@GetMapping
+	public ResponseEntity<List<UsuarioDTO>> obtenerTodos() {
+
+		return new ResponseEntity<>(
+				usuarioService.getAll(),
+				HttpStatus.OK);
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<UsuarioDTO> obtenerPorId(
+			@PathVariable Long id,
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+		UsuarioDTO usuario =
+				puedeGestionarUsuario(
+                        usuarioAutenticado,
+                        id)
+                        ? usuarioService.getPerfilById(id)
+                        : usuarioService.getById(id);
+
+		if (usuario != null) {
+			return new ResponseEntity<>(
+					usuario,
+					HttpStatus.OK);
+		}
+
+		return new ResponseEntity<>(
+				HttpStatus.NOT_FOUND);
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<String> eliminar(
+	        @PathVariable Long id,
+	        HttpServletRequest request) {
+
+	    String ip = request.getRemoteAddr();
+	    String navegador = request.getHeader("User-Agent");
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!puedeGestionarUsuario(usuarioAutenticado, id)) {
+            return new ResponseEntity<>(
+                    "No tienes permiso para eliminar este usuario",
+                    HttpStatus.FORBIDDEN);
+        }
+
+	    String mensaje = usuarioService.deleteById(id);
+
+	    if (mensaje.equals("Usuario eliminado")) {
+	        auditoriaService.registrarConCorreo(
+	                extraerCorreo(request),
+	                "ELIMINAR_USUARIO",
+	                "USUARIOS",
+	                "Usuario eliminado: " + id,
+	                ip, navegador, null, null, null, true);
+	        return new ResponseEntity<>(mensaje, HttpStatus.OK);
+	    }
+	    return new ResponseEntity<>(mensaje, HttpStatus.NOT_FOUND);
+	}
+
+	@PutMapping("/{id}")
+	public ResponseEntity<String> actualizar(
+			@PathVariable Long id,
+			@RequestBody UsuarioDTO dto,
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!puedeGestionarUsuario(usuarioAutenticado, id)) {
+            return new ResponseEntity<>(
+                    "No tienes permiso para actualizar este usuario",
+                    HttpStatus.FORBIDDEN);
+        }
+
+		int status =
+				usuarioService.updateById(id, dto);
+
+		if (status == 0) {
+			return new ResponseEntity<>(
+					"Usuario actualizado",
+					HttpStatus.OK);
+		}
+
+		return new ResponseEntity<>(
+				HttpStatus.NOT_FOUND);
+	}
+
+	@PostMapping("/{id}/foto-perfil")
+	public ResponseEntity<?> actualizarFotoPerfil(
+			@PathVariable Long id,
+			@RequestParam MultipartFile archivo,
+            HttpServletRequest request) {
+
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!puedeGestionarUsuario(usuarioAutenticado, id)) {
+            return new ResponseEntity<>(
+                    "No tienes permiso para actualizar este usuario",
+                    HttpStatus.FORBIDDEN);
+        }
+
+		try {
+			return new ResponseEntity<>(
+					usuarioService.actualizarFotoPerfil(id, archivo),
+					HttpStatus.OK);
+		} catch (RuntimeException e) {
+			return new ResponseEntity<>(
+					e.getMessage(),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping("/username/{username}")
+	public ResponseEntity<UsuarioDTO> obtenerPorUsername(
+			@PathVariable String username,
+            HttpServletRequest request) {
+
+        if (obtenerUsuarioAutenticado(request) == null) {
+            return new ResponseEntity<>(
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+		UsuarioDTO usuario =
+				usuarioService.getByUsername(username);
+
+		if (usuario != null) {
+			return new ResponseEntity<>(
+					usuario,
+					HttpStatus.OK);
+		}
+
+		return new ResponseEntity<>(
+				HttpStatus.NOT_FOUND);
+	}
+	
+}

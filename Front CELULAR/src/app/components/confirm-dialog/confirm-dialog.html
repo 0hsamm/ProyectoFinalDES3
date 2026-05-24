@@ -1,0 +1,33 @@
+<div
+  class="confirm-overlay"
+  [class.is-open]="visible"
+  [attr.aria-hidden]="!visible"
+>
+  <div
+    class="confirm-dialog"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="title"
+  >
+    <h3>{{ title }}</h3>
+    <p>{{ message }}</p>
+
+    <div class="confirm-actions">
+      <button
+        type="button"
+        class="confirm-btn secondary"
+        (click)="cancelled.emit()"
+      >
+        {{ cancelLabel }}
+      </button>
+
+      <button
+        type="button"
+        class="confirm-btn danger"
+        (click)="confirmed.emit()"
+      >
+        {{ confirmLabel }}
+      </button>
+    </div>
+  </div>
+</div>

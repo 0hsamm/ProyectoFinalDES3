@@ -1,0 +1,93 @@
+<div
+  class="main-layout"
+  [class.single-panel]="panelActivo != 'chats'"
+  [class.mobile-list]="vistaChatMobile == 'lista'"
+  [class.mobile-chat]="vistaChatMobile == 'chat'"
+  [class.mobile-detail]="vistaChatMobile == 'detalle'"
+>
+
+  <app-sidebar
+    [panelActivo]="panelActivo"
+    (panelActivoChange)="cambiarPanel($event)"
+  ></app-sidebar>
+
+  <ng-container [ngSwitch]="panelActivo">
+
+    <ng-container *ngSwitchCase="'chats'">
+
+      <section class="chat-list-pane">
+        <app-chat-list
+          [conversacionSeleccionada]="conversacionSeleccionada"
+          (conversacionSeleccionadaChange)="seleccionarConversacion($event)"
+        ></app-chat-list>
+      </section>
+
+      <section class="chat-window-pane">
+
+        <div class="mobile-toolbar">
+          <button
+            type="button"
+            (click)="volverALista()"
+          >
+            <i class="pi pi-angle-left"></i>
+            Chats
+          </button>
+
+          <button
+            type="button"
+            [disabled]="conversacionSeleccionada == null"
+            (click)="mostrarDetalle()"
+          >
+            <i class="pi pi-info-circle"></i>
+          </button>
+        </div>
+
+        <app-chat-window
+          [conversacion]="conversacionSeleccionada"
+        ></app-chat-window>
+
+      </section>
+
+      <section class="chat-info-pane">
+
+        <div class="mobile-toolbar">
+          <button
+            type="button"
+            (click)="vistaChatMobile = 'chat'"
+          >
+            <i class="pi pi-angle-left"></i>
+            Volver
+          </button>
+        </div>
+
+        <app-chat-info
+          [conversacion]="conversacionSeleccionada"
+        ></app-chat-info>
+
+      </section>
+
+    </ng-container>
+
+    <section class="panel-pane" *ngSwitchCase="'amigos'">
+      <app-friends-panel></app-friends-panel>
+    </section>
+
+    <section class="panel-pane" *ngSwitchCase="'estados'">
+      <app-states-panel></app-states-panel>
+    </section>
+
+    <section class="panel-pane" *ngSwitchCase="'notificaciones'">
+      <app-notifications-panel></app-notifications-panel>
+    </section>
+
+    <section class="panel-pane" *ngSwitchCase="'ia'">
+      <app-ai-panel></app-ai-panel>
+    </section>
+
+    <section class="panel-pane" *ngSwitchCase="'configuracion'">
+      <app-settings-panel></app-settings-panel>
+    </section>
+
+  </ng-container>
+
+</div>
