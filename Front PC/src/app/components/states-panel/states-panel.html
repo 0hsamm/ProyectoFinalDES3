@@ -248,54 +248,36 @@
       <div class="detail-columns" *ngIf="!cargandoDetalle">
         <section>
           <h4>Lo vieron</h4>
-          <div
-            class="person-row"
-            *ngFor="let vista of vistasDetalle"
-          >
+          <div class="person-row" *ngFor="let vista of vistasDetalle">
             <div class="avatar small">
-              <img
-                *ngIf="vista.fotoPerfil"
-                [src]="vista.fotoPerfil"
-                alt="Foto de perfil"
-              >
-              <span *ngIf="!vista.fotoPerfil">
-                {{ obtenerIniciales(vista.usuarioNombre || vista.usuario) }}
-              </span>
+              <img *ngIf="obtenerFotoVista(vista)" [src]="obtenerFotoVista(vista)" alt="Foto de perfil">
+              <span *ngIf="!obtenerFotoVista(vista)">
+          {{ obtenerIniciales(obtenerNombreVista(vista)) }}
+        </span>
             </div>
             <div>
-              <strong>{{ vista.usuarioNombre || vista.usuario }}</strong>
+              <strong>{{ obtenerNombreVista(vista) }}</strong>
               <span>{{ formatearFecha(vista.fecha) }}</span>
             </div>
           </div>
-          <p class="muted" *ngIf="vistasDetalle.length == 0">
-            Aun nadie lo ha visto
-          </p>
+          <p class="muted" *ngIf="!tieneVistas()">Aun nadie lo ha visto</p>
         </section>
 
         <section>
           <h4>Les gusto</h4>
-          <div
-            class="person-row"
-            *ngFor="let like of likesDetalle"
-          >
+          <div class="person-row" *ngFor="let like of likesDetalle">
             <div class="avatar small">
-              <img
-                *ngIf="like.fotoPerfil"
-                [src]="like.fotoPerfil"
-                alt="Foto de perfil"
-              >
-              <span *ngIf="!like.fotoPerfil">
-                {{ obtenerIniciales(like.usuarioNombre || like.usuario) }}
-              </span>
+              <img *ngIf="obtenerFotoLike(like)" [src]="obtenerFotoLike(like)" alt="Foto de perfil">
+              <span *ngIf="!obtenerFotoLike(like)">
+          {{ obtenerIniciales(obtenerNombreLike(like)) }}
+        </span>
             </div>
             <div>
-              <strong>{{ like.usuarioNombre || like.usuario }}</strong>
+              <strong>{{ obtenerNombreLike(like) }}</strong>
               <span>{{ formatearFecha(like.fecha) }}</span>
             </div>
           </div>
-          <p class="muted" *ngIf="likesDetalle.length == 0">
-            Aun no tiene likes
-          </p>
+          <p class="muted" *ngIf="!tieneLikes()">Aun no tiene likes</p>
         </section>
       </div>
     </aside>

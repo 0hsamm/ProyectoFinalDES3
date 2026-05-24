@@ -34,9 +34,8 @@ export class LlamadaEntranteComponent {
 
   aceptar(): void {
     if (this.llamada.id == null) return;
-    // skipcq: JS-0339
     this.llamadaService
-      .aceptarLlamada(this.llamada.id!, this.idUsuarioActual)
+      .aceptarLlamada(this.llamada.id!, this.idUsuarioActual)    // skipcq: JS-0339
       .subscribe({
         next: (respuesta) => this.aceptada.emit(respuesta),
         error: () => this.rechazada.emit()
@@ -45,9 +44,8 @@ export class LlamadaEntranteComponent {
 
   rechazar(): void {
     if (this.llamada.id == null) return;
-    // skipcq: JS-0339
     this.llamadaService
-      .rechazarLlamada(this.llamada.id!)
+      .rechazarLlamada(this.llamada.id!)    // skipcq: JS-0339
       .subscribe({
         // skipcq: JS-0321
         next: () => {},

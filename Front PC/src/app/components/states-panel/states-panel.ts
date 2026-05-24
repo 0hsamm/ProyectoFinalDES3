@@ -621,7 +621,29 @@ export class StatesPanelComponent
         this.registrarVista(estado);
       });
   }
+  tieneVistas(): boolean {
+    return this.vistasDetalle.length > 0;
+  }
 
+  tieneLikes(): boolean {
+    return this.likesDetalle.length > 0;
+  }
+
+  obtenerFotoVista(vista: EstadoInteraccion): string {
+    return vista.fotoPerfil || '';
+  }
+
+  obtenerNombreVista(vista: EstadoInteraccion): string {
+    return vista.usuarioNombre || vista.usuario || '';
+  }
+
+  obtenerFotoLike(like: EstadoInteraccion): string {
+    return like.fotoPerfil || '';
+  }
+
+  obtenerNombreLike(like: EstadoInteraccion): string {
+    return like.usuarioNombre || like.usuario || '';
+  }
   private marcarCambio(): void {
 
     setTimeout(() => {
