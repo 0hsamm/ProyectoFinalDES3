@@ -77,6 +77,14 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
 
   private readonly baseTamano = 1024;
 
+  private readonly descripcionImagenAdjunta = 'Imagen adjunta';
+
+  private readonly descripcionAudioAdjunto = 'Audio adjunto';
+
+  private readonly descripcionVideoAdjunto = 'Video adjunto';
+
+  private readonly descripcionArchivoAdjunto = 'Archivo adjunto';
+
   fraseSecreta = '';
 
   archivoAdjunto: File | null = null;
@@ -309,7 +317,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
         this.conversacion.id,
         contenido === '' ? null : contenido,
         this.fraseSecreta,
-        ChatWindowComponent.obtenerTipoMensajeAdjunto(
+        this.obtenerTipoMensajeAdjunto(
           archivo
         ),
         archivo != null
@@ -642,18 +650,18 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
   ): string {
 
     if (this.tieneImagenAdjunta(mensaje)) {
-      return 'Imagen adjunta';
+      return this.descripcionImagenAdjunta;
     }
 
     if (mensaje.tipoMensaje === 'AUDIO') {
-      return 'Audio adjunto';
+      return this.descripcionAudioAdjunto;
     }
 
     if (mensaje.tipoMensaje === 'VIDEO') {
-      return 'Video adjunto';
+      return this.descripcionVideoAdjunto;
     }
 
-    return 'Archivo adjunto';
+    return this.descripcionArchivoAdjunto;
   }
 
   obtenerTamanoHumano(
@@ -1015,7 +1023,7 @@ export class ChatWindowComponent implements OnChanges, OnDestroy {
       this.obtenerReceptorId() != null;
   }
 
-  static obtenerTipoMensajeAdjunto(
+  obtenerTipoMensajeAdjunto(
     archivo: File | null
   ): string {
 
