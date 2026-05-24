@@ -1,0 +1,286 @@
+<div class="workspace-panel">
+
+  <header class="panel-heading">
+    <div>
+      <p>Estados</p>
+      <h2>Historias y actividad</h2>
+    </div>
+
+    <button
+      type="button"
+      class="tool-btn"
+      (click)="cargarEstados()"
+      title="Actualizar"
+    >
+      <i class="pi pi-refresh"></i>
+    </button>
+  </header>
+
+  <section class="states-layout">
+
+    <aside class="composer">
+      <div class="composer-title">
+        <span>Nuevo estado</span>
+        <strong>{{ texto.length }}/500</strong>
+      </div>
+
+      <textarea
+        rows="4"
+        maxlength="500"
+        placeholder="Escribe algo breve"
+        [(ngModel)]="texto"
+      ></textarea>
+
+      <div class="preview" *ngIf="archivo">
+        <img
+          *ngIf="tipoArchivo == 'IMAGEN'"
+          [src]="vistaPreviaArchivo"
+          alt="Vista previa"
+        >
+        <video
+          *ngIf="tipoArchivo == 'VIDEO'"
+          [src]="vistaPreviaArchivo"
+          muted
+          controls
+        ></video>
+        <button
+          type="button"
+          class="remove-preview"
+          (click)="quitarArchivo()"
+          title="Quitar archivo"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="composer-actions">
+        <label class="file-btn" title="Adjuntar imagen o video">
+          <i class="pi pi-paperclip"></i>
+          <input
+            type="file"
+            accept="image/*,video/*"
+            (change)="seleccionarArchivo($event)"
+          >
+        </label>
+
+        <span class="file-name" *ngIf="archivo">
+          {{ archivo.name }}
+        </span>
+
+        <button
+          type="button"
+          class="primary-btn"
+          [disabled]="publicando"
+          (click)="publicarEstado()"
+        >
+          <i class="pi pi-send"></i>
+          Publicar
+        </button>
+      </div>
+    </aside>
+
+    <main class="states-main">
+      <div class="state-toolbar">
+        <div class="segmented">
+          <button
+            type="button"
+            [class.active]="filtroActivo == 'todos'"
+            (click)="cambiarFiltro('todos')"
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            [class.active]="filtroActivo == 'mios'"
+            (click)="cambiarFiltro('mios')"
+          >
+            Mis estados
+          </button>
+        </div>
+
+        <span class="refresh-note">
+          Se actualiza automaticamente
+        </span>
+      </div>
+
+      <div class="state-box" *ngIf="cargando">
+        <i class="pi pi-spin pi-spinner"></i>
+        Cargando estados...
+      </div>
+
+      <section class="state-grid" *ngIf="!cargando">
+        <article
+          class="state-card"
+          *ngFor="let estado of obtenerEstadosVisibles()"
+          [class.own]="estado.propio"
+        >
+          <div class="state-author">
+            <div class="avatar">
+              <img
+                *ngIf="estado.fotoPerfil"
+                [src]="estado.fotoPerfil"
+                alt="Foto de perfil"
+              >
+              <span *ngIf="!estado.fotoPerfil">
+                {{ obtenerIniciales(estado.usuarioNombre) }}
+              </span>
+            </div>
+
+            <div class="author-copy">
+              <strong>{{ estado.usuarioNombre }}</strong>
+              <span>{{ formatearFecha(estado.fechaCreacion) }}</span>
+            </div>
+
+            <button
+              *ngIf="estado.propio"
+              type="button"
+              class="icon-btn danger"
+              [disabled]="procesandoEstadoId == estado.id"
+              (click)="eliminarEstado(estado)"
+              title="Eliminar estado"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+
+          <p *ngIf="estado.texto">{{ estado.texto }}</p>
+
+          <img
+            class="state-media"
+            *ngIf="estado.tipo == 'IMAGEN' && estado.mediaUrl"
+            [src]="estado.mediaUrl"
+            alt="Estado"
+          >
+
+          <video
+            class="state-media"
+            *ngIf="estado.tipo == 'VIDEO' && estado.mediaUrl"
+            [src]="estado.mediaUrl"
+            controls
+          ></video>
+
+          <footer>
+            <button
+              type="button"
+              class="metric-btn"
+              [class.active]="estado.meGusta"
+              [disabled]="procesandoEstadoId == estado.id"
+              (click)="alternarLike(estado)"
+              title="Me gusta"
+            >
+              <i class="pi" [class.pi-heart-fill]="estado.meGusta" [class.pi-heart]="!estado.meGusta"></i>
+              {{ estado.cantidadLikes || 0 }}
+            </button>
+
+            <button
+              type="button"
+              class="metric-btn"
+              [disabled]="!estado.propio"
+              (click)="abrirDetalle(estado)"
+              title="Ver detalle"
+            >
+              <i class="pi pi-eye"></i>
+              {{ estado.cantidadVistas || 0 }}
+            </button>
+
+            <button
+              *ngIf="estado.propio"
+              type="button"
+              class="detail-btn"
+              (click)="abrirDetalle(estado)"
+            >
+              Detalle
+            </button>
+          </footer>
+        </article>
+
+        <div
+          class="empty-state"
+          *ngIf="obtenerEstadosVisibles().length == 0"
+        >
+          No hay estados activos en esta vista
+        </div>
+      </section>
+    </main>
+
+  </section>
+
+  <section
+    class="detail-backdrop"
+    *ngIf="detalleEstado"
+    (click)="cerrarDetalle()"
+  >
+    <aside
+      class="detail-panel"
+      (click)="$event.stopPropagation()"
+    >
+      <header>
+        <div>
+          <p>Detalle del estado</p>
+          <h3>{{ detalleEstado.usuarioNombre }}</h3>
+        </div>
+        <button
+          type="button"
+          class="icon-btn"
+          (click)="cerrarDetalle()"
+          title="Cerrar"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      </header>
+
+      <div class="detail-summary">
+        <span>
+          <i class="pi pi-eye"></i>
+          {{ detalleEstado.cantidadVistas || 0 }} vistas
+        </span>
+        <span>
+          <i class="pi pi-heart"></i>
+          {{ detalleEstado.cantidadLikes || 0 }} likes
+        </span>
+      </div>
+
+      <div class="state-box" *ngIf="cargandoDetalle">
+        <i class="pi pi-spin pi-spinner"></i>
+        Cargando detalle...
+      </div>
+
+      <div class="detail-columns" *ngIf="!cargandoDetalle">
+        <section>
+          <h4>Lo vieron</h4>
+          <div class="person-row" *ngFor="let vista of vistasDetalle">
+            <div class="avatar small">
+              <img *ngIf="obtenerFotoVista(vista)" [src]="obtenerFotoVista(vista)" alt="Foto de perfil">
+              <span *ngIf="!obtenerFotoVista(vista)">
+          {{ obtenerIniciales(obtenerNombreVista(vista)) }}
+        </span>
+            </div>
+            <div>
+              <strong>{{ obtenerNombreVista(vista) }}</strong>
+              <span>{{ formatearFecha(vista.fecha) }}</span>
+            </div>
+          </div>
+          <p class="muted" [hidden]="tieneVistas()">Aun nadie lo ha visto</p>
+        </section>
+
+        <section>
+          <h4>Les gusto</h4>
+          <div class="person-row" *ngFor="let like of likesDetalle">
+            <div class="avatar small">
+              <img *ngIf="obtenerFotoLike(like)" [src]="obtenerFotoLike(like)" alt="Foto de perfil">
+              <span *ngIf="!obtenerFotoLike(like)">
+          {{ obtenerIniciales(obtenerNombreLike(like)) }}
+        </span>
+            </div>
+            <div>
+              <strong>{{ obtenerNombreLike(like) }}</strong>
+              <span>{{ formatearFecha(like.fecha) }}</span>
+            </div>
+          </div>
+          <p class="muted" [hidden]="tieneLikes()">Aun no tiene likes</p>
+        </section>
+      </div>
+    </aside>
+  </section>
+
+</div>

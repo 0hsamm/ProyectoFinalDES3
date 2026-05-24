@@ -1,0 +1,1150 @@
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
+
+import { CommonModule } from '@angular/common';
+
+import { FormsModule } from '@angular/forms';
+
+import { Conversacion } from '../../models/conversacion';
+
+import { Mensaje } from '../../models/mensaje';
+
+import { MensajeService } from '../../services/mensaje.service';
+
+import { LlamadaService } from '../../services/llamada.service';
+
+import { ToastService } from '../../services/toast.service';
+
+import { LlamadaComponent } from '../llamada/llamada';
+import { LlamadaEntranteComponent } from '../llamada-entrante/llamada-entrante';
+import { Llamada, LlamadaRespuesta } from '../../models/llamada';
+
+import {
+  interval,
+  Subscription
+} from 'rxjs';
+
+@Component({
+  selector: 'app-chat-window',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    LlamadaComponent,
+    LlamadaEntranteComponent
+  ],
+  templateUrl: './chat-window.html',
+  styleUrls: ['./chat-window.css']
+})
+export class ChatWindowComponent implements OnChanges, OnDestroy {
+
+  @Input()
+  conversacion: Conversacion | null = null;
+
+  @ViewChild('adjuntoInput')
+  adjuntoInput?: ElementRef<HTMLInputElement>;
+
+  mensajes: Mensaje[] = [];
+
+  nuevoMensaje = '';
+
+  cargando = false;
+
+  enviando = false;
+
+  llamadaActivaId: number | null = null;
+  llamadaActiva: LlamadaRespuesta | null = null;
+  llamadaEntrante: Llamada | null = null;
+  private pollingLlamadaSub?: Subscription;
+
+  error = '';
+
+  private readonly requiereUrlParaAdjunto = true;
+
+  private readonly contenidoProtegidoTexto = 'Mensaje protegido';
+
+  private readonly localeHora = 'es-CO';
+
+  private readonly unidadesTamano = ['B', 'KB', 'MB', 'GB'];
+
+  private readonly baseTamano = 1024;
+
+  private readonly descripcionImagenAdjunta = 'Imagen adjunta';
+
+  private readonly descripcionAudioAdjunto = 'Audio adjunto';
+
+  private readonly descripcionVideoAdjunto = 'Video adjunto';
+
+  private readonly descripcionArchivoAdjunto = 'Archivo adjunto';
+
+  fraseSecreta = '';
+
+  archivoAdjunto: File | null = null;
+
+  archivoPreviewUrl: string | null = null;
+
+  archivoPreviewEsImagen = false;
+
+  usuarioActual: string =
+    localStorage.getItem('usuario') || '';
+
+  idUsuarioActual =
+    Number(localStorage.getItem('idUsuario') || 0);
+
+  private refrescoSub?: Subscription;
+
+  private destruido = false;
+
+  constructor(
+    private mensajeService: MensajeService,
+    private llamadaService: LlamadaService,
+    private toastService: ToastService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {}
+
+  ngOnChanges(
+    changes: SimpleChanges
+  ): void {
+
+    if (
+      changes['conversacion'] &&
+      this.conversacion?.id
+    ) {
+      this.mensajes = [];
+      this.error = '';
+      this.nuevoMensaje = '';
+      this.limpiarAdjuntoSeleccionado();
+
+      this.fraseSecreta =
+        this.obtenerFraseGuardada(
+          this.conversacion.id
+        );
+
+      this.cargarMensajes();
+      this.reiniciarRefresco();
+      this.iniciarPollingLlamadas();
+    }
+
+    if (
+      changes['conversacion'] &&
+      this.conversacion == null
+    ) {
+      this.mensajes = [];
+      this.nuevoMensaje = '';
+      this.limpiarAdjuntoSeleccionado();
+      this.refrescoSub?.unsubscribe();
+      this.pollingLlamadaSub?.unsubscribe();
+    }
+  }
+
+  ngOnDestroy(): void {
+
+    this.destruido = true;
+    this.refrescoSub?.unsubscribe();
+    this.limpiarAdjuntoSeleccionado();
+    this.pollingLlamadaSub?.unsubscribe();
+  }
+
+  cargarMensajes(
+    mostrarCarga = true
+  ): void {
+
+    if (!this.conversacion?.id) {
+      return;
+    }
+
+    if (
+      this.conversacion.fraseSecretaConfigurada &&
+      this.fraseSecreta.trim().length < 8
+    ) {
+      this.mensajes = [];
+      this.cargando = false;
+      this.error =
+        'Ingresa la frase secreta de esta conversacion para ver los mensajes';
+      this.marcarCambio();
+      return;
+    }
+
+    if (mostrarCarga) {
+      this.cargando = true;
+      this.marcarCambio();
+    }
+
+    this.error = '';
+
+    this.mensajeService
+      .obtenerMensajesPorConversacion(
+        this.conversacion.id,
+        this.fraseSecreta
+      )
+      .subscribe({
+
+        next: (mensajes) => {
+
+          this.mensajes = mensajes || [];
+
+          if (this.mensajes.length === 0) {
+            this.limpiarUltimoMensajeConversacion();
+          }
+
+          const hayMensajesProtegidos =
+            this.mensajes.some(
+              (mensaje) =>
+                mensaje.contenidoProtegido
+            );
+
+          const hayMensajesVisibles =
+            this.mensajes.some(
+              (mensaje) =>
+                this.tieneMensajeVisible(
+                  mensaje
+                )
+            );
+
+          if (
+            this.conversacion?.fraseSecretaConfigurada &&
+            this.fraseSecreta.trim().length >= 8 &&
+            this.mensajes.length > 0 &&
+            hayMensajesProtegidos &&
+            !hayMensajesVisibles
+          ) {
+            this.error =
+              'La frase secreta no coincide con esta conversacion';
+
+            if (mostrarCarga) {
+              this.toastService.warning(
+                'Frase secreta invalida',
+                this.error
+              );
+            }
+          } else {
+            this.error = '';
+          }
+
+          if (
+            this.conversacion?.id &&
+            this.conversacion.fraseSecretaConfigurada
+          ) {
+            this.guardarFraseSecreta(
+              this.conversacion.id,
+              this.fraseSecreta
+            );
+          }
+
+          this.actualizarUltimoMensajeConversacion();
+
+          this.cargando = false;
+          this.marcarCambio();
+        },
+
+        error: () => {
+
+          this.cargando = false;
+          this.marcarCambio();
+
+          this.error =
+            mostrarCarga
+              ? 'No se pudieron cargar los mensajes'
+              : '';
+
+          if (mostrarCarga) {
+            this.toastService.error(
+              'Mensajes no disponibles',
+              this.error
+            );
+          }
+        }
+      });
+  }
+
+  enviarMensaje(): void {
+
+    const contenido =
+      this.nuevoMensaje.trim();
+
+    const archivo =
+      this.archivoAdjunto;
+
+    if (
+      (contenido === '' && archivo === null) ||
+      !this.conversacion?.id ||
+      this.enviando
+    ) {
+      return;
+    }
+
+    this.enviando = true;
+    this.marcarCambio();
+
+    if (this.idUsuarioActual === 0) {
+      this.enviando = false;
+      this.marcarCambio();
+
+      this.toastService.error(
+        'Sesion incompleta',
+        'Vuelve a iniciar sesion para enviar mensajes'
+      );
+
+      return;
+    }
+
+    if (
+      this.conversacion.fraseSecretaConfigurada &&
+      this.fraseSecreta.trim().length < 8
+    ) {
+      this.enviando = false;
+      this.marcarCambio();
+
+      this.toastService.warning(
+        'Frase secreta requerida',
+        'Debes ingresar la frase secreta de la conversacion antes de enviar mensajes'
+      );
+
+      return;
+    }
+
+    this.mensajeService
+      .enviarMensaje(
+        this.idUsuarioActual,
+        this.conversacion.id,
+        contenido === '' ? null : contenido,
+        this.fraseSecreta,
+        this.obtenerTipoMensajeAdjunto(
+          archivo
+        ),
+        archivo != null
+      )
+      .subscribe({
+
+        next: (mensajeCreado) => {
+
+          if (
+            archivo != null &&
+            mensajeCreado.id != null
+          ) {
+            this.subirAdjunto(
+              mensajeCreado,
+              archivo,
+              contenido
+            );
+            return;
+          }
+
+          this.finalizarEnvioExitoso(
+            'Mensaje enviado'
+          );
+        },
+
+        error: (err) => {
+
+          this.enviando = false;
+          this.marcarCambio();
+
+          this.error =
+            'No se pudo enviar el mensaje';
+
+          this.toastService.error(
+            'No se envio el mensaje',
+            ChatWindowComponent.obtenerMensajeError(
+              err,
+              this.error
+            )
+          );
+        }
+      });
+  }
+
+  iniciarLlamada(tipo: 'VOZ' | 'VIDEO'): void {
+
+    if (this.esConversacionGrupal()) {
+      this.toastService.warning(
+        'Llamadas no disponibles',
+        'Las llamadas solo estan habilitadas en chats privados'
+      );
+      return;
+    }
+
+    const receptorId = this.obtenerReceptorId();
+
+    if (!this.conversacion?.id || this.idUsuarioActual === 0 || receptorId == null) {
+      this.toastService.warning(
+        'Llamada no disponible',
+        'La conversacion no tiene un receptor valido para iniciar llamada'
+      );
+      return;
+    }
+
+    this.llamadaService
+      .iniciarLlamada({
+        tipoLlamada: tipo,
+        conversacionId: this.conversacion.id,
+        usuarioLlamanteId: this.idUsuarioActual,
+        usuarioReceptorId: receptorId
+      })
+      .subscribe({
+        next: (respuesta) => {
+          this.llamadaActivaId = respuesta.id;
+          this.llamadaActiva = respuesta;
+          this.marcarCambio();
+          this.toastService.success(
+            tipo === 'VOZ' ? 'Llamada iniciada' : 'Videollamada iniciada',
+            `Conectando con ${this.obtenerNombreConversacion()}`
+          );
+        },
+        error: (err) => {
+          this.toastService.error(
+            'No se pudo iniciar la llamada',
+            ChatWindowComponent.obtenerMensajeError(
+              err,
+              'Revisa que ambos usuarios pertenezcan a la conversacion'
+            )
+          );
+        }
+      });
+  }
+
+  finalizarLlamada(): void {
+
+    if (this.llamadaActivaId == null) return;
+
+    this.llamadaService
+      .finalizarLlamada(this.llamadaActivaId)
+      .subscribe({
+        next: (respuesta) => {
+          this.toastService.info('Llamada finalizada', respuesta);
+          this.llamadaActivaId = null;
+          this.llamadaActiva = null;
+          this.marcarCambio();
+        },
+        error: (err) => {
+          this.toastService.error(
+            'No se pudo finalizar',
+            ChatWindowComponent.obtenerMensajeError(err, 'Intenta nuevamente')
+          );
+        }
+      });
+  }
+
+  onColgar(): void {
+    this.finalizarLlamada();
+  }
+
+  adjuntoSeleccionado(
+    event: Event
+  ): void {
+
+    const input =
+      event.target as HTMLInputElement;
+
+    const archivo =
+      input.files?.item(0) || null;
+
+    if (archivo == null) {
+      this.limpiarAdjuntoSeleccionado();
+      return;
+    }
+
+    this.limpiarPreviewAnterior();
+
+    this.archivoAdjunto =
+      archivo;
+
+    this.archivoPreviewEsImagen =
+      ChatWindowComponent.esImagenMime(
+        archivo.type
+      );
+
+    if (this.archivoPreviewEsImagen) {
+      this.archivoPreviewUrl =
+        URL.createObjectURL(archivo);
+    }
+
+    this.error = '';
+    this.marcarCambio();
+  }
+
+  quitarAdjunto(): void {
+    this.limpiarAdjuntoSeleccionado();
+    this.marcarCambio();
+  }
+
+  obtenerNombreConversacion(): string {
+
+    return this.conversacion?.nombre ||
+      (
+        this.conversacion?.id != null
+          ? `Chat #${this.conversacion.id}`
+          : ''
+      );
+  }
+
+  obtenerFotoConversacion(): string {
+
+    if (
+      this.conversacion?.fotoGrupo &&
+      this.conversacion.fotoGrupo.trim() !== ''
+    ) {
+      return this.conversacion.fotoGrupo;
+    }
+
+    const participanteVisible =
+      this.conversacion?.participantes?.[0];
+
+    return participanteVisible?.fotoPerfil || '';
+  }
+
+  obtenerIniciales(): string {
+
+    return this.obtenerNombreConversacion()
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((parte) => parte[0])
+      .join('')
+      .toUpperCase();
+  }
+
+  esMensajePropio(
+    mensaje: Mensaje
+  ): boolean {
+
+    return mensaje.remitenteId === this.idUsuarioActual ||
+      mensaje.usuarioId === this.idUsuarioActual ||
+      mensaje.usuario === this.usuarioActual ||
+      mensaje.nombreUsuario === this.usuarioActual;
+  }
+
+  debeMostrarRemitente(
+    mensaje: Mensaje
+  ): boolean {
+
+    return this.esConversacionGrupal() &&
+      this.obtenerNombreRemitente(
+        mensaje
+      ) !== '';
+  }
+
+  obtenerNombreRemitente(
+    mensaje: Mensaje
+  ): string {
+
+    if (this.esMensajePropio(mensaje)) {
+      return 'Tu';
+    }
+
+    return mensaje.remitenteNombre ||
+      mensaje.usuarioNombre ||
+      mensaje.nombreUsuario ||
+      mensaje.remitenteUsuario ||
+      mensaje.usuario ||
+      (
+        mensaje.remitenteId != null
+          ? `Usuario ${mensaje.remitenteId}`
+          : ''
+      );
+  }
+
+  formatearHora(
+    fecha?: string
+  ): string {
+
+    const valorFecha =
+      fecha || '';
+
+    if (!valorFecha) {
+      return '';
+    }
+
+    const fechaMensaje =
+      new Date(valorFecha);
+
+    if (Number.isNaN(fechaMensaje.getTime())) {
+      return '';
+    }
+
+    return fechaMensaje.toLocaleTimeString(
+      this.localeHora,
+      {
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+    );
+  }
+
+  obtenerContenido(
+    mensaje: Mensaje
+  ): string {
+
+    if (mensaje.contenidoProtegido) {
+      return this.contenidoProtegidoTexto;
+    }
+
+    return (mensaje.contenido || '')
+      .trim();
+  }
+
+  tieneContenidoVisible(
+    mensaje: Mensaje
+  ): boolean {
+
+    return this.obtenerContenido(
+      mensaje
+    ) !== '';
+  }
+
+  tieneAdjuntoVisible(
+    mensaje: Mensaje
+  ): boolean {
+
+    return Boolean(
+      mensaje.tieneAdjunto &&
+      (
+        !this.requiereUrlParaAdjunto ||
+        mensaje.adjuntoUrl
+      )
+    );
+  }
+
+  tieneImagenAdjunta(
+    mensaje: Mensaje
+  ): boolean {
+
+    return this.tieneAdjuntoVisible(
+      mensaje
+    ) && ChatWindowComponent.esImagenMime(
+      mensaje.adjuntoFormato
+    );
+  }
+
+  tieneAdjuntoNoImagen(
+    mensaje: Mensaje
+  ): boolean {
+
+    return this.tieneAdjuntoVisible(
+      mensaje
+    ) && !this.tieneImagenAdjunta(
+      mensaje
+    );
+  }
+
+  obtenerNombreAdjunto(
+    mensaje: Mensaje
+  ): string {
+
+    return mensaje.adjuntoNombreOriginal ||
+      this.obtenerDescripcionAdjunto(
+        mensaje
+      );
+  }
+
+  obtenerDescripcionAdjunto(
+    mensaje: Mensaje
+  ): string {
+
+    if (this.tieneImagenAdjunta(mensaje)) {
+      return this.descripcionImagenAdjunta;
+    }
+
+    if (mensaje.tipoMensaje === 'AUDIO') {
+      return this.descripcionAudioAdjunto;
+    }
+
+    if (mensaje.tipoMensaje === 'VIDEO') {
+      return this.descripcionVideoAdjunto;
+    }
+
+    return this.descripcionArchivoAdjunto;
+  }
+
+  obtenerTamanoHumano(
+    bytes?: number
+  ): string {
+
+    if (bytes === undefined || bytes === null || bytes <= 0) {
+      return '';
+    }
+
+    let valor =
+      bytes;
+
+    let indice =
+      0;
+
+    while (
+      valor >= this.baseTamano &&
+      indice < this.unidadesTamano.length - 1
+      ) {
+      valor /= this.baseTamano;
+      indice++;
+    }
+
+    const decimales =
+      valor >= 10 || indice === 0
+        ? 0
+        : 1;
+
+    return `${valor.toFixed(decimales)} ${this.unidadesTamano[indice]}`;
+  }
+
+  obtenerHoraMensaje(
+    mensaje: Mensaje
+  ): string {
+
+    return this.formatearHora(
+      mensaje.horaEnvio ||
+      mensaje.fechaEnvio
+    );
+  }
+  // skipcq: JS-0105
+  obtenerSiglaAdjunto(
+    tipoMensaje?: string
+  ): string {
+
+    if (tipoMensaje === 'VIDEO') {
+      return 'VD';
+    }
+
+    if (tipoMensaje === 'AUDIO') {
+      return 'AU';
+    }
+
+    return 'AR';
+  }
+
+  private subirAdjunto(
+    mensajeCreado: Mensaje,
+    archivo: File,
+    contenido: string
+  ): void {
+
+    this.mensajeService
+      .subirAdjunto(
+        mensajeCreado.id as number,
+        archivo,
+        this.fraseSecreta
+      )
+      .subscribe({
+
+        next: (mensajeActualizado) => {
+          this.finalizarEnvioExitoso(
+            this.obtenerTituloEnvioAdjunto(
+              mensajeActualizado,
+              contenido
+            )
+          );
+        },
+
+        error: (err) => {
+          this.manejarErrorAdjunto(
+            err,
+            mensajeCreado.id as number,
+            contenido
+          );
+        }
+      });
+  }
+
+  private manejarErrorAdjunto(
+    err: unknown,
+    mensajeId: number,
+    contenido: string
+  ): void {
+
+    if (contenido === '') {
+      this.mensajeService
+        .eliminarMensaje(mensajeId)
+        .subscribe({
+          next: () => {
+
+            this.toastService.info(
+              'Mensaje descartado',
+              'El mensaje sin archivo fue eliminado'
+            );
+          },
+          error: () => {
+
+            this.toastService.warning(
+              'Mensaje pendiente',
+              'El mensaje quedo registrado, pero el archivo no se pudo adjuntar'
+            );
+          }
+        });
+    } else {
+      this.nuevoMensaje = '';
+      this.limpiarAdjuntoSeleccionado();
+    }
+
+    this.enviando = false;
+    this.marcarCambio();
+
+    this.toastService.error(
+      'No se pudo subir el archivo',
+      contenido === ''
+        ? ChatWindowComponent.obtenerMensajeError(
+            err,
+            'El archivo no se pudo enviar'
+          )
+        : ChatWindowComponent.obtenerMensajeError(
+            err,
+            'El texto se envio, pero el archivo no se pudo adjuntar'
+          )
+    );
+  }
+
+  private finalizarEnvioExitoso(
+    titulo: string
+  ): void {
+
+    this.nuevoMensaje = '';
+    this.limpiarAdjuntoSeleccionado();
+    this.enviando = false;
+    this.marcarCambio();
+
+    if (
+      this.conversacion?.id &&
+      this.conversacion.fraseSecretaConfigurada
+    ) {
+      this.guardarFraseSecreta(
+        this.conversacion.id,
+        this.fraseSecreta
+      );
+    }
+
+    this.toastService.success(
+      titulo
+    );
+
+    this.cargarMensajes();
+  }
+
+  private obtenerReceptorId(): number | null {
+
+    const participantes =
+      this.conversacion?.participantesIds || [];
+
+    const receptor =
+      participantes.find(
+        (id) => id !== this.idUsuarioActual
+      );
+
+    return receptor || null;
+  }
+
+  private obtenerTituloEnvioAdjunto(
+    mensaje: Mensaje,
+    contenido: string
+  ): string {
+
+    const descripcion =
+      this.obtenerDescripcionAdjunto(
+        mensaje
+      );
+
+    if (contenido === '') {
+      return descripcion;
+    }
+
+    return `Mensaje y ${descripcion.toLowerCase()}`;
+  }
+
+  private static obtenerMensajeError(
+    err: unknown,
+    mensajeDefecto: string
+  ): string {
+
+    const errorBody =
+      typeof err === 'object' && err !== null && 'error' in err
+        ? (err as { error?: unknown }).error
+        : undefined;
+
+    if (typeof errorBody === 'string') {
+      return errorBody;
+    }
+
+    if (
+      typeof errorBody === 'object' &&
+      errorBody !== null
+    ) {
+      const errorObject =
+        errorBody as Record<string, unknown>;
+
+      if (typeof errorObject['mensaje'] === 'string') {
+        return errorObject['mensaje'];
+      }
+
+      if (typeof errorObject['error'] === 'string') {
+        return errorObject['error'];
+      }
+
+      if (typeof errorObject['message'] === 'string') {
+        return errorObject['message'];
+      }
+    }
+
+    return mensajeDefecto;
+  }
+
+  private reiniciarRefresco(): void {
+
+    this.refrescoSub?.unsubscribe();
+
+    this.refrescoSub =
+      interval(7000)
+        .subscribe(() => {
+          this.cargarMensajes(false);
+        });
+  }
+
+  private obtenerFraseGuardada(
+    conversacionId: number
+  ): string {
+
+    return sessionStorage.getItem(
+      this.obtenerClaveFrase(
+        conversacionId
+      )
+    ) || '';
+  }
+
+  private guardarFraseSecreta(
+    conversacionId: number,
+    frase: string
+  ): void {
+
+    sessionStorage.setItem(
+      this.obtenerClaveFrase(
+        conversacionId
+      ),
+      frase.trim()
+    );
+  }
+
+  private actualizarUltimoMensajeConversacion(): void {
+
+    if (
+      !this.conversacion?.id ||
+      this.mensajes.length === 0
+    ) {
+      return;
+    }
+
+    const ultimoMensaje =
+      this.mensajes[
+        this.mensajes.length - 1
+      ];
+
+    const vistaPrevia =
+      this.obtenerVistaPreviaMensaje(
+        ultimoMensaje
+      );
+
+    if (vistaPrevia === '') {
+      return;
+    }
+
+    this.conversacion.ultimoMensaje =
+      vistaPrevia;
+
+    sessionStorage.setItem(
+      this.obtenerClaveUltimoMensaje(
+        this.conversacion.id
+      ),
+      vistaPrevia
+    );
+  }
+
+  private limpiarUltimoMensajeConversacion(): void {
+
+    if (!this.conversacion?.id) {
+      return;
+    }
+
+    this.conversacion.ultimoMensaje = '';
+
+    sessionStorage.removeItem(
+      this.obtenerClaveUltimoMensaje(
+        this.conversacion.id
+      )
+    );
+  }
+
+  private obtenerVistaPreviaMensaje(
+    mensaje: Mensaje
+  ): string {
+
+    if (mensaje.contenidoProtegido) {
+      return '';
+    }
+
+    const contenido =
+      this.obtenerContenido(mensaje);
+
+    if (contenido !== '') {
+      return contenido;
+    }
+
+    if (this.tieneAdjuntoVisible(mensaje)) {
+      return this.obtenerDescripcionAdjunto(
+        mensaje
+      );
+    }
+
+    return '';
+  }
+
+  private tieneMensajeVisible(
+    mensaje: Mensaje
+  ): boolean {
+
+    return this.tieneContenidoVisible(
+      mensaje
+    ) || this.tieneAdjuntoVisible(
+      mensaje
+    );
+  }
+
+  private esConversacionGrupal(): boolean {
+
+    return this.conversacion?.tipoConversacion ===
+      'GRUPAL';
+  }
+
+  puedeHacerLlamadas(): boolean {
+
+    return !this.esConversacionGrupal() &&
+      this.obtenerReceptorId() != null;
+  }
+  // skipcq: JS-0105
+  obtenerTipoMensajeAdjunto(
+    archivo: File | null
+  ): string {
+
+    if (archivo == null) {
+      return 'TEXTO';
+    }
+
+    const mime =
+      (archivo.type || '')
+        .toLowerCase();
+
+    if (mime.startsWith('image/')) {
+      return 'IMAGEN';
+    }
+
+    if (mime.startsWith('audio/')) {
+      return 'AUDIO';
+    }
+
+    if (mime.startsWith('video/')) {
+      return 'VIDEO';
+    }
+
+    return 'ARCHIVO';
+  }
+
+  private static esImagenMime(
+    mime?: string | null
+  ): boolean {
+
+    return (mime || '')
+      .toLowerCase()
+      .startsWith('image/');
+  }
+
+  private limpiarAdjuntoSeleccionado(): void {
+
+    this.archivoAdjunto = null;
+    this.archivoPreviewEsImagen = false;
+    this.limpiarPreviewAnterior();
+
+    if (this.adjuntoInput?.nativeElement) {
+      this.adjuntoInput.nativeElement.value = '';
+    }
+  }
+
+  private limpiarPreviewAnterior(): void {
+
+    if (this.archivoPreviewUrl != null) {
+      URL.revokeObjectURL(
+        this.archivoPreviewUrl
+      );
+    }
+
+    this.archivoPreviewUrl = null;
+  }
+
+  private obtenerClaveFrase(
+    conversacionId: number
+  ): string {
+
+    return `fraseSecretaConversacion:${this.idUsuarioActual}:${conversacionId}`;
+  }
+
+  private obtenerClaveUltimoMensaje(
+    conversacionId: number
+  ): string {
+
+    return `ultimoMensajeConversacion:${this.idUsuarioActual}:${conversacionId}`;
+  }
+
+  private marcarCambio(): void {
+
+    setTimeout(() => {
+      if (!this.destruido) {
+        this.changeDetectorRef.detectChanges();
+      }
+    });
+  }
+  iniciarPollingLlamadas(): void {
+    this.pollingLlamadaSub?.unsubscribe();
+    this.pollingLlamadaSub = interval(4000).subscribe(() => {
+      if (this.idUsuarioActual === 0) return;
+      this.llamadaService
+        .obtenerLlamadasPendientes(this.idUsuarioActual)
+        .subscribe({
+          next: (llamadas) => {
+            const entrante = llamadas.find(
+              (l) =>
+                l.estadoLlamada === 'INICIADA' &&
+                l.usuarioReceptorId === this.idUsuarioActual &&
+                l.id !== this.llamadaActivaId
+            );
+            if (entrante && this.llamadaEntrante?.id !== entrante.id) {
+              this.llamadaEntrante = entrante;
+              this.marcarCambio();
+            } else if (!entrante && this.llamadaEntrante != null) {
+              this.llamadaEntrante = null;
+              this.marcarCambio();
+            }
+          },
+          error: () => {
+
+            this.error =
+              'No se pudieron consultar las llamadas pendientes';
+
+            this.marcarCambio();
+          }
+        });
+    });
+  }
+
+  onLlamadaAceptada(respuesta: LlamadaRespuesta): void {
+    this.llamadaEntrante = null;
+    this.llamadaActiva = respuesta;
+    this.llamadaActivaId = respuesta.id;
+    this.marcarCambio();
+  }
+
+  onLlamadaRechazada(): void {
+    this.llamadaEntrante = null;
+    this.marcarCambio();
+  }
+}

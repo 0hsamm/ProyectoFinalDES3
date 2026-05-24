@@ -1,6 +1,8 @@
 package co.edu.unbosque.proyectofinal.repository;
 
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import co.edu.unbosque.proyectofinal.entity.ParticipanteConversacion;
@@ -21,6 +23,10 @@ public interface ParticipanteConversacionRepository extends JpaRepository<Partic
             RolParticipante rol);
     
     boolean existsByConversacion_IdAndUsuario_Usuario(Long conversacionId, String usuario);
+
+    Optional<ParticipanteConversacion> findByConversacion_IdAndUsuario_Id(
+            Long conversacionId,
+            Long usuarioId);
 }
 
 

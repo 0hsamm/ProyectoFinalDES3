@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import co.edu.unbosque.proyectofinal.dto.MensajeDTO;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
+import co.edu.unbosque.proyectofinal.security.JwtUtil;
 import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.MensajeService;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/mensajes")
-@CrossOrigin(origins = {"http://localhost:8081", "*"})
 public class MensajeController {
 
 	@Autowired
@@ -36,87 +35,173 @@ public class MensajeController {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    private Usuario obtenerUsuarioAutenticado(
+            HttpServletRequest request) {
+
+        String authHeader =
+                request.getHeader("Authorization");
+
+        if (authHeader == null
+                || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+
+        String correo =
+                jwtUtil.extractUsername(
+                        authHeader.substring(7));
+
+        return usuarioRepository
+                .findByCorreo(correo)
+                .orElse(null);
+    }
+
+    private boolean esAdmin(
+            Usuario usuario) {
+
+        return usuario != null
+                && usuario.getRol() != null
+                && "ROLE_ADMIN".equals(
+                        usuario.getRol().name());
+    }
+
 	@PostMapping
-	public ResponseEntity<String> enviarMensaje(
+	public ResponseEntity<?> enviarMensaje(
 	        @RequestBody MensajeDTO dto,
 	        HttpServletRequest request) {
 
 	    String ip = request.getRemoteAddr();
 	    String navegador = request.getHeader("User-Agent");
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
 
-	    int status = mensajeService.create(dto);
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        dto.setRemitenteId(
+                usuarioAutenticado.getId());
+
+	    MensajeService.ResultadoCreacionMensaje resultado =
+                mensajeService.create(dto);
+
+        int status =
+                resultado.getCodigo();
 
 	    if (status == 0) {
-
-	    	Usuario usuario = dto.getRemitenteId() != null
-	    	        ? usuarioRepository.findById(dto.getRemitenteId()).orElse(null)
-	    	        : null;
-
 	        auditoriaService.registrar(
-	                usuario,
+	                usuarioAutenticado,
 	                "ENVIAR_MENSAJE",
 	                "MENSAJES",
-	                "Mensaje enviado en conversacion: " + dto.getConversacionId(),	                ip,
-	                navegador,
-	                null, null, null,
-	                true);
-
+	                "Mensaje enviado en conversacion: " + dto.getConversacionId(),
+	                ip, navegador, null, null, null, true);
 	        return new ResponseEntity<>(
-	                "Mensaje enviado correctamente",
-	                HttpStatus.OK);
-	    }
-	    else if (status == 1) {
+                    resultado.getMensaje(),
+                    HttpStatus.CREATED);
+	    } else if (status == 1) {
 	        return new ResponseEntity<>("Usuario no encontrado", HttpStatus.BAD_REQUEST);
-	    }
-	    else if (status == 2) {
-	        return new ResponseEntity<>("Conversacion no encontrada", HttpStatus.BAD_REQUEST);
-	    }
-	    else if (status == 4) {
-	        return new ResponseEntity<>("El usuario no tiene permiso para enviar mensajes en esta conversacion", HttpStatus.FORBIDDEN);
-	    }
-	    else if (status == 5) {
+	    } else if (status == 4) {
+	        return new ResponseEntity<>("El usuario no tiene permiso", HttpStatus.FORBIDDEN);
+	    } else if (status == 5) {
 	        return new ResponseEntity<>("Datos del mensaje incompletos", HttpStatus.BAD_REQUEST);
-	    }
-	    else if (status == 6) {
-	        return new ResponseEntity<>("Frase secreta invalida o no configurada", HttpStatus.FORBIDDEN);
-	    }
-	    else {
-	        return new ResponseEntity<>("Error interno al enviar mensaje", HttpStatus.INTERNAL_SERVER_ERROR);
+	    } else {
+	        return new ResponseEntity<>("Error interno", HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
 
 	@GetMapping
-	public List<MensajeDTO> obtenerTodos(
+	public ResponseEntity<?> obtenerTodos(
 			@RequestParam(required = false)
-			String fraseSecreta) {
+			String fraseSecreta,
+            HttpServletRequest request) {
 
-		return mensajeService.getAll(fraseSecreta);
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!esAdmin(usuarioAutenticado)) {
+            return new ResponseEntity<>(
+                    "No tienes permiso para consultar todos los mensajes",
+                    HttpStatus.FORBIDDEN);
+        }
+
+		return ResponseEntity.ok(
+                mensajeService.getAll(fraseSecreta));
 	}
 
 	@GetMapping("/conversacion/{id}")
-	public List<MensajeDTO> obtenerPorConversacion(
+	public ResponseEntity<?> obtenerPorConversacion(
 			@PathVariable Long id,
 			@RequestParam(required = false)
-			String fraseSecreta) {
+			String fraseSecreta,
+            HttpServletRequest request) {
 
-		return mensajeService
-				.getMensajesPorConversacion(id, fraseSecreta);
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+		return ResponseEntity.ok(
+                mensajeService.getMensajesPorConversacion(
+                        id,
+                        usuarioAutenticado.getId(),
+                        fraseSecreta));
 	}
 
 	@GetMapping("/conversacion/{id}/recientes")
-	public List<MensajeDTO> obtenerRecientes(
+	public ResponseEntity<?> obtenerRecientes(
 			@PathVariable Long id,
 			@RequestParam(required = false)
-			String fraseSecreta) {
+			String fraseSecreta,
+            HttpServletRequest request) {
 
-		return mensajeService
-				.getUltimosMensajes(id, fraseSecreta);
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+		return ResponseEntity.ok(
+                mensajeService.getUltimosMensajes(
+                        id,
+                        usuarioAutenticado.getId(),
+                        fraseSecreta));
 	}
 
 	@DeleteMapping("/{id}")
-	public int eliminar(
-			@PathVariable Long id) {
+	public ResponseEntity<?> eliminar(
+			@PathVariable Long id,
+            HttpServletRequest request) {
 
-		return mensajeService.deleteById(id);
+        Usuario usuarioAutenticado =
+                obtenerUsuarioAutenticado(request);
+
+        if (usuarioAutenticado == null) {
+            return new ResponseEntity<>(
+                    "No autorizado",
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+		return ResponseEntity.ok(
+                mensajeService.deleteById(
+                        id,
+                        usuarioAutenticado.getId(),
+                        esAdmin(usuarioAutenticado)));
 	}
 }

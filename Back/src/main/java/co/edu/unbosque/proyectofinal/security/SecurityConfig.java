@@ -117,13 +117,18 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
+                                "/uploads/**",
                                 "/error")
 
                         .permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/usuarios")
+                        .hasAuthority("ROLE_ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/usuarios")
-                        .permitAll()
+                        .hasAuthority("ROLE_ADMIN")
                         
+                     
                         .requestMatchers("/admin/**")
                         .hasAuthority("ROLE_ADMIN")
                         
@@ -212,7 +217,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
 
                 List.of(
-                        "http://localhost:4200"));
+                        "http://localhost:4200",
+                        "http://localhost:4201"));
 
         configuration.setAllowedMethods(
 

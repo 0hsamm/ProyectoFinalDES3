@@ -2,61 +2,41 @@ package co.edu.unbosque.proyectofinal.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-/**
- * Registro administrativo de acciones importantes del sistema.
- */
 @Entity
-@Table(name = "registro_auditoria")
 public class RegistroAuditoria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario")
-    private Usuario usuario;
-
-    @Column(nullable = false, length = 80)
     private String accion;
 
-    @Column(nullable = false, length = 80)
     private String modulo;
 
-    @Column(length = 250)
+    @Column(length = 1000)
     private String descripcion;
 
-    @Column(nullable = false)
     private LocalDateTime fechaAccion;
 
-    @Column(length = 80)
     private String ip;
 
-    @Column(length = 250)
     private String navegador;
 
     private Double latitud;
 
     private Double longitud;
 
-    @Column(length = 160)
     private String ubicacion;
 
-    @Column(name = "id_conversacion")
     private Long conversacionId;
 
-    @Column(nullable = false)
     private boolean exitoso;
+
+    @ManyToOne
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
 
     public RegistroAuditoria() {
     }
@@ -67,14 +47,6 @@ public class RegistroAuditoria {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
     }
 
     public String getAccion() {
@@ -105,7 +77,9 @@ public class RegistroAuditoria {
         return fechaAccion;
     }
 
-    public void setFechaAccion(LocalDateTime fechaAccion) {
+    public void setFechaAccion(
+            LocalDateTime fechaAccion) {
+
         this.fechaAccion = fechaAccion;
     }
 
@@ -153,8 +127,11 @@ public class RegistroAuditoria {
         return conversacionId;
     }
 
-    public void setConversacionId(Long conversacionId) {
-        this.conversacionId = conversacionId;
+    public void setConversacionId(
+            Long conversacionId) {
+
+        this.conversacionId =
+                conversacionId;
     }
 
     public boolean isExitoso() {
@@ -163,5 +140,13 @@ public class RegistroAuditoria {
 
     public void setExitoso(boolean exitoso) {
         this.exitoso = exitoso;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }

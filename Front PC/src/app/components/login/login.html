@@ -1,0 +1,225 @@
+<div class="page" [class.light-mode]="modoClaro">
+
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <header class="topbar">
+
+    <div class="brand-mark">
+      <div class="logo-circle">
+        R
+      </div>
+      <div>
+        <strong>Reload</strong>
+        <span>Mensajeria privada</span>
+      </div>
+    </div>
+
+    <button
+      class="theme-btn"
+      type="button"
+      (click)="toggleTheme()"
+    >
+      <i
+        class="pi"
+        [class.pi-sun]="!modoClaro"
+        [class.pi-moon]="modoClaro"
+      ></i>
+      {{ modoClaro ? 'Modo oscuro' : 'Modo claro' }}
+    </button>
+
+  </header>
+
+  <main class="auth-shell">
+
+    <section class="brand-panel">
+
+      <p class="mini-title">
+        RELOAD
+      </p>
+
+      <h1>
+        Entra a tus conversaciones sin ruido.
+      </h1>
+
+      <p class="description">
+        Mensajes, estados, llamadas y asistencia en una experiencia limpia para seguir hablando con tu gente.
+      </p>
+
+      <div class="conversation-preview">
+
+        <div class="preview-header">
+          <div class="preview-avatar">A</div>
+          <div>
+            <strong>Andres Riano</strong>
+            <span>Activo ahora</span>
+          </div>
+        </div>
+
+        <div class="preview-message left">
+          Nos vemos en Reload.
+        </div>
+
+        <div class="preview-message right">
+          Listo, ya estoy dentro.
+        </div>
+
+        <div class="preview-tools">
+          <span><i class="pi pi-phone"></i> Voz</span>
+          <span><i class="pi pi-images"></i> Estados</span>
+          <span><i class="pi pi-sparkles"></i> IA</span>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="login-panel">
+
+      <p class="panel-top">
+        {{ modoRegistro ? 'CREAR CUENTA' : 'ACCESO' }}
+      </p>
+
+      <h2>
+        {{ modoRegistro ? 'Crea tu cuenta' : 'Iniciar sesion' }}
+      </h2>
+
+      <p class="panel-subtitle">
+        {{
+          modoRegistro
+            ? 'Completa tus datos para empezar.'
+            : 'Usa tus credenciales para continuar.'
+        }}
+      </p>
+
+      <div class="input-group">
+        <label>Usuario</label>
+        <div class="field">
+          <i class="pi pi-user"></i>
+          <input
+            type="text"
+            [(ngModel)]="usuario"
+            placeholder="tu_usuario"
+          >
+        </div>
+      </div>
+
+      <div
+        class="input-group"
+        *ngIf="modoRegistro"
+      >
+        <label>Correo</label>
+        <div class="field">
+          <i class="pi pi-envelope"></i>
+          <input
+            type="email"
+            [(ngModel)]="correo"
+            placeholder="correo@dominio.com"
+          >
+        </div>
+      </div>
+
+      <div
+        class="input-group"
+        *ngIf="modoRegistro"
+      >
+        <label>Nombre</label>
+        <div class="field">
+          <i class="pi pi-id-card"></i>
+          <input
+            type="text"
+            [(ngModel)]="nombrePersona"
+            placeholder="Nombre completo"
+          >
+        </div>
+      </div>
+
+      <div
+        class="input-group"
+        *ngIf="modoRegistro"
+      >
+        <label>Fecha de nacimiento</label>
+        <div class="field">
+          <i class="pi pi-calendar"></i>
+          <input
+            type="date"
+            [(ngModel)]="fechaNacimiento"
+          >
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Contrasena</label>
+        <div class="field">
+          <i class="pi pi-lock"></i>
+          <input
+            type="password"
+            [(ngModel)]="contrasena"
+            placeholder="Contrasena"
+          >
+        </div>
+      </div>
+
+      <button
+        class="main-btn"
+        type="button"
+        [disabled]="cargando"
+        *ngIf="!modoRegistro"
+        (click)="entrar()"
+      >
+        <i
+          class="pi"
+          [class.pi-sign-in]="!cargando"
+          [class.pi-spinner]="cargando"
+          [class.pi-spin]="cargando"
+        ></i>
+        Entrar
+      </button>
+
+      <button
+        class="main-btn"
+        type="button"
+        [disabled]="cargando"
+        *ngIf="modoRegistro"
+        (click)="registrar()"
+      >
+        <i
+          class="pi"
+          [class.pi-user-plus]="!cargando"
+          [class.pi-spinner]="cargando"
+          [class.pi-spin]="cargando"
+        ></i>
+        Crear cuenta
+      </button>
+
+      <button
+        class="switch-btn"
+        type="button"
+        (click)="cambiarModo()"
+      >
+        {{
+          modoRegistro
+            ? 'Ya tienes cuenta? Inicia sesion'
+            : 'Crear cuenta nueva'
+        }}
+      </button>
+
+      <p
+        class="error"
+        *ngIf="error != ''"
+      >
+        {{ error }}
+      </p>
+
+      <p
+        class="success"
+        *ngIf="mensaje != ''"
+      >
+        {{ mensaje }}
+      </p>
+
+    </section>
+
+  </main>
+
+</div>

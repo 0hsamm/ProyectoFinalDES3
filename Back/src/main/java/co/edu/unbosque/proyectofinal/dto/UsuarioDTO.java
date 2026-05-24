@@ -18,6 +18,8 @@ public class UsuarioDTO {
 
 	private String sobreMi;
 
+	private String fotoPerfil;
+
 	private boolean enLinea;
 
 	private LocalDate fechaNacimiento;
@@ -31,14 +33,16 @@ public class UsuarioDTO {
 	public UsuarioDTO() {
 	}
 
-	public UsuarioDTO(Long id, String usuario, String correo, String nombrePersona, String sobreMi, boolean enLinea,
-			LocalDate fechaNacimiento, LocalDateTime ultimaVezEnLinea, String contrasena, RolUsuario rol) {
+	public UsuarioDTO(Long id, String usuario, String correo, String nombrePersona, String sobreMi, String fotoPerfil,
+			boolean enLinea, LocalDate fechaNacimiento, LocalDateTime ultimaVezEnLinea, String contrasena,
+			RolUsuario rol) {
 		super();
 		this.id = id;
 		this.usuario = usuario;
 		this.correo = correo;
 		this.nombrePersona = nombrePersona;
 		this.sobreMi = sobreMi;
+		this.fotoPerfil = fotoPerfil;
 		this.enLinea = enLinea;
 		this.fechaNacimiento = fechaNacimiento;
 		this.ultimaVezEnLinea = ultimaVezEnLinea;
@@ -94,6 +98,14 @@ public class UsuarioDTO {
 		this.sobreMi = sobreMi;
 	}
 
+	public String getFotoPerfil() {
+		return fotoPerfil;
+	}
+
+	public void setFotoPerfil(String fotoPerfil) {
+		this.fotoPerfil = fotoPerfil;
+	}
+
 	public boolean isEnLinea() {
 		return enLinea;
 	}
@@ -134,7 +146,7 @@ public class UsuarioDTO {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(contrasena, correo, enLinea, fechaNacimiento, id, nombrePersona, rol, sobreMi,
+		return Objects.hash(contrasena, correo, enLinea, fechaNacimiento, fotoPerfil, id, nombrePersona, rol, sobreMi,
 				ultimaVezEnLinea, usuario);
 	}
 
@@ -149,17 +161,18 @@ public class UsuarioDTO {
 		UsuarioDTO other = (UsuarioDTO) obj;
 		return Objects.equals(contrasena, other.contrasena) && Objects.equals(correo, other.correo)
 				&& enLinea == other.enLinea && Objects.equals(fechaNacimiento, other.fechaNacimiento)
-				&& Objects.equals(id, other.id) && Objects.equals(nombrePersona, other.nombrePersona)
-				&& rol == other.rol && Objects.equals(sobreMi, other.sobreMi)
+				&& Objects.equals(fotoPerfil, other.fotoPerfil) && Objects.equals(id, other.id)
+				&& Objects.equals(nombrePersona, other.nombrePersona) && rol == other.rol
+				&& Objects.equals(sobreMi, other.sobreMi)
 				&& Objects.equals(ultimaVezEnLinea, other.ultimaVezEnLinea) && Objects.equals(usuario, other.usuario);
 	}
 
 	@Override
 	public String toString() {
 		return "UsuarioDTO [id=" + id + ", usuario=" + usuario + ", correo=" + correo + ", nombrePersona="
-				+ nombrePersona + ", sobreMi=" + sobreMi + ", enLinea=" + enLinea + ", fechaNacimiento="
-				+ fechaNacimiento + ", ultimaVezEnLinea=" + ultimaVezEnLinea + ", contrasena=" + contrasena + ", rol="
-				+ rol + "]";
+				+ nombrePersona + ", sobreMi=" + sobreMi + ", fotoPerfil=" + fotoPerfil + ", enLinea=" + enLinea
+				+ ", fechaNacimiento=" + fechaNacimiento + ", ultimaVezEnLinea=" + ultimaVezEnLinea
+				+ ", contrasena=" + contrasena + ", rol=" + rol + "]";
 	}
 
 

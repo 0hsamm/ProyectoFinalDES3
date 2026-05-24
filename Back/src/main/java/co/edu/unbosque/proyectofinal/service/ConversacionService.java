@@ -18,8 +18,10 @@ import co.edu.unbosque.proyectofinal.entity.ParticipanteConversacion;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.enums.RolParticipante;
 import co.edu.unbosque.proyectofinal.enums.TipoConversacion;
+import co.edu.unbosque.proyectofinal.enums.TipoMensaje;
 import co.edu.unbosque.proyectofinal.repository.ConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.MensajeRepository;
+import co.edu.unbosque.proyectofinal.repository.ParticipanteConversacionRepository;
 import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 
 @Service
@@ -34,6 +36,9 @@ public class ConversacionService {
 
 	@Autowired
 	private MensajeRepository mensajeRepo;
+
+	@Autowired
+	private ParticipanteConversacionRepository participanteRepo;
 
 	@Autowired
 	private CifradoService cifradoService;
@@ -123,6 +128,8 @@ public class ConversacionService {
 					calcularRolInicial(
 							dto.getTipoConversacion(),
 							i));
+			participante.setOculta(false);
+			participante.setFechaOcultada(null);
 
 			participantes.add(participante);
 		}
@@ -208,7 +215,7 @@ public class ConversacionService {
 
 		List<Conversacion> lista =
 				conversacionRepo
-						.findByParticipante_Usuario_Id(
+						.findVisiblesByUsuarioIdOrderByActividadDesc(
 								usuarioId);
 
 		List<ConversacionDTO> dtoList =
@@ -245,13 +252,21 @@ public class ConversacionService {
 
 			if (ultimo.isPresent()) {
 
-				if (ultimo.get().getVi() == null) {
+				if (esMensajeProtegido(
+						c,
+						ultimo.get())) {
+					dto.setUltimoMensaje(
+							"Mensaje protegido");
+				} else if (tieneTexto(
+						ultimo.get()
+								.getContenidoCifrado())) {
 					dto.setUltimoMensaje(
 							ultimo.get()
 									.getContenidoCifrado());
-				} else {
+				} else if (ultimo.get().getAdjunto() != null) {
 					dto.setUltimoMensaje(
-							"Mensaje protegido");
+							obtenerDescripcionAdjunto(
+									ultimo.get()));
 				}
 
 				dto.setFechaUltimoMensaje(
@@ -324,6 +339,8 @@ public class ConversacionService {
 				dto.getRol() == null
 						? RolParticipante.MIEMBRO
 						: dto.getRol());
+		nuevo.setOculta(false);
+		nuevo.setFechaOcultada(null);
 
 		conversacion.getParticipante()
 				.add(nuevo);
@@ -355,6 +372,44 @@ public class ConversacionService {
 		}
 
 		return dtoList;
+	}
+
+	public int ocultarParaUsuario(
+			Long conversacionId,
+			Long usuarioId) {
+
+		if (!conversacionRepo.existsById(conversacionId)) {
+			return 1;
+		}
+
+		Optional<ParticipanteConversacion> participante =
+				participanteRepo.findByConversacion_IdAndUsuario_Id(
+						conversacionId,
+						usuarioId);
+
+		if (!participante.isPresent()) {
+			return 2;
+		}
+
+		ParticipanteConversacion registro =
+				participante.get();
+
+		registro.setOculta(true);
+		registro.setFechaOcultada(
+				LocalDateTime.now());
+
+		participanteRepo.save(registro);
+
+		return 0;
+	}
+
+	public boolean usuarioPertenece(
+			Long conversacionId,
+			Long usuarioId) {
+
+		return participanteRepo.existsByConversacion_IdAndUsuario_Id(
+				conversacionId,
+				usuarioId);
 	}
 
 	private List<Long> normalizarParticipantes(
@@ -443,6 +498,10 @@ public class ConversacionService {
 				participante.getFechaIngresoChat());
 		dto.setFechaUltimoLeido(
 				participante.getFechaUltimoLeido());
+		dto.setOculta(
+				participante.isOculta());
+		dto.setFechaOcultada(
+				participante.getFechaOcultada());
 
 		return dto;
 	}
@@ -452,5 +511,50 @@ public class ConversacionService {
 
 		return valor != null
 				&& !valor.trim().isEmpty();
+	}
+
+	private boolean esMensajeProtegido(
+			Conversacion conversacion,
+			Mensaje mensaje) {
+
+		if (mensaje.getVi() != null) {
+			return true;
+		}
+
+		return mensaje.getAdjunto() != null
+				&& cifradoService.esHashFraseConfigurado(
+						conversacion.getEncripado());
+	}
+
+	private boolean esImagen(
+			String formatoArchivo) {
+
+		return tieneTexto(formatoArchivo)
+				&& formatoArchivo.toLowerCase()
+						.startsWith("image/");
+	}
+
+	private String obtenerDescripcionAdjunto(
+			Mensaje mensaje) {
+
+		if (mensaje.getAdjunto() == null) {
+			return "";
+		}
+
+		if (esImagen(
+				mensaje.getAdjunto()
+						.getFormatoArchivo())) {
+			return "Imagen adjunta";
+		}
+
+		if (mensaje.getTipoMensaje() == TipoMensaje.AUDIO) {
+			return "Audio adjunto";
+		}
+
+		if (mensaje.getTipoMensaje() == TipoMensaje.VIDEO) {
+			return "Video adjunto";
+		}
+
+		return "Archivo adjunto";
 	}
 }

@@ -1,10 +1,11 @@
 package co.edu.unbosque.proyectofinal.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,11 +17,13 @@ import co.edu.unbosque.proyectofinal.dto.RespuestaAutenticacionDTO;
 import co.edu.unbosque.proyectofinal.dto.LoginDTO;
 import co.edu.unbosque.proyectofinal.dto.RegistroDTO;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
+import co.edu.unbosque.proyectofinal.exception.CorreoYaExisteException;
 import co.edu.unbosque.proyectofinal.exception.CredencialesInvalidasException;
 import co.edu.unbosque.proyectofinal.exception.UsuarioYaExisteException;
 import co.edu.unbosque.proyectofinal.security.JwtUtil;
 import co.edu.unbosque.proyectofinal.service.AuditoriaService;
 import co.edu.unbosque.proyectofinal.service.AutenticacionService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -30,10 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = {
-        "http://localhost:8081",
-        "*"
-})
+@SecurityRequirements
 public class AutenticacionController {
 
     private final AutenticacionService authService;
@@ -69,53 +69,41 @@ public class AutenticacionController {
      */
     @PostMapping("/registro")
     public ResponseEntity<?> registro(
-            @RequestBody RegistroDTO registerRequest) {
+            @RequestBody RegistroDTO registerRequest,
+            HttpServletRequest request) {
 
         try {
-
-            RegistroDTO dto =
-                    new RegistroDTO();
-
-            dto.setUsuario(
-                    registerRequest.getUsuario());
-
-            dto.setCorreo(
-                    registerRequest.getCorreo());
-
-            dto.setNombrePersona(
-                    registerRequest.getNombrePersona());
-
-            dto.setContrasena(
-                    registerRequest.getContrasena());
-
+            RegistroDTO dto = new RegistroDTO();
+            dto.setUsuario(registerRequest.getUsuario());
+            dto.setCorreo(registerRequest.getCorreo());
+            dto.setNombrePersona(registerRequest.getNombrePersona());
+            dto.setContrasena(registerRequest.getContrasena());
             dto.setFechaNacimiento(
-                    LocalDate.parse(
-                            registerRequest
-                                    .getFechaNacimiento()
-                                    .toString()));
+                    registerRequest.getFechaNacimiento());
 
-            Usuario usuarioCreado =
-                    authService.registrar(dto);
+            AutenticacionService.RegistroResultado resultado =
+                    authService.registrar(
+                            dto,
+                            request.getHeader("Origin"));
+
+            String mensaje =
+                    resultado.correoEnviado()
+                            ? "Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta."
+                            : "Usuario registrado correctamente, pero no se pudo enviar el correo de verificacion. Revisa la configuracion SMTP del servidor.";
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(usuarioCreado);
+                    .body(mensaje);
 
-        }
-
-        catch (
-                UsuarioYaExisteException e
-        ) {
-
+        } catch (UsuarioYaExisteException e) {
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(HttpStatus.CONFLICT)
                     .body(e.getMessage());
-        }
-
-        catch (
-                RuntimeException e
-        ) {
-
+        } catch (CorreoYaExisteException e) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(e.getMessage());
+        } catch (RuntimeException e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
@@ -146,7 +134,8 @@ public class AutenticacionController {
                             usuarioLogeado.getId(),
                             usuarioLogeado.getUsuario(),
                             usuarioLogeado.getCorreo(),
-                            usuarioLogeado.getNombrePersona());
+                            usuarioLogeado.getNombrePersona(),
+                            usuarioLogeado.getFotoPerfil());
 
             auditoriaService.registrar(
                     usuarioLogeado,
@@ -202,5 +191,29 @@ public class AutenticacionController {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body("Token invalido o expirado");
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            HttpServletRequest request) {
+
+        String authHeader = request.getHeader("Authorization");
+        
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String jwt = authHeader.substring(7);
+            String correo = jwtUtil.extractUsername(jwt);
+            
+            Optional<Usuario> usuarioOpt = 
+                    authService.buscarPorCorreo(correo);
+                    
+            if (usuarioOpt.isPresent()) {
+                Usuario usuario = usuarioOpt.get();
+                usuario.setEnLinea(false);
+                usuario.setUltimaVezEnLinea(LocalDateTime.now());
+                authService.guardar(usuario);
+            }
+        }
+        
+        return ResponseEntity.ok("Sesion cerrada correctamente");
     }
 }

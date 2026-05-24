@@ -1,5 +1,7 @@
 package co.edu.unbosque.proyectofinal.dto;
 
+import java.time.LocalDateTime;
+
 import co.edu.unbosque.proyectofinal.enums.EstadoLlamada;
 import co.edu.unbosque.proyectofinal.enums.TipoLlamada;
 
@@ -16,6 +18,9 @@ public class LlamadaRespuestaDTO {
 	private Long conversacionId;
 	private Long usuarioLlamanteId;
 	private Long usuarioReceptorId;
+	private String usuarioLlamanteNombre;
+	private String usuarioReceptorNombre;
+	private LocalDateTime fechaInicio;
 
 	public LlamadaRespuestaDTO() {
 	}
@@ -113,6 +118,30 @@ public class LlamadaRespuestaDTO {
 
 	public void setUsuarioReceptorId(Long usuarioReceptorId) {
 		this.usuarioReceptorId = usuarioReceptorId;
+	}
+
+	public String getUsuarioLlamanteNombre() {
+		return usuarioLlamanteNombre;
+	}
+
+	public void setUsuarioLlamanteNombre(String usuarioLlamanteNombre) {
+		this.usuarioLlamanteNombre = usuarioLlamanteNombre;
+	}
+
+	public String getUsuarioReceptorNombre() {
+		return usuarioReceptorNombre;
+	}
+
+	public void setUsuarioReceptorNombre(String usuarioReceptorNombre) {
+		this.usuarioReceptorNombre = usuarioReceptorNombre;
+	}
+
+	public LocalDateTime getFechaInicio() {
+		return fechaInicio;
+	}
+
+	public void setFechaInicio(LocalDateTime fechaInicio) {
+		this.fechaInicio = fechaInicio;
 	}
 
 }

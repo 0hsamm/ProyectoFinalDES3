@@ -1,0 +1,47 @@
+<div class="verify-page">
+
+  <div class="verify-card">
+
+    <div
+      class="status-circle"
+      [class.success]="correcto"
+      [class.error-circle]="!correcto && !cargando"
+    >
+
+      <span *ngIf="cargando">
+        ...
+      </span>
+
+      <span *ngIf="correcto">
+        OK
+      </span>
+
+      <span *ngIf="!correcto && !cargando">
+        X
+      </span>
+
+    </div>
+
+    <h1>
+
+      <span *ngIf="cargando">
+        Verificando...
+      </span>
+
+      <span *ngIf="correcto">
+        Cuenta verificada
+      </span>
+
+      <span *ngIf="!correcto && !cargando">
+        Error de verificacion
+      </span>
+
+    </h1>
+
+    <p>
+      {{ mensaje }}
+    </p>
+
+  </div>
+
+</div>

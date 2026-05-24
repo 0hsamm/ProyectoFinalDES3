@@ -1,0 +1,161 @@
+<div class="chat-container">
+
+  <aside class="sidebar">
+
+    <div class="sidebar-top">
+
+      <div class="user-photo">
+
+        {{ usuarioActual.charAt(0) }}
+
+      </div>
+
+      <div class="user-info">
+
+        <h3>
+          {{ usuarioActual }}
+        </h3>
+
+        <p>
+          En linea
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="search-box">
+
+      <input
+        type="text"
+        placeholder="Buscar conversacion">
+
+    </div>
+
+    <div class="chat-list">
+
+      <div
+
+        class="chat-item"
+
+        *ngFor="
+          let conversacion
+          of conversaciones
+        "
+
+        (click)="
+          seleccionarConversacion(
+            conversacion.id
+          )
+        "
+
+        [class.active]="
+          conversacion.id ==
+          conversacionSeleccionada
+        ">
+
+        <div class="chat-avatar">
+
+          {{ conversacion.id }}
+
+        </div>
+
+        <div class="chat-details">
+
+          <h4>
+
+            Conversacion
+            {{ conversacion.id }}
+
+          </h4>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+  <main class="chat-area">
+
+    <header class="chat-header">
+
+      <h2>
+
+        Conversacion
+        {{ conversacionSeleccionada }}
+
+      </h2>
+
+    </header>
+
+    <section class="messages">
+
+      <div
+
+        *ngFor="
+          let mensaje
+          of mensajes
+        ">
+
+        <div
+
+          class="message"
+
+          [class.sent]="
+            mensaje.remitenteUsuario ==
+            usuarioActual
+          "
+
+          [class.received]="
+            mensaje.remitenteUsuario !=
+            usuarioActual
+          ">
+
+          {{ mensaje.contenido }}
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <footer class="message-box">
+
+      <input
+
+        type="text"
+
+        placeholder="Escribe un mensaje"
+
+        [(ngModel)]="
+          nuevoMensaje
+        "
+
+        name="nuevoMensaje"
+      >
+
+      <button
+
+        type="button"
+
+        (click)="
+          enviarMensaje()
+        ">
+
+        Enviar
+
+      </button>
+
+    </footer>
+
+    <p class="error">
+
+      {{ error }}
+
+    </p>
+
+  </main>
+
+</div>

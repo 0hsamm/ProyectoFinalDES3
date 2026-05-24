@@ -11,7 +11,7 @@ import co.edu.unbosque.proyectofinal.entity.Usuario;
 
 public interface MensajeRepository extends JpaRepository<Mensaje, Long>{
 
-    List<Mensaje> findByConversacion_Id(Long conversacionId);
+    List<Mensaje> findByConversacion_IdOrderByHoraEnvioAsc(Long conversacionId);
 
     List<Mensaje> findTop20ByConversacion_IdOrderByHoraEnvioDesc(Long conversacionId);
 

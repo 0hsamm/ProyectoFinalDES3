@@ -1,0 +1,27 @@
+.main-layout {
+  display: grid;
+  grid-template-columns: 85px 340px minmax(0, 1fr) 320px;
+  height: 100vh;
+  overflow: hidden;
+  background:
+    linear-gradient(115deg, rgba(34, 211, 238, 0.13), transparent 34%),
+    linear-gradient(245deg, rgba(251, 113, 133, 0.08), transparent 43%),
+    linear-gradient(180deg, #081018 0%, #06070d 58%, #080612 100%);
+}
+
+.main-layout.single-panel {
+  grid-template-columns: 85px minmax(0, 1fr);
+}
+
+@media (max-width: 1180px) {
+  .main-layout {
+    grid-template-columns: 78px 320px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .main-layout,
+  .main-layout.single-panel {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+}

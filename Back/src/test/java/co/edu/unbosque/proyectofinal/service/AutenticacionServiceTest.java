@@ -1,15 +1,20 @@
 package co.edu.unbosque.proyectofinal.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -22,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import co.edu.unbosque.proyectofinal.dto.LoginDTO;
 import co.edu.unbosque.proyectofinal.dto.RegistroDTO;
+import co.edu.unbosque.proyectofinal.entity.TokenVerificacion;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
 import co.edu.unbosque.proyectofinal.exception.CorreoYaExisteException;
 import co.edu.unbosque.proyectofinal.exception.CredencialesInvalidasException;
@@ -41,6 +47,9 @@ class AutenticacionServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private EmailService emailService;
+
     @InjectMocks
     private AutenticacionService autenticacionService;
 
@@ -56,7 +65,7 @@ class AutenticacionServiceTest {
         when(passwordEncoder.encode("12345678"))
                 .thenReturn("hash-seguro");
 
-        Usuario creado =
+        AutenticacionService.RegistroResultado resultado =
                 autenticacionService.registrar(dto);
 
         ArgumentCaptor<Usuario> captor =
@@ -72,7 +81,39 @@ class AutenticacionServiceTest {
         assertEquals("hash-seguro", guardado.getContrasenaHash());
         assertEquals("Hola! Estoy usando WZ", guardado.getSobreMi());
         assertNotNull(guardado.getFechaCreacionCuenta());
-        assertEquals(creado, guardado);
+        assertEquals(resultado.usuario(), guardado);
+        assertTrue(resultado.correoEnviado());
+        verify(emailService).enviarCorreoVerificacion(
+                eq("usuario@correo.com"),
+                any(String.class),
+                isNull());
+    }
+
+    @Test
+    void registrarMantieneUsuarioSiFallaElCorreo() {
+        RegistroDTO dto =
+                registroValido();
+
+        when(usuarioRepo.findByUsuario("usuario1"))
+                .thenReturn(Optional.empty());
+        when(usuarioRepo.findByCorreo("usuario@correo.com"))
+                .thenReturn(Optional.empty());
+        when(passwordEncoder.encode("12345678"))
+                .thenReturn("hash-seguro");
+        doThrow(new RuntimeException("SMTP no disponible"))
+                .when(emailService)
+                .enviarCorreoVerificacion(
+                        eq("usuario@correo.com"),
+                        any(String.class),
+                        isNull());
+
+        AutenticacionService.RegistroResultado resultado =
+                autenticacionService.registrar(dto);
+
+        assertEquals("usuario1", resultado.usuario().getUsuario());
+        assertFalse(resultado.correoEnviado());
+        verify(usuarioRepo).save(any(Usuario.class));
+        verify(tokenRepo).save(any());
     }
 
     @Test
@@ -161,6 +202,54 @@ class AutenticacionServiceTest {
                 () -> autenticacionService.login(dto));
     }
 
+    @Test
+    void verificarCuentaEliminaTokenCuandoSeUsaCorrectamente() {
+        Usuario usuario =
+                new Usuario();
+        usuario.setHabilitado(false);
+
+        TokenVerificacion token =
+                new TokenVerificacion();
+        token.setToken("token-valido");
+        token.setUsuario(usuario);
+        token.setFechaExpiracion(
+                LocalDateTime.now().plusHours(1));
+
+        when(tokenRepo.findByToken("token-valido"))
+                .thenReturn(Optional.of(token));
+
+        boolean resultado =
+                autenticacionService.verificarCuenta("token-valido");
+
+        assertTrue(resultado);
+        assertTrue(usuario.isHabilitado());
+        verify(usuarioRepo).save(usuario);
+        verify(tokenRepo).delete(token);
+    }
+
+    @Test
+    void verificarCuentaEliminaTokenSiYaExpiró() {
+        Usuario usuario =
+                new Usuario();
+
+        TokenVerificacion token =
+                new TokenVerificacion();
+        token.setToken("token-expirado");
+        token.setUsuario(usuario);
+        token.setFechaExpiracion(
+                LocalDateTime.now().minusMinutes(1));
+
+        when(tokenRepo.findByToken("token-expirado"))
+                .thenReturn(Optional.of(token));
+
+        boolean resultado =
+                autenticacionService.verificarCuenta("token-expirado");
+
+        assertFalse(resultado);
+        verify(usuarioRepo, never()).save(any());
+        verify(tokenRepo).delete(token);
+    }
+
     private RegistroDTO registroValido() {
         RegistroDTO dto =
                 new RegistroDTO();
@@ -194,6 +283,7 @@ class AutenticacionServiceTest {
         usuario.setUsuario("usuario1");
         usuario.setCorreo("usuario@correo.com");
         usuario.setContrasenaHash(contrasena);
+        usuario.setHabilitado(true);
 
         return usuario;
     }

@@ -1,6 +1,7 @@
 package co.edu.unbosque.proyectofinal.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,13 +35,25 @@ public class LlamadaController {
 	public ResponseEntity<?> iniciarLlamada(
 			@RequestBody LlamadaDTO dto) {
 
-		LlamadaRespuestaDTO respuesta =
-				llamadaService.iniciarLlamada(dto);
+		LlamadaRespuestaDTO respuesta;
+
+		try {
+			respuesta =
+					llamadaService.iniciarLlamada(dto);
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of(
+							"message",
+							e.getMessage()));
+		}
 
 		if (respuesta == null) {
 			return ResponseEntity
 					.status(HttpStatus.BAD_REQUEST)
-					.body("Usuario o conversación no encontrados");
+					.body(Map.of(
+							"message",
+							"Usuario, conversacion o participantes no validos"));
 		}
 
 		return ResponseEntity
@@ -56,13 +69,25 @@ public class LlamadaController {
 			@PathVariable Long id,
 			@PathVariable Long usuarioReceptorId) {
 
-		LlamadaRespuestaDTO respuesta =
-				llamadaService.aceptarLlamada(id, usuarioReceptorId);
+		LlamadaRespuestaDTO respuesta;
+
+		try {
+			respuesta =
+					llamadaService.aceptarLlamada(id, usuarioReceptorId);
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of(
+							"message",
+							e.getMessage()));
+		}
 
 		if (respuesta == null) {
 			return ResponseEntity
 					.status(HttpStatus.NOT_FOUND)
-					.body("Llamada no encontrada o usuario incorrecto");
+					.body(Map.of(
+							"message",
+							"Llamada no encontrada o usuario incorrecto"));
 		}
 
 		return ResponseEntity.ok(respuesta);

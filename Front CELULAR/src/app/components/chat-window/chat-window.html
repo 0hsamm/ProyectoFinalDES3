@@ -1,0 +1,322 @@
+<div class="chat-window">
+
+  <ng-container *ngIf="conversacion; else sinConversacion">
+
+    <div class="chat-topbar">
+
+      <div class="user-info">
+
+        <div class="avatar">
+          <img
+            *ngIf="obtenerFotoConversacion()"
+            [src]="obtenerFotoConversacion()"
+            [alt]="obtenerNombreConversacion()"
+          >
+          <span *ngIf="!obtenerFotoConversacion()">
+            {{ obtenerIniciales() }}
+          </span>
+        </div>
+
+        <div class="texts">
+
+          <div class="name">
+            {{ obtenerNombreConversacion() }}
+          </div>
+
+          <div class="status">
+            Conversacion activa
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="actions">
+
+        <button
+          class="action-btn"
+          type="button"
+          title="Llamada de voz"
+          aria-label="Llamada de voz"
+          *ngIf="puedeHacerLlamadas()"
+          (click)="iniciarLlamada('VOZ')"
+        >
+          <span class="icon icon-phone"></span>
+        </button>
+
+        <button
+          class="action-btn"
+          type="button"
+          title="Videollamada"
+          aria-label="Videollamada"
+          *ngIf="puedeHacerLlamadas()"
+          (click)="iniciarLlamada('VIDEO')"
+        >
+          <span class="icon icon-video"></span>
+        </button>
+
+        <button
+          class="action-btn end-call"
+          type="button"
+          title="Finalizar llamada"
+          aria-label="Finalizar llamada"
+          *ngIf="puedeHacerLlamadas() && llamadaActivaId != null"
+          (click)="finalizarLlamada()"
+        >
+          <span class="icon icon-phone"></span>
+        </button>
+
+        <button
+          class="action-btn"
+          type="button"
+          title="Actualizar mensajes"
+          aria-label="Actualizar mensajes"
+          (click)="cargarMensajes()"
+        >
+          <span class="icon icon-refresh"></span>
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="messages-container">
+
+      <div
+        class="secret-bar"
+        *ngIf="conversacion.fraseSecretaConfigurada"
+      >
+
+        <input
+          type="password"
+          placeholder="Frase secreta de la conversacion"
+          [(ngModel)]="fraseSecreta"
+        >
+
+        <button
+          type="button"
+          (click)="cargarMensajes()"
+        >
+          Desbloquear
+        </button>
+
+      </div>
+
+      <div
+        class="state"
+        *ngIf="cargando"
+      >
+        <i class="pi pi-spin pi-spinner"></i>
+        Cargando mensajes...
+      </div>
+
+      <div
+        class="state error"
+        *ngIf="!cargando && error != ''"
+      >
+        {{ error }}
+      </div>
+
+      <ng-container *ngIf="!cargando">
+
+        <div
+          class="message"
+          *ngFor="let mensaje of mensajes"
+          [class.me]="esMensajePropio(mensaje)"
+          [class.other]="!esMensajePropio(mensaje)"
+        >
+
+          <div
+            class="sender"
+            *ngIf="debeMostrarRemitente(mensaje)"
+          >
+            {{ obtenerNombreRemitente(mensaje) }}
+          </div>
+
+          <div class="message-content">
+
+            <a
+              class="message-image-link"
+              *ngIf="tieneImagenAdjunta(mensaje)"
+              [href]="mensaje.adjuntoUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                class="message-image"
+                [src]="mensaje.adjuntoUrl"
+                [alt]="obtenerNombreAdjunto(mensaje)"
+              >
+            </a>
+
+            <a
+              class="message-file"
+              *ngIf="tieneAdjuntoNoImagen(mensaje)"
+              [href]="mensaje.adjuntoUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div class="message-file-icon">
+                {{ obtenerSiglaAdjunto(mensaje.tipoMensaje) }}
+              </div>
+
+              <div class="message-file-copy">
+                <strong>{{ obtenerNombreAdjunto(mensaje) }}</strong>
+                <span>
+                  {{ obtenerDescripcionAdjunto(mensaje) }}
+                  <ng-container *ngIf="obtenerTamanoHumano(mensaje.adjuntoTamano) != ''">
+                    - {{ obtenerTamanoHumano(mensaje.adjuntoTamano) }}
+                  </ng-container>
+                </span>
+              </div>
+            </a>
+
+            <div
+              class="message-text"
+              *ngIf="tieneContenidoVisible(mensaje)"
+            >
+              {{ obtenerContenido(mensaje) }}
+            </div>
+
+            <div
+              class="message-text"
+              *ngIf="!tieneImagenAdjunta(mensaje) && !tieneContenidoVisible(mensaje)"
+            >
+              {{ obtenerContenido(mensaje) }}
+            </div>
+
+          </div>
+
+          <div
+            class="time"
+            *ngIf="obtenerHoraMensaje(mensaje) != ''"
+          >
+            {{ obtenerHoraMensaje(mensaje) }}
+          </div>
+
+        </div>
+
+        <div
+          class="state"
+          *ngIf="mensajes.length == 0 && error == ''"
+        >
+          Aun no hay mensajes en esta conversacion
+        </div>
+
+      </ng-container>
+
+    </div>
+
+    <div
+      class="attachment-preview"
+      *ngIf="archivoAdjunto"
+    >
+
+      <img
+        *ngIf="archivoPreviewEsImagen && archivoPreviewUrl"
+        class="attachment-preview-image"
+        [src]="archivoPreviewUrl"
+        [alt]="archivoAdjunto.name"
+      >
+
+      <div
+        class="attachment-preview-icon"
+        *ngIf="!archivoPreviewEsImagen"
+      >
+        {{ obtenerSiglaAdjunto(obtenerTipoMensajeAdjunto(archivoAdjunto)) }}
+      </div>
+
+      <div class="attachment-preview-info">
+        <div class="attachment-preview-name">
+          {{ archivoAdjunto.name }}
+        </div>
+
+        <div class="attachment-preview-meta">
+          {{ archivoPreviewEsImagen ? 'Imagen lista para enviar' : 'Archivo listo para enviar' }}
+          <ng-container *ngIf="obtenerTamanoHumano(archivoAdjunto.size) != ''">
+            - {{ obtenerTamanoHumano(archivoAdjunto.size) }}
+          </ng-container>
+        </div>
+      </div>
+
+      <button
+        class="attachment-preview-remove"
+        type="button"
+        (click)="quitarAdjunto()"
+      >
+        Quitar
+      </button>
+
+    </div>
+
+    <form
+      class="message-input-container"
+      (ngSubmit)="enviarMensaje()"
+    >
+
+      <label
+        class="attach-btn"
+        title="Adjuntar archivo"
+        aria-label="Adjuntar archivo"
+      >
+        <span class="icon icon-clip"></span>
+        <input
+          type="file"
+          #adjuntoInput
+          (change)="adjuntoSeleccionado($event)"
+        >
+      </label>
+
+      <input
+        type="text"
+        name="nuevoMensaje"
+        placeholder="Escribe un mensaje"
+        [(ngModel)]="nuevoMensaje"
+        [disabled]="enviando"
+      >
+
+      <button
+        class="send-btn"
+        type="submit"
+        title="Enviar mensaje"
+        aria-label="Enviar mensaje"
+        [disabled]="(nuevoMensaje.trim() == '' && !archivoAdjunto) || enviando || (conversacion.fraseSecretaConfigurada && fraseSecreta.trim().length < 8)"
+      >
+        <span class="icon icon-send"></span>
+      </button>
+
+    </form>
+
+  </ng-container>
+  <app-llamada
+    *ngIf="llamadaActiva != null"
+    [llamada]="llamadaActiva!"
+    [idUsuarioActual]="idUsuarioActual"
+    (colgar)="onColgar()"
+  >
+  </app-llamada>
+  <ng-template #sinConversacion>
+
+    <div class="empty-window">
+
+      <div class="empty-icon">
+        R
+      </div>
+
+      <h2>Selecciona una conversacion</h2>
+
+      <p>
+        Tus mensajes apareceran aqui cuando elijas una conversacion.
+      </p>
+
+    </div>
+
+  </ng-template>
+  <app-llamada-entrante
+    *ngIf="llamadaEntrante != null"
+    [llamada]="llamadaEntrante!"
+    [idUsuarioActual]="idUsuarioActual"
+    (aceptada)="onLlamadaAceptada($event)"
+    (rechazada)="onLlamadaRechazada()"
+  />
+</div>

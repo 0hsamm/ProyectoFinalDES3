@@ -2,11 +2,12 @@ package co.edu.unbosque.proyectofinal.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import co.edu.unbosque.proyectofinal.dto.UsuarioDTO;
 import co.edu.unbosque.proyectofinal.entity.Usuario;
@@ -16,187 +17,296 @@ import co.edu.unbosque.proyectofinal.repository.UsuarioRepository;
 @Service
 public class UsuarioService {
 
-	@Autowired
-	private UsuarioRepository usuarioRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
-	@Autowired
-	private ModelMapper modelMapper;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
-	public int create(UsuarioDTO dto) {
+    public int create(UsuarioDTO dto) {
 
-		try {
+        try {
+            if (dto == null
+                    || dto.getUsuario() == null
+                    || dto.getCorreo() == null
+                    || dto.getNombrePersona() == null
+                    || dto.getContrasena() == null
+                    || dto.getContrasena().isBlank()) {
 
-			if (dto == null
-					|| dto.getUsuario() == null
-					|| dto.getCorreo() == null
-					|| dto.getNombrePersona() == null
-					|| dto.getContrasena() == null
-					|| dto.getContrasena().isBlank()) {
+                return 1;
+            }
 
-				return 1;
-			}
+            if (usuarioRepository.findByUsuario(dto.getUsuario().trim()).isPresent()
+                    || usuarioRepository.findByCorreo(dto.getCorreo().trim()).isPresent()) {
+                return 1;
+            }
 
-			Usuario usuario =
-					new Usuario();
+            Usuario usuario = new Usuario();
+            usuario.setUsuario(dto.getUsuario().trim());
+            usuario.setCorreo(dto.getCorreo().trim());
+            usuario.setNombrePersona(dto.getNombrePersona().trim());
+            usuario.setContrasenaHash(
+                    passwordEncoder.encode(dto.getContrasena()));
+            usuario.setSobreMi(dto.getSobreMi());
+            usuario.setFotoPerfil(dto.getFotoPerfil());
 
-			usuario.setUsuario(
-					dto.getUsuario());
+            if (usuario.getSobreMi() == null
+                    || usuario.getSobreMi().isBlank()) {
+                usuario.setSobreMi("");
+            }
 
-			usuario.setCorreo(
-					dto.getCorreo());
+            usuario.setFechaNacimiento(dto.getFechaNacimiento());
+            usuario.setFechaCreacionCuenta(LocalDateTime.now());
+            usuario.setEnLinea(false);
+            usuario.setUltimaVezEnLinea(null);
+            usuario.setHabilitado(true);
+            usuario.setRol(RolUsuario.ROLE_USER);
 
-			usuario.setNombrePersona(
-					dto.getNombrePersona());
+            usuarioRepository.save(usuario);
 
-			usuario.setContrasenaHash(
-					passwordEncoder.encode(
-							dto.getContrasena()));
+            return 0;
 
-			usuario.setSobreMi(
-					dto.getSobreMi());
+        } catch (Exception e) {
+            return 1;
+        }
+    }
 
-			if (usuario.getSobreMi() == null
-					|| usuario.getSobreMi().isBlank()) {
+    public List<UsuarioDTO> getAll() {
 
-				usuario.setSobreMi("Hola! Estoy usando WZ");
-			}
+        return usuarioRepository.findAll()
+                .stream()
+                .filter(Usuario::isHabilitado)
+                .map(this::mapearPublico)
+                .toList();
+    }
 
-			usuario.setFechaNacimiento(
-					dto.getFechaNacimiento());
+    public UsuarioDTO getById(Long id) {
 
-			usuario.setFechaCreacionCuenta(
-					LocalDateTime.now());
+        return usuarioRepository.findById(id)
+                .filter(Usuario::isHabilitado)
+                .map(this::mapearPublico)
+                .orElse(null);
+    }
 
-			usuario.setEnLinea(false);
+    public UsuarioDTO getPerfilById(Long id) {
 
-			usuario.setUltimaVezEnLinea(null);
+        return usuarioRepository.findById(id)
+                .filter(Usuario::isHabilitado)
+                .map(this::mapearPrivado)
+                .orElse(null);
+    }
 
-			usuario.setHabilitado(false);
-			
-			if (dto.getRol() != null) {
-			    usuario.setRol(dto.getRol());
-			} else {
-			    usuario.setRol(RolUsuario.ROLE_USER);
-			}
+    public String deleteById(Long id) {
 
-			usuarioRepository.save(usuario);
+        try {
+            Usuario usuario =
+                    usuarioRepository
+                            .findById(id)
+                            .orElse(null);
 
-			return 0;
+            if (usuario == null) {
+                return "Usuario no encontrado";
+            }
 
-		} catch (Exception e) {
+            String sufijo =
+                    "_eliminado_" + usuario.getId();
 
-			e.printStackTrace();
+            usuario.setHabilitado(false);
+            usuario.setEnLinea(false);
+            usuario.setUltimaVezEnLinea(LocalDateTime.now());
+            usuario.setUsuario(
+                    limpiarValorUnico(usuario.getUsuario(), sufijo));
+            usuario.setCorreo(
+                    "usuario" + usuario.getId()
+                            + "@eliminado.local");
+            usuario.setNombrePersona("Usuario eliminado");
+            usuario.setSobreMi("");
 
-			return 1;
-		}
-	}
+            usuarioRepository.save(usuario);
 
-	public List<UsuarioDTO> getAll() {
+            return "Usuario eliminado";
 
-		return usuarioRepository.findAll()
-				.stream()
-				.map(usuario ->
-						modelMapper.map(
-								usuario,
-								UsuarioDTO.class))
-				.toList();
-	}
+        } catch (Exception e) {
+            return "Error al eliminar usuario";
+        }
+    }
 
-	public UsuarioDTO getById(Long id) {
+    public int updateById(Long id, UsuarioDTO dto) {
+        try {
+            Usuario usuario = usuarioRepository.findById(id).orElse(null);
+            if (usuario == null || !usuario.isHabilitado()) return 1;
 
-		return usuarioRepository.findById(id)
-				.map(usuario ->
-						modelMapper.map(
-								usuario,
-								UsuarioDTO.class))
-				.orElse(null);
-	}
+            if (actualizarUsuario(usuario, id, dto) != 0) return 1;
+            if (actualizarNombre(usuario, dto) != 0) return 1;
+            if (actualizarCorreo(usuario, id, dto) != 0) return 1;
 
-	public int deleteById(Long id) {
+            actualizarCamposOpcionales(usuario, dto);
 
-		try {
+            usuarioRepository.save(usuario);
+            return 0;
 
-			usuarioRepository.deleteById(id);
+        } catch (Exception e) {
+            return 1;
+        }
+    }
 
-			return 0;
+    private int actualizarUsuario(Usuario usuario, Long id, UsuarioDTO dto) {
+        if (dto.getUsuario() == null) return 0;
+        String nuevoUsuario = dto.getUsuario().trim();
+        if (nuevoUsuario.isBlank()) return 1;
 
-		} catch (Exception e) {
+        Optional<Usuario> duplicado = usuarioRepository.findByUsuario(nuevoUsuario);
+        if (duplicado.isPresent() && !duplicado.get().getId().equals(id)) return 1;
 
-			e.printStackTrace();
+        usuario.setUsuario(nuevoUsuario);
+        return 0;
+    }
 
-			return 1;
-		}
-	}
+    private int actualizarNombre(Usuario usuario, UsuarioDTO dto) {
+        if (dto.getNombrePersona() == null) return 0;
+        String nuevoNombre = dto.getNombrePersona().trim();
+        if (nuevoNombre.isBlank()) return 1;
+        usuario.setNombrePersona(nuevoNombre);
+        return 0;
+    }
 
-	public int updateById(Long id, UsuarioDTO dto) {
+    private int actualizarCorreo(Usuario usuario, Long id, UsuarioDTO dto) {
+        if (dto.getCorreo() == null) return 0;
+        String nuevoCorreo = dto.getCorreo().trim();
+        if (nuevoCorreo.isBlank()) return 1;
 
-		try {
+        Optional<Usuario> duplicado = usuarioRepository.findByCorreo(nuevoCorreo);
+        if (duplicado.isPresent() && !duplicado.get().getId().equals(id)) return 1;
 
-			Usuario usuario =
-					usuarioRepository.findById(id)
-							.orElse(null);
+        usuario.setCorreo(nuevoCorreo);
+        return 0;
+    }
 
-			if (usuario == null) {
-				return 1;
-			}
+    private void actualizarCamposOpcionales(Usuario usuario, UsuarioDTO dto) {
+        if (dto.getSobreMi() != null) usuario.setSobreMi(dto.getSobreMi());
+        if (dto.getFotoPerfil() != null) usuario.setFotoPerfil(dto.getFotoPerfil());
+        if (dto.getFechaNacimiento() != null) usuario.setFechaNacimiento(dto.getFechaNacimiento());
+        if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
+            usuario.setContrasenaHash(passwordEncoder.encode(dto.getContrasena()));
+        }
+    }
 
-			if (dto.getUsuario() != null) {
-				usuario.setUsuario(
-						dto.getUsuario());
-			}
+    public UsuarioDTO getByUsername(
+            String username) {
 
-			if (dto.getNombrePersona() != null) {
-				usuario.setNombrePersona(
-						dto.getNombrePersona());
-			}
+        return usuarioRepository
+                .findByUsuario(username)
+                .filter(Usuario::isHabilitado)
+                .map(this::mapearPublico)
+                .orElse(null);
+    }
 
-			if (dto.getCorreo() != null) {
-				usuario.setCorreo(
-						dto.getCorreo());
-			}
+    public UsuarioDTO actualizarFotoPerfil(
+            Long id,
+            MultipartFile archivo) {
 
-			if (dto.getSobreMi() != null) {
-				usuario.setSobreMi(
-						dto.getSobreMi());
-			}
+        if (archivo == null || archivo.isEmpty()) {
+            throw new RuntimeException("Debes seleccionar una imagen");
+        }
 
-			if (dto.getFechaNacimiento() != null) {
-				usuario.setFechaNacimiento(
-						dto.getFechaNacimiento());
-			}
+        String contentType =
+                archivo.getContentType() == null
+                        ? ""
+                        : archivo.getContentType();
 
-			if (dto.getContrasena() != null
-					&& !dto.getContrasena().isBlank()) {
+        if (!contentType.startsWith("image/")) {
+            throw new RuntimeException("La foto de perfil debe ser una imagen");
+        }
 
-				usuario.setContrasenaHash(
-						passwordEncoder.encode(
-								dto.getContrasena()));
-			}
+        Usuario usuario =
+                usuarioRepository
+                        .findById(id)
+                        .filter(Usuario::isHabilitado)
+                        .orElseThrow(() ->
+                                new RuntimeException("Usuario no encontrado"));
 
-			usuarioRepository.save(usuario);
+        String url =
+                cloudinaryService.subirArchivo(archivo);
 
-			return 0;
+        usuario.setFotoPerfil(url);
 
-		} catch (Exception e) {
+        return mapearPrivado(
+                usuarioRepository.save(usuario));
+    }
 
-			e.printStackTrace();
+    public Optional<Usuario> buscarEntidadPorCorreo(
+            String correo) {
 
-			return 1;
-		}
-	}
+        return usuarioRepository.findByCorreo(correo);
+    }
 
-	public UsuarioDTO getByUsername(
-			String username) {
+    public Optional<Usuario> buscarEntidadPorId(
+            Long id) {
 
-		return usuarioRepository
-				.findByUsuario(username)
-				.map(usuario ->
-						modelMapper.map(
-								usuario,
-								UsuarioDTO.class))
-				.orElse(null);
-	}
+        return usuarioRepository.findById(id);
+    }
+
+    public boolean esAdmin(
+            Usuario usuario) {
+
+        return usuario != null
+                && usuario.getRol() == RolUsuario.ROLE_ADMIN;
+    }
+
+    private UsuarioDTO mapearPrivado(
+            Usuario usuario) {
+
+        UsuarioDTO dto =
+                mapearPublico(usuario);
+
+        dto.setCorreo(usuario.getCorreo());
+        dto.setFechaNacimiento(usuario.getFechaNacimiento());
+        dto.setRol(usuario.getRol());
+        dto.setContrasena(null);
+
+        return dto;
+    }
+
+    private UsuarioDTO mapearPublico(
+            Usuario usuario) {
+
+        UsuarioDTO dto =
+                new UsuarioDTO();
+
+        dto.setId(usuario.getId());
+        dto.setUsuario(usuario.getUsuario());
+        dto.setNombrePersona(usuario.getNombrePersona());
+        dto.setSobreMi(usuario.getSobreMi());
+        dto.setFotoPerfil(usuario.getFotoPerfil());
+        dto.setEnLinea(usuario.isEnLinea());
+        dto.setUltimaVezEnLinea(usuario.getUltimaVezEnLinea());
+        dto.setCorreo(null);
+        dto.setFechaNacimiento(null);
+        dto.setContrasena(null);
+        dto.setRol(null);
+
+        return dto;
+    }
+
+    private String limpiarValorUnico(
+            String valor,
+            String sufijo) {
+
+        String base =
+                valor == null || valor.isBlank()
+                        ? "usuario"
+                        : valor;
+
+        int maximoBase =
+                Math.max(1, 120 - sufijo.length());
+
+        if (base.length() > maximoBase) {
+            base = base.substring(0, maximoBase);
+        }
+
+        return base + sufijo;
+    }
 }

@@ -32,6 +32,9 @@ public interface EstadoVistoRepository extends JpaRepository<EstadoVisto, Long>{
     int countByEstado(
             Estado estado);
 
+    void deleteByEstado(
+            Estado estado);
+
     /*
      * Buscar visualización específica.
      */

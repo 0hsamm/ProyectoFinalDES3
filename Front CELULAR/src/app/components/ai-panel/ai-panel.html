@@ -1,0 +1,74 @@
+<div class="ai-layout">
+
+  <main class="ai-chat">
+    <header class="panel-heading">
+      <div>
+        <p>Asistente</p>
+        <h2>IA de Reload</h2>
+      </div>
+    </header>
+
+    <section class="messages">
+      <div
+        class="ai-message"
+        *ngFor="let mensaje of mensajes"
+        [class.user]="mensaje.role == 'user'"
+      >
+        <strong>{{ mensaje.role == 'user' ? 'Tu' : 'Asistente IA' }}</strong>
+        <p>{{ mensaje.content }}</p>
+      </div>
+
+      <div class="empty-state" *ngIf="mensajes.length == 0">
+        Haz una pregunta. La llave de Gemini vive solo en el backend, nunca en este front.
+      </div>
+
+      <div class="empty-state loading" *ngIf="enviando">
+        <i class="pi pi-spin pi-spinner"></i>
+        Pensando respuesta...
+      </div>
+    </section>
+
+    <form class="prompt-box" (ngSubmit)="enviar()">
+      <input
+        type="text"
+        name="pregunta"
+        placeholder="Pregunta algo al asistente"
+        [(ngModel)]="pregunta"
+        [disabled]="enviando"
+      >
+      <button type="submit" [disabled]="enviando || pregunta.trim() == ''">
+        <i class="pi pi-send"></i>
+      </button>
+    </form>
+  </main>
+
+  <aside class="ai-history">
+    <div class="history-heading">
+      <h3>Historial</h3>
+      <button
+        type="button"
+        class="history-refresh"
+        title="Actualizar historial"
+        aria-label="Actualizar historial"
+        [disabled]="cargandoHistorial"
+        (click)="refrescarHistorial()"
+      >
+        <i
+          class="pi pi-refresh"
+          [class.pi-spin]="cargandoHistorial"
+        ></i>
+      </button>
+    </div>
+    <article *ngFor="let item of historial">
+      <strong>{{ item.tipoAccion }}</strong>
+      <span>{{ item.vistaPreviaSolicitud }}</span>
+    </article>
+    <div class="empty-state" *ngIf="cargandoHistorial">
+      Actualizando historial...
+    </div>
+    <div class="empty-state" *ngIf="!cargandoHistorial && historial.length == 0">
+      Aun no hay historial de IA
+    </div>
+  </aside>
+
+</div>

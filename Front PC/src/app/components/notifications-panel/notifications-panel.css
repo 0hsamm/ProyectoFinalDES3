@@ -1,0 +1,128 @@
+.workspace-panel {
+  height: 100vh;
+  overflow-y: auto;
+  padding: 30px;
+  color: var(--text-1);
+  background:
+    linear-gradient(135deg, rgba(56, 189, 248, 0.1), transparent 36%),
+    linear-gradient(225deg, rgba(245, 158, 11, 0.08), transparent 45%),
+    rgba(7, 9, 15, 0.92);
+}
+
+.panel-heading,
+.item {
+  display: flex;
+  align-items: center;
+}
+
+.panel-heading {
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.panel-heading p {
+  margin: 0 0 6px;
+  color: var(--accent-cyan);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.panel-heading h2 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.section-card,
+.state-box,
+.empty-state {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-soft);
+}
+
+.section-card {
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.section-card h3 {
+  margin: 0 0 14px;
+}
+
+.item {
+  gap: 14px;
+  padding: 13px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.045);
+  margin-bottom: 10px;
+}
+
+.item:hover {
+  border-color: var(--line-soft);
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.item i {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  background: rgba(14, 165, 233, 0.16);
+  color: #bae6fd;
+}
+
+.item div {
+  min-width: 0;
+  flex: 1;
+}
+
+.item strong,
+.item span {
+  display: block;
+}
+
+.item span,
+.item small,
+.empty-state,
+.state-box {
+  color: var(--text-2);
+}
+
+button {
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 0 12px;
+  background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+  color: white;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+button.ghost,
+.tool-btn {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.tool-btn {
+  width: 42px;
+  padding: 0;
+}
+
+.empty-state,
+.state-box {
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .workspace-panel {
+    padding: 22px;
+  }
+}

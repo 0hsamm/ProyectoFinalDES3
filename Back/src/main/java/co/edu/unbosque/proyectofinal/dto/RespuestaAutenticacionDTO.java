@@ -18,6 +18,8 @@ public class RespuestaAutenticacionDTO {
 
     private String nombrePersona;
 
+    private String fotoPerfil;
+
     public RespuestaAutenticacionDTO() {
     }
 
@@ -27,7 +29,8 @@ public class RespuestaAutenticacionDTO {
             Long id,
             String usuario,
             String correo,
-            String nombrePersona) {
+            String nombrePersona,
+            String fotoPerfil) {
 
         this.token = token;
         this.tipoToken = tipoToken;
@@ -35,6 +38,7 @@ public class RespuestaAutenticacionDTO {
         this.usuario = usuario;
         this.correo = correo;
         this.nombrePersona = nombrePersona;
+        this.fotoPerfil = fotoPerfil;
     }
 
     public String getToken() {
@@ -83,5 +87,13 @@ public class RespuestaAutenticacionDTO {
 
     public void setNombrePersona(String nombrePersona) {
         this.nombrePersona = nombrePersona;
+    }
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 }
