@@ -162,21 +162,48 @@ public class RegistroAuditoriaDTO {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+
+		if (!(obj instanceof RegistroAuditoriaDTO other)) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RegistroAuditoriaDTO other = (RegistroAuditoriaDTO) obj;
-		return Objects.equals(accion, other.accion) && Objects.equals(conversacionId, other.conversacionId)
-				&& Objects.equals(descripcion, other.descripcion) && exitoso == other.exitoso
-				&& Objects.equals(fechaAccion, other.fechaAccion) && Objects.equals(id, other.id)
-				&& Objects.equals(ip, other.ip) && Objects.equals(latitud, other.latitud)
-				&& Objects.equals(longitud, other.longitud) && Objects.equals(modulo, other.modulo)
-				&& Objects.equals(navegador, other.navegador) && Objects.equals(ubicacion, other.ubicacion)
-				&& Objects.equals(usuarioCorreo, other.usuarioCorreo)
-				&& Objects.equals(usuarioNombre, other.usuarioNombre);
+		}
+
+		return Objects.equals(
+				java.util.List.of(
+						accion,
+						conversacionId,
+						descripcion,
+						exitoso,
+						fechaAccion,
+						id,
+						ip,
+						latitud,
+						longitud,
+						modulo,
+						navegador,
+						ubicacion,
+						usuarioCorreo,
+						usuarioNombre
+				),
+				java.util.List.of(
+						other.accion,
+						other.conversacionId,
+						other.descripcion,
+						other.exitoso,
+						other.fechaAccion,
+						other.id,
+						other.ip,
+						other.latitud,
+						other.longitud,
+						other.modulo,
+						other.navegador,
+						other.ubicacion,
+						other.usuarioCorreo,
+						other.usuarioNombre
+				)
+		);
 	}
 
 	@Override

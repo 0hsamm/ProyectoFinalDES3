@@ -774,7 +774,9 @@ public class MensajeService {
 			this.contentType =
 					contentType;
 			this.contenido =
-					contenido;
+					contenido == null
+							? null
+							: contenido.clone();
 		}
 
 		public String getNombreArchivo() {
@@ -786,7 +788,9 @@ public class MensajeService {
 		}
 
 		public byte[] getContenido() {
-			return contenido;
+			return contenido == null
+					? null
+					: contenido.clone();
 		}
 	}
 

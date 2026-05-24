@@ -27,16 +27,17 @@ public class ConversacionDTO {
 	}
 
 
-	public ConversacionDTO(Long id, TipoConversacion tipoConversacion, LocalDateTime fechaCreacion,
-			LocalDateTime fechaUltimoMensaje, List<Long> participantesIds, String ultimoMensaje) {
-		super();
-		this.id = id;
-		this.tipoConversacion = tipoConversacion;
-		this.fechaCreacion = fechaCreacion;
-		this.fechaUltimoMensaje = fechaUltimoMensaje;
-		this.participantesIds = participantesIds;
-		this.ultimoMensaje = ultimoMensaje;
-	}
+    public ConversacionDTO(Long id, TipoConversacion tipoConversacion, LocalDateTime fechaCreacion,
+    		LocalDateTime fechaUltimoMensaje, List<Long> participantesIds, String ultimoMensaje) {
+    	this.id = id;
+    	this.tipoConversacion = tipoConversacion;
+    	this.fechaCreacion = fechaCreacion;
+    	this.fechaUltimoMensaje = fechaUltimoMensaje;
+    	this.participantesIds = participantesIds == null
+    			? null
+    			: List.copyOf(participantesIds);
+    	this.ultimoMensaje = ultimoMensaje;
+    }
 
 
 	public Long getId() {
@@ -85,7 +86,9 @@ public class ConversacionDTO {
 
 
 	public void setParticipantesIds(List<Long> participantesIds) {
-		this.participantesIds = participantesIds;
+		this.participantesIds = participantesIds == null
+				? null
+				: List.copyOf(participantesIds);
 	}
 
 
