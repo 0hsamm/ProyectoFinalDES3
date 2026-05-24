@@ -1,7 +1,7 @@
 package co.edu.unbosque.proyectofinal.dto;
 
 import java.time.LocalDateTime;
-// skipcq: JAVA-E1086
+
 import java.util.List;
 import java.util.Objects;
 import java.util.ArrayList;
@@ -34,6 +34,8 @@ public class ConversacionDTO {
     	this.tipoConversacion = tipoConversacion;
     	this.fechaCreacion = fechaCreacion;
     	this.fechaUltimoMensaje = fechaUltimoMensaje;
+
+		// skipcq: JAVA-E1086
     	this.participantesIds = participantesIds == null
     			? null
     			: new ArrayList<>(participantesIds);
@@ -85,7 +87,7 @@ public class ConversacionDTO {
 	    return participantesIds == null ? null : new ArrayList<>(participantesIds);
 	}
 
-
+	// skipcq: JAVA-E1086
 	public void setParticipantesIds(List<Long> participantesIds) {
 		this.participantesIds = participantesIds == null
 				? null
