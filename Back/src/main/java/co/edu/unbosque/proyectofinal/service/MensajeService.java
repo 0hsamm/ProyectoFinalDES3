@@ -776,9 +776,7 @@ public class MensajeService {
 			this.contenido =
 					contenido == null
 							? null
-							: Arrays.copyOf(
-									contenido,
-									contenido.length);
+							: contenido.clone();
 		}
 
 		public String getNombreArchivo() {
@@ -790,11 +788,9 @@ public class MensajeService {
 		}
 
 		public byte[] getContenido() {
-			return contenido == null
-					? null
-					: Arrays.copyOf(
-							contenido,
-							contenido.length);
+		    return contenido == null
+		        ? null
+		        : contenido.clone();
 		}
 	}
 

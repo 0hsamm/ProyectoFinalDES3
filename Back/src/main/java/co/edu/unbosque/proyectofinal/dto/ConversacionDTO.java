@@ -81,7 +81,7 @@ public class ConversacionDTO {
 
 
 	public List<Long> getParticipantesIds() {
-		return participantesIds;
+	    return participantesIds == null ? null : new ArrayList<>(participantesIds);
 	}
 
 
