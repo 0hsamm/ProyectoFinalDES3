@@ -775,6 +775,7 @@ public class MensajeService {
 					nombreArchivo;
 			this.contentType =
 					contentType;
+			// skipcq: JAVA-E1086
 			this.contenido =
 					contenido == null
 							? null
